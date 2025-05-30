@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Barista Station - Order Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            color: #00d4ff;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-display {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .time-display {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 140px);
+        }
+
+        .orders-section {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            border-radius: 15px;
+            padding: 25px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2a3b5c;
+        }
+
+        .orders-title {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .order-card {
+            background: linear-gradient(135deg, #1e2a5a, #2a3b5c);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #00d4ff;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .order-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+        }
+
+        .order-card.finalized {
+            border-left-color: #00ff88;
+            background: linear-gradient(135deg, #1a3d2e, #2d5a3d);
+        }
+
+        .order-card.priority-high {
+            border-left-color: #ff6b6b;
+            background: linear-gradient(135deg, #3d1a1a, #5a2d2d);
+        }
+
+        .order-card.priority-express {
+            border-left-color: #ffd43b;
+            background: linear-gradient(135deg, #3d3d1a, #5a5a2d);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 212, 59, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(255, 212, 59, 0.6); }
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .order-id {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .order-time {
+            font-size: 1.1rem;
+            color: #aaa;
+        }
+
+        .order-description {
+            font-size: 1.1rem;
+            color: white;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 3px;
+        }
+
+        .detail-value {
+            font-weight: bold;
+            color: white;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .action-btn.ready {
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            color: #1a1a2e;
+        }
+
+        .action-btn.complete {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            color: white;
+        }
+
+        .action-btn.cancel {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-panel {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .stats-panel h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a3b5c;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-name {
+            color: #aaa;
+        }
+
+        .stat-value {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .controls-panel {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .control-group select, .control-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #2a3b5c;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: white;
+            font-size: 14px;
+        }
+
+        .control-group select:focus, .control-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .sound-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .sound-toggle input[type="checkbox"] {
+            width: auto;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            color: #1a1a2e;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+            font-weight: 600;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .orders-section {
+                max-height: 60vh;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .status-display {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .order-details {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .order-actions {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                flex: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            ☕ QUP Barista Station
+        </h1>
+        <div class="status-display">
+            <div class="status-item">
+                <div class="status-number" id="pendingOrders">0</div>
+                <div class="status-label">Pending</div>
+            </div>
+            <div class="status-item">
+                <div class="status-number" id="readyOrders">0</div>
+                <div class="status-label">Ready</div>
+            </div>
+            <div class="status-item">
+                <div class="time-display" id="currentTime">00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="orders-section">
+            <div class="orders-header">
+                <div class="orders-title">Active Orders</div>
+                <button class="refresh-btn" onclick="refreshOrders()" id="refreshBtn">
+                    🔄 Refresh
+                </button>
+            </div>
+
+            <div id="ordersContainer">
+                <div style="text-align: center; padding: 50px; color: #666;">
+                    <div class="loading" style="margin: 0 auto 20px;"></div>
+                    <div>Loading orders...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="stats-panel">
+                <h3>📊 Station Stats</h3>
+                <div class="stat-row">
+                    <span class="stat-name">Orders Today</span>
+                    <span class="stat-value" id="ordersToday">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Avg Prep Time</span>
+                    <span class="stat-value" id="avgPrepTime">0m</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Queue Efficiency</span>
+                    <span class="stat-value" id="queueEfficiency">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Revenue</span>
+                    <span class="stat-value" id="revenueToday">$0</span>
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <h3>⚙️ Station Controls</h3>
+                
+                <div class="control-group">
+                    <label>Station Status</label>
+                    <select id="stationStatus">
+                        <option value="active">🟢 Active</option>
+                        <option value="break">🟡 On Break</option>
+                        <option value="maintenance">🔴 Maintenance</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Auto-refresh Orders</label>
+                    <div class="sound-toggle">
+                        <input type="checkbox" id="autoRefresh" checked>
+                        <span>Enable auto-refresh</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Sound Notifications</label>
+                    <div class="sound-toggle">
+                        <input type="checkbox" id="soundEnabled" checked>
+                        <span>Enable sounds</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Break Duration (minutes)</label>
+                    <input type="number" id="breakDuration" value="15" min="5" max="60">
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <h3>🎯 Quick Actions</h3>
+                
+                <button class="refresh-btn" onclick="markAllReady()" style="width: 100%; margin-bottom: 10px;">
+                    ✅ Mark All Ready
+                </button>
+                
+                <button class="refresh-btn" onclick="clearCompleted()" style="width: 100%; margin-bottom: 10px;">
+                    🗑️ Clear Completed
+                </button>
+                
+                <button class="refresh-btn" onclick="exportReport()" style="width: 100%;">
+                    📊 Export Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Configuration
+        const API_BASE = window.location.origin; // Will use your deployed API URL
+        const ADMIN_KEY = 'barista_key'; // Barista access key
+
+        let currentOrders = [];
+        let stationStats = {};
+        let autoRefreshInterval = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeStation();
+            refreshOrders();
+            updateClock();
+            setupAutoRefresh();
+
+            setInterval(updateClock, 1000);
+        });
+
+        function initializeStation() {
+            // Load saved preferences
+            const autoRefresh = localStorage.getItem('barista_auto_refresh');
+            const soundEnabled = localStorage.getItem('barista_sound_enabled');
+            
+            if (autoRefresh !== null) {
+                document.getElementById('autoRefresh').checked = autoRefresh === 'true';
+            }
+            
+            if (soundEnabled !== null) {
+                document.getElementById('soundEnabled').checked = soundEnabled === 'true';
+            }
+
+            // Setup event listeners
+            document.getElementById('autoRefresh').addEventListener('change', setupAutoRefresh);
+            document.getElementById('soundEnabled').addEventListener('change', saveSoundPreference);
+            document.getElementById('stationStatus').addEventListener('change', updateStationStatus);
+        }
+
+        // API Functions
+        async function apiCall(endpoint, method = 'GET', data = null, useAdminKey = false) {
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+
+            if (useAdminKey) {
+                headers['X-Admin-Key'] = ADMIN_KEY;
+            }
+
+            const config = {
+                method,
+                headers,
+            };
+
+            if (data) {
+                config.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, config);
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || `HTTP ${response.status}`);
+                }
+
+                return result;
+            } catch (error) {
+                showNotification(`API Error: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // Order Management
+        async function refreshOrders() {
+            try {
+                document.getElementById('refreshBtn').innerHTML = '<div class="loading"></div>';
+
+                const response = await apiCall('/api/v1/queue/list?admin=true', 'GET', null, true);
+                currentOrders = response.queue || [];
+
+                updateOrdersDisplay();
+                updateStatistics();
+                playNotificationSound();
+            } catch (error) {
+                console.error('Failed to refresh orders:', error);
+            } finally {
+                document.getElementById('refreshBtn').innerHTML = '🔄 Refresh';
+            }
+        }
+
+        function updateOrdersDisplay() {
+            const container = document.getElementById('ordersContainer');
+
+            if (currentOrders.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 20px;">☕</div>
+                        <div style="font-size: 1.2rem;">No active orders</div>
+                        <div style="color: #888; margin-top: 10px;">Waiting for new orders...</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort orders by priority and time
+            const sortedOrders = [...currentOrders].sort((a, b) => {
+                if (a.finalized && !b.finalized) return 1;
+                if (!a.finalized && b.finalized) return -1;
+                if (a.cancelled && !b.cancelled) return 1;
+                if (!a.cancelled && b.cancelled) return -1;
+                return a.priority - b.priority;
+            });
+
+            container.innerHTML = sortedOrders.map(order => {
+                const priorityClass = order.priority <= 100 ? 'priority-express' : 
+                                   order.priority <= 300 ? 'priority-high' : '';
+                
+                return `
+                    <div class="order-card ${order.finalized ? 'finalized' : ''} ${priorityClass}">
+                        <div class="order-header">
+                            <div class="order-id">${order.id}</div>
+                            <div class="order-time">${formatDuration(order.duration)}</div>
+                        </div>
+
+                        <div class="order-description">
+                            ${order.payload?.order || 'No description'}
+                        </div>
+
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Priority</div>
+                                <div class="detail-value">${getPriorityText(order.priority)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Status</div>
+                                <div class="detail-value">${getStatusText(order)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Time Left</div>
+                                <div class="detail-value">${order.remaining_time || 'Done'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">QUP</div>
+                                <div class="detail-value">${order.can_qup ? '⚡' : '❌'}</div>
+                            </div>
+                        </div>
+
+                        <div class="order-actions">
+                            ${!order.finalized && !order.cancelled ? `
+                                <button class="action-btn ready" onclick="markReady('${order.id}')">
+                                    📦 Ready
+                                </button>
+                            ` : ''}
+                            ${order.finalized && !order.cancelled ? `
+                                <button class="action-btn complete" onclick="completeOrder('${order.id}')">
+                                    ✅ Complete
+                                </button>
+                            ` : ''}
+                            ${!order.cancelled ? `
+                                <button class="action-btn cancel" onclick="cancelOrder('${order.id}')">
+                                    ❌ Cancel
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStatistics() {
+            const pending = currentOrders.filter(o => !o.finalized && !o.cancelled).length;
+            const ready = currentOrders.filter(o => o.finalized && !o.cancelled).length;
+            
+            document.getElementById('pendingOrders').textContent = pending;
+            document.getElementById('readyOrders').textContent = ready;
+
+            // Calculate additional stats
+            const completedToday = currentOrders.filter(o => o.finalized).length;
+            const avgTime = currentOrders.length > 0 ? 
+                Math.round(currentOrders.reduce((sum, o) => sum + (o.assigned_time || 0), 0) / currentOrders.length / 60) : 0;
+            
+            document.getElementById('ordersToday').textContent = completedToday;
+            document.getElementById('avgPrepTime').textContent = `${avgTime}m`;
+            document.getElementById('queueEfficiency').textContent = `${Math.min(100, Math.round(ready / Math.max(1, pending) * 100))}%`;
+            document.getElementById('revenueToday').textContent = `$${(completedToday * 8.50).toFixed(2)}`;
+        }
+
+        // Order Actions
+        async function markReady(orderId) {
+            try {
+                await apiCall('/api/v1/queue/finalize', 'POST', { id: orderId }, true);
+                showNotification('Order marked as ready!');
+                refreshOrders();
+            } catch (error) {
+                console.error('Failed to mark order ready:', error);
+            }
+        }
+
+        async function completeOrder(orderId) {
+            try {
+                await apiCall('/api/v1/queue/complete', 'POST', { id: orderId }, true);
+                showNotification('Order completed!');
+                refreshOrders();
+            } catch (error) {
+                console.error('Failed to complete order:', error);
+            }
+        }
+
+        async function cancelOrder(orderId) {
+            if (confirm('Are you sure you want to cancel this order?')) {
+                try {
+                    await apiCall('/api/v1/queue/cancel', 'POST', { id: orderId }, true);
+                    showNotification('Order cancelled');
+                    refreshOrders();
+                } catch (error) {
+                    console.error('Failed to cancel order:', error);
+                }
+            }
+        }
+
+        // Quick Actions
+        async function markAllReady() {
+            const pendingOrders = currentOrders.filter(o => !o.finalized && !o.cancelled);
+            
+            if (pendingOrders.length === 0) {
+                showNotification('No pending orders to mark ready', 'error');
+                return;
+            }
+
+            if (confirm(`Mark all ${pendingOrders.length} pending orders as ready?`)) {
+                try {
+                    for (const order of pendingOrders) {
+                        await markReady(order.id);
+                    }
+                    showNotification(`Marked ${pendingOrders.length} orders as ready!`);
+                } catch (error) {
+                    console.error('Failed to mark all ready:', error);
+                }
+            }
+        }
+
+        async function clearCompleted() {
+            const completedOrders = currentOrders.filter(o => o.finalized);
+            
+            if (completedOrders.length === 0) {
+                showNotification('No completed orders to clear', 'error');
+                return;
+            }
+
+            if (confirm(`Clear ${completedOrders.length} completed orders?`)) {
+                try {
+                    for (const order of completedOrders) {
+                        await completeOrder(order.id);
+                    }
+                    showNotification(`Cleared ${completedOrders.length} completed orders!`);
+                } catch (error) {
+                    console.error('Failed to clear completed orders:', error);
+                }
+            }
+        }
+
+        function exportReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                station: 'Barista Station 1',
+                orders: currentOrders,
+                stats: {
+                    total: currentOrders.length,
+                    pending: currentOrders.filter(o => !o.finalized && !o.cancelled).length,
+                    ready: currentOrders.filter(o => o.finalized).length,
+                    cancelled: currentOrders.filter(o => o.cancelled).length
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `barista-report-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            showNotification('Report exported successfully!');
+        }
+
+        // Utility Functions
+        function setupAutoRefresh() {
+            const enabled = document.getElementById('autoRefresh').checked;
+            localStorage.setItem('barista_auto_refresh', enabled);
+
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+
+            if (enabled) {
+                autoRefreshInterval = setInterval(refreshOrders, 5000);
+            }
+        }
+
+        function saveSoundPreference() {
+            const enabled = document.getElementById('soundEnabled').checked;
+            localStorage.setItem('barista_sound_enabled', enabled);
+        }
+
+        function updateStationStatus() {
+            const status = document.getElementById('stationStatus').value;
+            showNotification(`Station status updated to: ${status}`);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        function playNotificationSound() {
+            const soundEnabled = document.getElementById('soundEnabled').checked;
+            if (soundEnabled && currentOrders.some(o => o.finalized && !o.notified)) {
+                // Play notification sound (you can replace with actual audio file)
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhEUaHx+XNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhEUaHx+XNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhEU=');
+                audio.play().catch(() => {}); // Ignore errors if sound fails
+            }
+        }
+
+        function getPriorityText(priority) {
+            if (priority <= 100) return '🔥 Express';
+            if (priority <= 300) return '⭐ High';
+            if (priority <= 500) return '📋 Normal';
+            return '⏰ Low';
+        }
+
+        function getStatusText(order) {
+            if (order.cancelled) return '❌ Cancelled';
+            if (order.finalized) return '✅ Ready';
+            return '⏳ Preparing';
+        }
+
+        function formatDuration(duration) {
+            if (!duration) re          return duration;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
