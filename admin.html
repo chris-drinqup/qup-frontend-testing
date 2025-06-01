@@ -1,757 +1,296 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUP Admin Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+#!/usr/bin/env python3
+"""
+QUP User Management CLI Tool
+Manage users via command line and validate API functionality
+"""
+
+import os
+import sys
+import json
+import bcrypt
+import hashlib
+import requests
+import argparse
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment
+load_dotenv()
+
+class QUPUserManager:
+    def __init__(self):
+        self.api_base = os.environ.get('QUP_API_BASE', 'https://qupcore-supercode-692478335867.us-central1.run.app')
+        self.dev_api_key = os.environ.get('DEV_API_KEY', 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc')
+        
+        # Load auth config from environment
+        self.auth_config = {'users': {}, 'api_keys': {}}
+        self._load_auth_config()
+        
+    def _load_auth_config(self):
+        """Load authentication configuration from environment"""
+        # Load admin user
+        admin_hash = os.environ.get('ADMIN_PASSWORD_HASH_B64', '')
+        if admin_hash:
+            try:
+                import base64
+                admin_hash = base64.b64decode(admin_hash).decode('utf-8')
+            except:
+                admin_hash = os.environ.get('ADMIN_PASSWORD_HASH', '')
+        else:
+            admin_hash = os.environ.get('ADMIN_PASSWORD_HASH', '')
+            
+        if admin_hash:
+            self.auth_config['users']['admin'] = {
+                'password_hash': admin_hash,
+                'hash_type': 'bcrypt',
+                'role': 'admin',
+                'active': True
+            }
+            
+        # Add API key
+        self.auth_config['api_keys'][self.dev_api_key] = {
+            'name': 'developer_key',
+            'permissions': ['queue:read', 'queue:write'],
+            'active': True
+        }
+    
+    def hash_password(self, password):
+        """Hash password using bcrypt"""
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+    
+    def verify_password(self, password, hash_str):
+        """Verify password against hash"""
+        try:
+            return bcrypt.checkpw(password.encode('utf-8'), hash_str.encode('utf-8'))
+        except:
+            # Fallback to SHA256
+            return hashlib.sha256(password.encode()).hexdigest() == hash_str
+    
+    def list_users(self):
+        """List all configured users"""
+        print("\n🔐 CONFIGURED USERS")
+        print("=" * 50)
+        
+        if not self.auth_config['users']:
+            print("❌ No users configured")
+            return
+            
+        for username, user_info in self.auth_config['users'].items():
+            status = "✅ Active" if user_info.get('active', True) else "❌ Inactive"
+            role = user_info.get('role', 'user')
+            hash_type = user_info.get('hash_type', 'sha256')
+            hash_preview = user_info.get('password_hash', '')[:20] + '...'
+            
+            print(f"👤 {username}")
+            print(f"   Role: {role}")
+            print(f"   Status: {status}")
+            print(f"   Hash Type: {hash_type}")
+            print(f"   Hash: {hash_preview}")
+            print()
+    
+    def add_user(self, username, password, role='user'):
+        """Add a new user"""
+        if username in self.auth_config['users']:
+            print(f"❌ User '{username}' already exists")
+            return False
+            
+        password_hash = self.hash_password(password)
+        
+        self.auth_config['users'][username] = {
+            'password_hash': password_hash,
+            'hash_type': 'bcrypt',
+            'role': role,
+            'active': True
         }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: rgba(0,0,0,0.1);
-        }
-
-        .login-form {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            width: 400px;
-        }
-
-        .admin-dashboard {
-            display: none;
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .config-panel, .user-panel, .queue-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .queue-panel {
-            grid-column: 1 / -1;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
-        }
-
-        .queue-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .queue-table th, .queue-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e1e5e9;
-        }
-
-        .queue-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-waiting {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-ready {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .status-processing {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .priority-high {
-            color: #dc3545;
-            font-weight: 600;
-        }
-
-        .priority-medium {
-            color: #fd7e14;
-            font-weight: 600;
-        }
-
-        .priority-low {
-            color: #28a745;
-            font-weight: 600;
-        }
-
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: #28a745;
-        }
-
-        .notification.error {
-            background: #dc3545;
-        }
-
-        .time-management {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <!-- Login Form -->
-    <div class="login-container" id="loginContainer">
-        <div class="login-form">
-            <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">QUP Admin Login</h2>
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="loginUsername" placeholder="Enter admin username">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter password">
-            </div>
-            <button class="btn" style="width: 100%;" onclick="login()">Login</button>
-            <div id="loginError" style="color: #dc3545; margin-top: 10px; text-align: center;"></div>
-        </div>
-    </div>
-
-    <!-- Admin Dashboard -->
-    <div class="admin-dashboard" id="adminDashboard">
-        <div class="header">
-            <h1>🎯 QUP Admin Dashboard</h1>
-            <div>
-                <span id="adminUser" style="margin-right: 20px;"></span>
-                <button class="btn btn-danger" onclick="logout()">Logout</button>
-            </div>
-        </div>
-
-        <!-- Stats Row -->
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-number" id="totalOrders">0</div>
-                <div class="stat-label">Total Orders</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="activeOrders">0</div>
-                <div class="stat-label">Active Orders</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="poolTime">0s</div>
-                <div class="stat-label">Pool Time</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="queueMode">FIFO</div>
-                <div class="stat-label">Queue Mode</div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <!-- Configuration Panel -->
-            <div class="config-panel">
-                <h3>⚙️ Queue Configuration</h3>
-                <div class="form-group">
-                    <label>Queue Name</label>
-                    <input type="text" id="queueName" placeholder="Queue Name">
-                </div>
-                <div class="form-group">
-                    <label>Queue Mode</label>
-                    <select id="queueMode">
-                        <option value="fifo">FIFO (First In First Out)</option>
-                        <option value="super_qup">Super QUP</option>
-                        <option value="negotiation">Negotiation Queue</option>
-                        <option value="chaos">Chaos Queue</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Default Priority</label>
-                    <input type="number" id="defaultPriority" placeholder="500">
-                </div>
-                <div class="form-group">
-                    <label>Default Time Estimate (seconds)</label>
-                    <input type="number" id="defaultTimeEstimate" placeholder="120">
-                </div>
-                <div class="form-group">
-                    <label>Super QUP Enabled</label>
-                    <select id="superQupEnabled">
-                        <option value="true">Enabled</option>
-                        <option value="false">Disabled</option>
-                    </select>
-                </div>
-                <button class="btn" onclick="updateConfig()">Update Configuration</button>
+        print(f"✅ User '{username}' created with role '{role}'")
+        print(f"   Password hash: {password_hash[:30]}...")
+        return True
+    
+    def delete_user(self, username):
+        """Delete a user"""
+        if username not in self.auth_config['users']:
+            print(f"❌ User '{username}' not found")
+            return False
+            
+        if username == 'admin':
+            print("❌ Cannot delete admin user")
+            return False
+            
+        del self.auth_config['users'][username]
+        print(f"✅ User '{username}' deleted")
+        return True
+    
+    def test_login(self, username, password):
+        """Test user login"""
+        print(f"\n🔍 TESTING LOGIN FOR: {username}")
+        print("=" * 50)
+        
+        if username not in self.auth_config['users']:
+            print(f"❌ User '{username}' not found in local config")
+            return False
+            
+        user_info = self.auth_config['users'][username]
+        stored_hash = user_info['password_hash']
+        hash_type = user_info.get('hash_type', 'sha256')
+        
+        print(f"Hash type: {hash_type}")
+        print(f"Stored hash: {stored_hash[:30]}...")
+        
+        # Test local verification
+        local_valid = self.verify_password(password, stored_hash)
+        print(f"Local verification: {'✅ PASS' if local_valid else '❌ FAIL'}")
+        
+        # Test API login
+        try:
+            response = requests.post(f'{self.api_base}/api/v1/auth/login', 
+                                   json={'username': username, 'password': password},
+                                   timeout=10)
+            
+            print(f"API response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"✅ API LOGIN SUCCESS")
+                print(f"   Token type: {data.get('token_type', 'N/A')}")
+                print(f"   User type: {data.get('user_type', 'N/A')}")
+                print(f"   Token preview: {data.get('access_token', '')[:50]}...")
+                return True
+            else:
+                print(f"❌ API LOGIN FAILED")
+                try:
+                    error_data = response.json()
+                    print(f"   Error: {error_data.get('error', 'Unknown error')}")
+                except:
+                    print(f"   Raw response: {response.text[:200]}")
+                return False
                 
-                <div class="time-management">
-                    <h4>Time Management</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                        <div>Pool Overhead: <span id="poolOverhead">10%</span></div>
-                        <div>Max QUP Time: <span id="maxQupTime">1200s</span></div>
-                        <div>Drift Corrections: <span id="driftCorrections">0</span></div>
-                        <div>Reserve Time: <span id="reserveTime">0s</span></div>
-                    </div>
-                </div>
-            </div>
+        except Exception as e:
+            print(f"❌ API CONNECTION ERROR: {e}")
+            return False
+    
+    def test_api_endpoints(self, username=None, password=None):
+        """Test various API endpoints"""
+        print(f"\n🧪 TESTING API ENDPOINTS")
+        print("=" * 50)
+        
+        # Test health endpoint
+        try:
+            response = requests.get(f'{self.api_base}/health', timeout=10)
+            print(f"Health endpoint: {'✅ OK' if response.status_code == 200 else '❌ FAIL'} ({response.status_code})")
+        except Exception as e:
+            print(f"Health endpoint: ❌ ERROR - {e}")
+        
+        # Test auth debug
+        try:
+            response = requests.get(f'{self.api_base}/debug/auth', timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                print(f"Auth debug: ✅ OK")
+                print(f"   Admin user exists: {data.get('admin_user_exists', False)}")
+                print(f"   Admin hash set: {data.get('admin_hash_set', False)}")
+                print(f"   Users configured: {data.get('auth_config_users', [])}")
+            else:
+                print(f"Auth debug: ❌ FAIL ({response.status_code})")
+        except Exception as e:
+            print(f"Auth debug: ❌ ERROR - {e}")
+        
+        # Test queue list with API key
+        try:
+            headers = {'X-API-Key': self.dev_api_key}
+            response = requests.get(f'{self.api_base}/api/v1/queue/list', headers=headers, timeout=10)
+            print(f"Queue list (API key): {'✅ OK' if response.status_code == 200 else '❌ FAIL'} ({response.status_code})")
+        except Exception as e:
+            print(f"Queue list (API key): ❌ ERROR - {e}")
+        
+        # Test with JWT token if credentials provided
+        if username and password:
+            try:
+                login_response = requests.post(f'{self.api_base}/api/v1/auth/login', 
+                                             json={'username': username, 'password': password},
+                                             timeout=10)
+                if login_response.status_code == 200:
+                    token = login_response.json().get('access_token')
+                    headers = {'Authorization': f'Bearer {token}'}
+                    
+                    # Test users endpoint
+                    response = requests.get(f'{self.api_base}/api/users', headers=headers, timeout=10)
+                    print(f"Users endpoint (JWT): {'✅ OK' if response.status_code == 200 else '❌ FAIL'} ({response.status_code})")
+                    
+                    if response.status_code == 200:
+                        users = response.json().get('users', [])
+                        print(f"   Found {len(users)} users: {[u.get('username') for u in users]}")
+                        
+                else:
+                    print(f"JWT test: ❌ FAIL - Could not get token")
+            except Exception as e:
+                print(f"JWT test: ❌ ERROR - {e}")
+    
+    def show_env_info(self):
+        """Show environment configuration"""
+        print(f"\n🌍 ENVIRONMENT CONFIGURATION")
+        print("=" * 50)
+        
+        env_vars = [
+            'QUP_API_BASE',
+            'DEV_API_KEY', 
+            'ADMIN_PASSWORD_HASH',
+            'ADMIN_PASSWORD_HASH_B64',
+            'JWT_SECRET_KEY',
+            'SUPABASE_URL',
+            'SUPABASE_KEY'
+        ]
+        
+        for var in env_vars:
+            value = os.environ.get(var, 'NOT SET')
+            if var in ['ADMIN_PASSWORD_HASH', 'ADMIN_PASSWORD_HASH_B64', 'JWT_SECRET_KEY', 'SUPABASE_KEY']:
+                display_value = f"{value[:20]}..." if value != 'NOT SET' else 'NOT SET'
+            else:
+                display_value = value
+            print(f"{var}: {display_value}")
+        
+        print(f"\nAPI Base URL: {self.api_base}")
+        print(f"Working Directory: {os.getcwd()}")
 
-            <!-- User Management Panel -->
-            <div class="user-panel">
-                <h3>👥 User Management</h3>
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="newUsername" placeholder="Enter username">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="newPassword" placeholder="Enter password">
-                </div>
-                <div class="form-group">
-                    <label>Role</label>
-                    <select id="newUserRole">
-                        <option value="user">User</option>
-                        <option value="server">Barista/Server</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <button class="btn btn-success" onclick="createUser()">Create User</button>
-                
-                <div style="margin-top: 20px;">
-                    <h4>Existing Users</h4>
-                    <div id="usersList"></div>
-                </div>
-            </div>
-        </div>
+def main():
+    parser = argparse.ArgumentParser(description='QUP User Management CLI')
+    parser.add_argument('command', choices=['list', 'add', 'delete', 'test-login', 'test-api', 'env-info'], 
+                       help='Command to execute')
+    parser.add_argument('--username', '-u', help='Username')
+    parser.add_argument('--password', '-p', help='Password')
+    parser.add_argument('--role', '-r', default='user', choices=['user', 'admin', 'server'], help='User role')
+    
+    args = parser.parse_args()
+    
+    manager = QUPUserManager()
+    
+    if args.command == 'list':
+        manager.list_users()
+        
+    elif args.command == 'add':
+        if not args.username or not args.password:
+            print("❌ Username and password required for adding user")
+            sys.exit(1)
+        manager.add_user(args.username, args.password, args.role)
+        
+    elif args.command == 'delete':
+        if not args.username:
+            print("❌ Username required for deleting user")
+            sys.exit(1)
+        manager.delete_user(args.username)
+        
+    elif args.command == 'test-login':
+        if not args.username or not args.password:
+            print("❌ Username and password required for testing login")
+            sys.exit(1)
+        manager.test_login(args.username, args.password)
+        
+    elif args.command == 'test-api':
+        manager.test_api_endpoints(args.username, args.password)
+        
+    elif args.command == 'env-info':
+        manager.show_env_info()
 
-        <!-- Queue Management Panel -->
-        <div class="queue-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>📋 Queue Management</h3>
-                <div>
-                    <button class="btn" onclick="refreshQueue()">🔄 Refresh</button>
-                    <button class="btn btn-success" onclick="clearCompleted()">✅ Clear Completed</button>
-                </div>
-            </div>
-            
-            <table class="queue-table">
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Order Details</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Wait Time</th>
-                        <th>Position</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="queueTableBody">
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
-
-    <script>
-        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
-        let authToken = localStorage.getItem('adminToken');
-        let currentUser = localStorage.getItem('adminUser');
-
-        // Check if already logged in
-        if (authToken && currentUser) {
-            showDashboard();
-        }
-
-        async function login() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-
-            if (!username || !password) {
-                showError('Please enter both username and password');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.access_token) {
-                    if (data.user_type === 'admin') {
-                        authToken = data.access_token;
-                        currentUser = username;
-                        localStorage.setItem('adminToken', authToken);
-                        localStorage.setItem('adminUser', currentUser);
-                        showDashboard();
-                    } else {
-                        showError('Access denied. Admin privileges required.');
-                    }
-                } else {
-                    showError(data.error || 'Login failed');
-                }
-            } catch (error) {
-                showError('Connection error. Please try again.');
-            }
-        }
-
-        function logout() {
-            authToken = null;
-            currentUser = null;
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('adminUser');
-            document.getElementById('loginContainer').style.display = 'flex';
-            document.getElementById('adminDashboard').style.display = 'none';
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
-        }
-
-        function showDashboard() {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('adminDashboard').style.display = 'block';
-            document.getElementById('adminUser').textContent = `Welcome, ${currentUser}`;
-            loadDashboardData();
-        }
-
-        async function loadDashboardData() {
-            await Promise.all([
-                loadConfiguration(),
-                loadUsers(),
-                loadQueue()
-            ]);
-        }
-
-        async function loadConfiguration() {
-            try {
-                const response = await fetch(`${API_BASE}/api/configure`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    const config = data.config;
-                    document.getElementById('queueName').value = config.queue_name || '';
-                    document.getElementById('queueMode').value = config.mode || 'fifo';
-                    document.getElementById('defaultPriority').value = config.default_priority || 500;
-                    document.getElementById('defaultTimeEstimate').value = config.default_time_estimate || 120;
-                    document.getElementById('superQupEnabled').value = config.super_qup_enabled ? 'true' : 'false';
-
-                    // Update time management display
-                    if (data.time_management) {
-                        const tm = data.time_management;
-                        document.getElementById('poolOverhead').textContent = `${tm.pool_overhead_percent || 10}%`;
-                        document.getElementById('maxQupTime').textContent = `${tm.max_qup_time || 1200}s`;
-                        document.getElementById('driftCorrections').textContent = tm.drift_corrections_count || 0;
-                        document.getElementById('reserveTime').textContent = `${tm.reserve_time || 0}s`;
-                    }
-                }
-            } catch (error) {
-                showNotification('Failed to load configuration', 'error');
-            }
-        }
-
-        async function updateConfig() {
-            const configData = {
-                queue_name: document.getElementById('queueName').value,
-                mode: document.getElementById('queueMode').value,
-                default_priority: parseInt(document.getElementById('defaultPriority').value),
-                default_time_estimate: parseInt(document.getElementById('defaultTimeEstimate').value),
-                super_qup_enabled: document.getElementById('superQupEnabled').value === 'true'
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}/api/configure`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(configData)
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    showNotification('Configuration updated successfully', 'success');
-                    loadQueue(); // Refresh queue to show changes
-                } else {
-                    showNotification('Failed to update configuration', 'error');
-                }
-            } catch (error) {
-                showNotification('Error updating configuration', 'error');
-            }
-        }
-
-        async function loadUsers() {
-            try {
-                const response = await fetch(`${API_BASE}/api/users`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    displayUsers(data.users);
-                }
-            } catch (error) {
-                showNotification('Failed to load users', 'error');
-            }
-        }
-
-        function displayUsers(users) {
-            const usersList = document.getElementById('usersList');
-            usersList.innerHTML = users.map(user => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border: 1px solid #e1e5e9; border-radius: 5px; margin-bottom: 5px;">
-                    <div>
-                        <strong>${user.username}</strong> (${user.role})
-                    </div>
-                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteUser('${user.username}')">Delete</button>
-                </div>
-            `).join('');
-        }
-
-        async function createUser() {
-            const userData = {
-                username: document.getElementById('newUsername').value,
-                password: document.getElementById('newPassword').value,
-                role: document.getElementById('newUserRole').value
-            };
-
-            if (!userData.username || !userData.password) {
-                showNotification('Please enter username and password', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/users`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    showNotification('User created successfully', 'success');
-                    document.getElementById('newUsername').value = '';
-                    document.getElementById('newPassword').value = '';
-                    loadUsers();
-                } else {
-                    showNotification('Failed to create user', 'error');
-                }
-            } catch (error) {
-                showNotification('Error creating user', 'error');
-            }
-        }
-
-        async function deleteUser(username) {
-            if (username === currentUser) {
-                showNotification('Cannot delete your own account', 'error');
-                return;
-            }
-
-            if (!confirm(`Are you sure you want to delete user: ${username}?`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/users/${username}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    showNotification('User deleted successfully', 'success');
-                    loadUsers();
-                } else {
-                    showNotification('Failed to delete user', 'error');
-                }
-            } catch (error) {
-                showNotification('Error deleting user', 'error');
-            }
-        }
-
-        async function loadQueue() {
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/list?admin=true`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    displayQueue(data.queue);
-                    updateStats(data);
-                }
-            } catch (error) {
-                showNotification('Failed to load queue', 'error');
-            }
-        }
-
-        function displayQueue(queue) {
-            const tbody = document.getElementById('queueTableBody');
-            tbody.innerHTML = queue.map(item => {
-                const priorityClass = item.priority < 300 ? 'priority-high' : item.priority < 700 ? 'priority-medium' : 'priority-low';
-                const statusClass = item.finalized ? 'status-ready' : item.cancelled ? 'status-cancelled' : 'status-waiting';
-                const statusText = item.finalized ? 'Ready' : item.cancelled ? 'Cancelled' : 'Waiting';
-
-                return `
-                    <tr>
-                        <td>${item.id}</td>
-                        <td>${item.user_id || 'Unknown'}</td>
-                        <td>${JSON.stringify(item.payload)}</td>
-                        <td class="${priorityClass}">${item.priority}</td>
-                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td>${item.remaining_time}</td>
-                        <td>${item.position}</td>
-                        <td>
-                            <button class="btn" style="padding: 4px 8px; font-size: 12px; margin: 2px;" onclick="changePriority('${item.id}')">Priority</button>
-                            <button class="btn btn-success" style="padding: 4px 8px; font-size: 12px; margin: 2px;" onclick="completeOrder('${item.id}')">Complete</button>
-                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px; margin: 2px;" onclick="cancelOrder('${item.id}')">Cancel</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function updateStats(data) {
-            document.getElementById('totalOrders').textContent = data.total_elements || 0;
-            document.getElementById('activeOrders').textContent = data.active_elements || 0;
-            document.getElementById('queueMode').textContent = (data.queue_mode || 'fifo').toUpperCase();
-            
-            if (data.time_management) {
-                document.getElementById('poolTime').textContent = `${Math.round(data.time_management.available_pool_time || 0)}s`;
-            }
-        }
-
-        async function changePriority(orderId) {
-            const newPriority = prompt('Enter new priority (lower number = higher priority):');
-            if (newPriority === null || isNaN(newPriority)) return;
-
-            // This would need to be implemented in your API
-            showNotification('Priority change feature coming soon', 'error');
-        }
-
-        async function completeOrder(orderId) {
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`,
-                        'X-Admin-Key': 'admin_secret'
-                    },
-                    body: JSON.stringify({ id: orderId })
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    showNotification('Order completed', 'success');
-                    loadQueue();
-                } else {
-                    showNotification('Failed to complete order', 'error');
-                }
-            } catch (error) {
-                showNotification('Error completing order', 'error');
-            }
-        }
-
-        async function cancelOrder(orderId) {
-            if (!confirm('Are you sure you want to cancel this order?')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`,
-                        'X-Admin-Key': 'admin_secret'
-                    },
-                    body: JSON.stringify({ id: orderId })
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    showNotification('Order cancelled', 'success');
-                    loadQueue();
-                } else {
-                    showNotification('Failed to cancel order', 'error');
-                }
-            } catch (error) {
-                showNotification('Error cancelling order', 'error');
-            }
-        }
-
-        async function clearCompleted() {
-            if (!confirm('Clear all completed orders?')) return;
-            // This would need to be implemented
-            showNotification('Clear completed feature coming soon', 'error');
-        }
-
-        function refreshQueue() {
-            loadQueue();
-        }
-
-        function showError(message) {
-            document.getElementById('loginError').textContent = message;
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // Auto-refresh queue every 10 seconds
-        setInterval(loadQueue, 10000);
-    </script>
-</body>
-</html>
+if __name__ == '__main__':
+    main()
