@@ -3,206 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUP - Smart Queue System</title>
+    <title>QUP - Quick User Positioning</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: #333;
         }
 
-        .container {
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .login-form {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 400px;
+            text-align: center;
+        }
+
+        .user-dashboard {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .qup-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .qup-logo h1 {
+            font-size: 48px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .order-card {
             background: white;
             border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-        }
-
-        .logo {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 50%;
-            margin: 0 auto 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-        }
-
-        .status-card {
-            background: #f8f9fc;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border-left: 5px solid #667eea;
-        }
-
-        .status-text {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .queue-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .info-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .info-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .info-value {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .form-section {
-            margin: 25px 0;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
         }
 
         .form-group {
             margin-bottom: 20px;
-            text-align: left;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
+            color: #333;
         }
 
-        .form-group input, .form-group select {
+        .form-group input {
             width: 100%;
             padding: 15px;
             border: 2px solid #e1e5e9;
             border-radius: 10px;
             font-size: 16px;
-            transition: all 0.3s;
+            transition: border-color 0.3s;
         }
 
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+            border-color: #74b9ff;
         }
 
         .btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
             color: white;
             border: none;
-            padding: 18px 40px;
-            border-radius: 50px;
+            padding: 15px 30px;
+            border-radius: 10px;
             cursor: pointer;
+            font-size: 16px;
             font-weight: 600;
-            font-size: 1.1rem;
             transition: all 0.3s;
             width: 100%;
-            margin-top: 20px;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(116, 185, 255, 0.4);
         }
 
         .btn:disabled {
-            background: #ccc;
+            background: #95a5a6;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
 
         .btn-danger {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
         }
 
-        .btn-danger:hover {
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        .status-display {
+            text-align: center;
+            margin: 20px 0;
         }
 
-        .btn-qup {
-            background: linear-gradient(45deg, #ffd43b, #fab005);
-            color: #333;
-            box-shadow: 0 5px 20px rgba(255, 212, 59, 0.3);
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
         }
 
-        .btn-qup:hover {
-            box-shadow: 0 10px 30px rgba(255, 212, 59, 0.4);
+        .status-waiting {
+            color: #f39c12;
         }
 
-        .pickup-notification {
-            background: linear-gradient(45deg, #51cf66, #40c057);
-            color: white;
-            padding: 25px;
+        .status-ready {
+            color: #27ae60;
+        }
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qup-section {
+            background: #f8f9fa;
             border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qup-button {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 10px;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+        }
+
+        .qup-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .qup-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qup-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .piqup-notification {
+            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
             margin: 20px 0;
             animation: pulse 2s infinite;
         }
 
-        .pickup-code {
-            font-size: 2.5rem;
-            font-weight: bold;
+        .piqup-code {
+            font-size: 36px;
+            font-weight: 700;
             margin: 15px 0;
-            letter-spacing: 3px;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 150px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         @keyframes pulse {
@@ -211,458 +209,520 @@
             100% { transform: scale(1); }
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .qup-section {
-            background: #fff9e6;
-            border: 2px solid #ffd43b;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .qup-info {
-            color: #856404;
-            margin-bottom: 15px;
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
             font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s;
         }
 
-        .estimated-time {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #667eea;
-            margin: 10px 0;
+        .notification.show {
+            transform: translateX(0);
         }
 
-        .connection-status {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #51cf66;
+        .notification.success {
+            background: #27ae60;
         }
 
-        .connection-status.disconnected {
-            background: #ff6b6b;
+        .notification.error {
+            background: #e74c3c;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
+        .order-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
             margin: 15px 0;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 4px;
-            transition: width 0.3s ease;
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
         }
 
-        @media (max-width: 480px) {
-            .container {
-                padding: 30px 20px;
-                margin: 20px;
-            }
-            
-            .queue-info {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
+        .cost-preview {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="connection-status" id="connectionStatus"></div>
-        
-        <div class="logo">QUP</div>
-        <h1>Smart Queue</h1>
-        <p class="subtitle">AI-Powered Queue Management</p>
-
-        <div class="status-card">
-            <div class="status-text" id="statusText">Welcome! Please enter your details</div>
-            <div id="estimatedTime" class="estimated-time" style="display: none;"></div>
-            <div id="progressContainer" style="display: none;">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="queueInfo" class="queue-info" style="display: none;">
-            <div class="info-item">
-                <div class="info-label">Position</div>
-                <div class="info-value" id="queuePosition">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Wait Time</div>
-                <div class="info-value" id="waitTime">-</div>
-            </div>
-        </div>
-
-        <div id="userForm" class="form-section">
-            <div class="form-group">
-                <label for="userName">Your Name</label>
-                <input type="text" id="userName" placeholder="Enter your name" autocomplete="name">
+    <!-- Login Form -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <div class="qup-logo">
+                <h1 style="color: #0984e3;">QUP</h1>
+                <p style="color: #666;">Quick User Positioning</p>
             </div>
             <div class="form-group">
-                <label for="orderText">Your Order</label>
-                <input type="text" id="orderText" placeholder="What would you like to order?">
+                <label>Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter your username">
             </div>
             <div class="form-group">
-                <label for="orderPriority">Priority Level</label>
-                <select id="orderPriority">
-                    <option value="500">📋 Standard</option>
-                    <option value="300">⭐ Premium</option>
-                    <option value="100">🔥 Express</option>
-                </select>
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
             </div>
-        </div>
-
-        <div id="qupSection" class="qup-section" style="display: none;">
-            <div class="qup-info">
-                ⚡ QUP Available! Skip ahead in line with AI-powered queue jumping
-            </div>
-            <button class="btn btn-qup" onclick="performQUP()" id="qupBtn">
-                ⚡ Use QUP - Skip Ahead
-            </button>
-        </div>
-
-        <button class="btn" onclick="handleOrderAction()" id="mainActionBtn">
-            🚀 Join Queue
-        </button>
-
-        <div id="pickupNotification" class="pickup-notification" style="display: none;">
-            <div>🎉 Your order is ready for pickup!</div>
-            <div class="pickup-code" id="pickupCode">CODE</div>
-            <button class="btn" onclick="acknowledgePickup()" style="background: rgba(255,255,255,0.2);">
-                ✅ Acknowledge Pickup
-            </button>
+            <button class="btn" onclick="login()">Login</button>
+            <div id="loginError" style="color: #e74c3c; margin-top: 10px;"></div>
         </div>
     </div>
 
-    <script>
-        // Configuration
-        const API_BASE = "https://qupcore-supercode-692478335867.us-central1.run.app";
+    <!-- User Dashboard -->
+    <div class="user-dashboard" id="userDashboard">
+        <button class="logout-btn" onclick="logout()">Logout</button>
         
-        let currentUser = {
-            name: '',
-            inQueue: false,
-            orderData: null
-        };
+        <div class="qup-logo">
+            <h1>QUP</h1>
+            <p style="color: white;">Welcome, <span id="userName"></span></p>
+        </div>
 
-        let connectionStatus = 'disconnected';
+        <!-- Order Placement -->
+        <div class="order-card" id="orderPlacement">
+            <h2 style="text-align: center; margin-bottom: 20px;">Place Your Order</h2>
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="customerName" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label>Order Details</label>
+                <input type="text" id="orderDetails" placeholder="What would you like to order?">
+            </div>
+            <button class="btn" onclick="submitOrder()">Submit Order</button>
+        </div>
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserData();
-            checkConnection();
+        <!-- Order Status -->
+        <div class="order-card" id="orderStatus" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px;">Your Order Status</h2>
             
-            // Auto-refresh every 5 seconds
-            setInterval(checkQueueStatus, 5000);
-            setInterval(checkConnection, 15000);
-        });
+            <div class="order-details">
+                <strong>Order:</strong> <span id="currentOrder"></span><br>
+                <strong>Customer:</strong> <span id="currentCustomer"></span>
+            </div>
 
-        // API Functions
-        async function apiCall(endpoint, method = 'GET', data = null) {
-            const config = {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            };
+            <div class="status-display">
+                <div class="status-text" id="statusText">Preparing your order...</div>
+                <div class="timer-display" id="timerDisplay">--:--</div>
+            </div>
 
-            if (data) {
-                config.body = JSON.stringify(data);
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}${endpoint}`, config);
-                const result = await response.json();
+            <!-- QUP Section -->
+            <div class="qup-section" id="qupSection" style="display: none;">
+                <h3>⚡ QUP - Move Up in Line</h3>
+                <p>Reduce your wait time by moving up in the queue!</p>
                 
-                if (!response.ok) {
-                    throw new Error(result.error || `HTTP ${response.status}`);
-                }
-                
-                updateConnectionStatus(true);
-                return result;
-            } catch (error) {
-                updateConnectionStatus(false);
-                throw error;
-            }
+                <div style="margin: 20px 0;">
+                    <button class="qup-button" id="qupButton" onclick="performQUP()">+</button>
+                    <div class="qup-info" id="qupInfo">
+                        <div id="qupCost">Cost: <span id="costAmount">--</span> seconds</div>
+                        <div id="qupAvailable">Pool time available: <span id="poolTimeAvailable">--</span>s</div>
+                    </div>
+                    <div class="cost-preview" id="costPreview" style="display: none;"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-danger" onclick="cancelOrder()">Cancel Order</button>
+        </div>
+
+        <!-- PiQUP Ready Notification -->
+        <div class="piqup-notification" id="piqupNotification" style="display: none;">
+            <h2>🎉 Your Order is Ready!</h2>
+            <p>Show this code to the barista:</p>
+            <div class="piqup-code" id="piqupCode">PIQUP</div>
+            <p>Please proceed to pickup</p>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
+        let authToken = localStorage.getItem('userToken');
+        let currentUser = localStorage.getItem('currentUser');
+        let userOrderId = null;
+        let timerInterval = null;
+        let qupCheckInterval = null;
+
+        // Check if already logged in
+        if (authToken && currentUser) {
+            showDashboard();
         }
 
-        // User Management
-        function loadUserData() {
-            const savedName = localStorage.getItem('qup_user_name');
-            if (savedName) {
-                document.getElementById('userName').value = savedName;
-                currentUser.name = savedName;
-            }
-        }
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
 
-        function saveUserData() {
-            const name = document.getElementById('userName').value.trim();
-            if (name) {
-                localStorage.setItem('qup_user_name', name);
-                currentUser.name = name;
-            }
-        }
-
-        // Queue Operations
-        async function handleOrderAction() {
-            const btn = document.getElementById('mainActionBtn');
-            
-            if (currentUser.inQueue) {
-                await cancelOrder();
-            } else {
-                await joinQueue();
-            }
-        }
-
-        async function joinQueue() {
-            const name = document.getElementById('userName').value.trim();
-            const order = document.getElementById('orderText').value.trim();
-            const priority = parseInt(document.getElementById('orderPriority').value);
-
-            if (!name || !order) {
-                alert('Please enter both your name and order details');
+            if (!username || !password) {
+                showError('Please enter both username and password');
                 return;
             }
 
-            const btn = document.getElementById('mainActionBtn');
-            btn.innerHTML = '<div class="loading"></div> Joining Queue...';
-            btn.disabled = true;
-
             try {
-                saveUserData();
-                
-                const response = await apiCall('/api/v1/queue/add', 'POST', {
-                    id: name,
-                    payload: { order: order },
-                    priority: priority,
-                    user_id: name
+                const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
                 });
 
-                currentUser.inQueue = true;
-                updateUI();
-                checkQueueStatus();
-                
+                const data = await response.json();
+
+                if (response.ok && data.access_token) {
+                    authToken = data.access_token;
+                    currentUser = username;
+                    localStorage.setItem('userToken', authToken);
+                    localStorage.setItem('currentUser', currentUser);
+                    showDashboard();
+                } else {
+                    showError(data.error || 'Login failed');
+                }
             } catch (error) {
-                alert(`Failed to join queue: ${error.message}`);
-            } finally {
-                btn.disabled = false;
+                showError('Connection error. Please try again.');
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            userOrderId = null;
+            localStorage.removeItem('userToken');
+            localStorage.removeItem('currentUser');
+            clearInterval(timerInterval);
+            clearInterval(qupCheckInterval);
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('userDashboard').style.display = 'none';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('userDashboard').style.display = 'block';
+            document.getElementById('userName').textContent = currentUser;
+            checkExistingOrder();
+        }
+
+        async function submitOrder() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const orderDetails = document.getElementById('orderDetails').value.trim();
+
+            if (!customerName || !orderDetails) {
+                showNotification('Please enter both your name and order details', 'error');
+                return;
+            }
+
+            // Generate unique order ID
+            userOrderId = `${currentUser}-${Date.now()}`;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/queue/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify({
+                        id: userOrderId,
+                        payload: {
+                            customer: customerName,
+                            order: orderDetails
+                        },
+                        user_id: currentUser,
+                        priority: 500
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    showNotification('Order submitted successfully!', 'success');
+                    localStorage.setItem('userOrderId', userOrderId);
+                    showOrderStatus();
+                    startOrderTracking();
+                } else {
+                    showNotification(data.error || 'Failed to submit order', 'error');
+                }
+            } catch (error) {
+                showNotification('Error submitting order', 'error');
             }
         }
 
         async function cancelOrder() {
-            const btn = document.getElementById('mainActionBtn');
-            btn.innerHTML = '<div class="loading"></div> Cancelling...';
-            btn.disabled = true;
+            if (!userOrderId) return;
+
+            if (!confirm('Are you sure you want to cancel your order?')) {
+                return;
+            }
 
             try {
-                await apiCall('/api/v1/queue/cancel', 'POST', {
-                    id: currentUser.name
+                const response = await fetch(`${API_BASE}/api/v1/queue/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ id: userOrderId })
                 });
 
-                currentUser.inQueue = false;
-                currentUser.orderData = null;
-                updateUI();
-                
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('Order cancelled', 'success');
+                    resetToOrderPlacement();
+                } else {
+                    showNotification('Failed to cancel order', 'error');
+                }
             } catch (error) {
-                alert(`Failed to cancel order: ${error.message}`);
-            } finally {
-                btn.disabled = false;
+                showNotification('Error cancelling order', 'error');
             }
+        }
+
+        async function checkExistingOrder() {
+            const savedOrderId = localStorage.getItem('userOrderId');
+            if (savedOrderId) {
+                userOrderId = savedOrderId;
+                const orderExists = await checkOrderStatus();
+                if (orderExists) {
+                    showOrderStatus();
+                    startOrderTracking();
+                } else {
+                    resetToOrderPlacement();
+                }
+            }
+        }
+
+        async function checkOrderStatus() {
+            if (!userOrderId) return false;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/queue/list?user_id=${currentUser}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const userOrder = data.queue.find(order => order.id === userOrderId);
+                    
+                    if (userOrder) {
+                        updateOrderDisplay(userOrder);
+                        await checkQUPAvailability();
+                        return true;
+                    }
+                }
+                return false;
+            } catch (error) {
+                console.error('Error checking order status:', error);
+                return false;
+            }
+        }
+
+        function updateOrderDisplay(order) {
+            document.getElementById('currentOrder').textContent = order.payload?.order || 'Unknown';
+            document.getElementById('currentCustomer').textContent = order.payload?.customer || 'Unknown';
+
+            if (order.finalized) {
+                showPiQUPNotification(order);
+            } else {
+                // Update timer
+                const remainingSeconds = order.remaining_seconds || 0;
+                updateTimer(remainingSeconds);
+
+                // Update status
+                document.getElementById('statusText').textContent = 'Preparing your order...';
+                document.getElementById('statusText').className = 'status-text status-waiting';
+            }
+        }
+
+        function updateTimer(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            const display = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            document.getElementById('timerDisplay').textContent = display;
+        }
+
+        async function checkQUPAvailability() {
+            if (!userOrderId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/queue/qup/preview`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify({
+                        id: userOrderId,
+                        qup_type: 'super',
+                        positions: 1
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    if (data.can_afford && data.positions_possible > 0) {
+                        showQUPSection(data);
+                    } else {
+                        hideQUPSection();
+                    }
+                } else {
+                    hideQUPSection();
+                }
+            } catch (error) {
+                hideQUPSection();
+            }
+        }
+
+        function showQUPSection(qupData) {
+            document.getElementById('qupSection').style.display = 'block';
+            document.getElementById('costAmount').textContent = Math.round(qupData.cost_amount);
+            document.getElementById('poolTimeAvailable').textContent = Math.round(qupData.available_pool_time);
+            
+            const qupButton = document.getElementById('qupButton');
+            qupButton.disabled = false;
+            qupButton.onclick = () => performQUP();
+        }
+
+        function hideQUPSection() {
+            document.getElementById('qupSection').style.display = 'none';
         }
 
         async function performQUP() {
-            const btn = document.getElementById('qupBtn');
-            btn.innerHTML = '<div class="loading"></div> Processing QUP...';
-            btn.disabled = true;
+            if (!userOrderId) return;
 
+            // Show cost preview first
             try {
-                const response = await apiCall('/api/v1/queue/qup', 'POST', {
-                    id: currentUser.name,
-                    qup_type: 'super'
+                const previewResponse = await fetch(`${API_BASE}/api/v1/queue/qup/preview`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify({
+                        id: userOrderId,
+                        qup_type: 'super',
+                        positions: 1
+                    })
                 });
 
-                alert('🎉 QUP successful! You\'ve moved ahead in the queue.');
-                checkQueueStatus();
+                const previewData = await previewResponse.json();
                 
-            } catch (error) {
-                alert(`QUP failed: ${error.message}`);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '⚡ Use QUP - Skip Ahead';
-            }
-        }
+                if (!previewData.can_afford) {
+                    showNotification('Not enough pool time available for QUP', 'error');
+                    return;
+                }
 
-        async function checkQueueStatus() {
-            if (!currentUser.name) return;
+                // Confirm QUP action
+                const costSeconds = Math.round(previewData.cost_amount);
+                if (!confirm(`Move up one position for ${costSeconds} seconds from the pool time?`)) {
+                    return;
+                }
 
-            try {
-                const response = await apiCall(`/api/v1/queue/list?user_id=${encodeURIComponent(currentUser.name)}`);
-                const queue = response.queue || [];
-                const userItem = queue.find(item => item.id === currentUser.name);
+                // Perform actual QUP
+                const response = await fetch(`${API_BASE}/api/v1/queue/qup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify({
+                        id: userOrderId,
+                        qup_type: 'super',
+                        positions: 1
+                    })
+                });
 
-                if (userItem) {
-                    currentUser.inQueue = true;
-                    currentUser.orderData = userItem;
-                    updateQueueDisplay(userItem, queue);
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    showNotification('Successfully moved up in line!', 'success');
+                    // Refresh order status
+                    setTimeout(checkOrderStatus, 1000);
                 } else {
-                    currentUser.inQueue = false;
-                    currentUser.orderData = null;
-                    updateUI();
+                    showNotification(data.message || 'QUP failed', 'error');
                 }
-                
             } catch (error) {
-                console.error('Failed to check queue status:', error);
+                showNotification('Error performing QUP', 'error');
             }
         }
 
-        function updateQueueDisplay(userItem, fullQueue) {
-            const statusText = document.getElementById('statusText');
-            const queueInfo = document.getElementById('queueInfo');
-            const queueSection = document.getElementById('qupSection');
-            const pickupNotification = document.getElementById('pickupNotification');
-            const progressContainer = document.getElementById('progressContainer');
-            const estimatedTime = document.getElementById('estimatedTime');
+        function showPiQUPNotification(order) {
+            // Generate unique color based on order ID
+            const colors = ['#e74c3c', '#f39c12', '#27ae60', '#3498db', '#9b59b6', '#e67e22'];
+            const colorIndex = order.id.length % colors.length;
+            const backgroundColor = colors[colorIndex];
 
-            if (userItem.finalized) {
-                statusText.textContent = '🎉 Your order is ready for pickup!';
-                pickupNotification.style.display = 'block';
-                queueInfo.style.display = 'none';
-                queueSection.style.display = 'none';
-                progressContainer.style.display = 'none';
-                
-                const pickupCode = userItem.timestamp ? userItem.timestamp.slice(-4) : '0000';
-                document.getElementById('pickupCode').textContent = pickupCode;
-                
-            } else if (userItem.cancelled) {
-                statusText.textContent = '❌ Your order has been cancelled';
-                currentUser.inQueue = false;
-                updateUI();
-                return;
-                
-            } else {
-                statusText.textContent = '⏳ You\'re in the queue!';
-                queueInfo.style.display = 'grid';
-                pickupNotification.style.display = 'none';
-                progressContainer.style.display = 'block';
-                
-                // Calculate position
-                const activeQueue = fullQueue.filter(item => !item.cancelled && !item.finalized);
-                const position = activeQueue.findIndex(item => item.id === currentUser.name) + 1;
-                
-                document.getElementById('queuePosition').textContent = position;
-                document.getElementById('waitTime').textContent = userItem.remaining_time || 'Calculating...';
-                
-                // Update progress bar
-                const progress = Math.max(0, 100 - (userItem.remaining_seconds / userItem.assigned_time * 100));
-                document.getElementById('progressFill').style.width = `${progress}%`;
-                
-                // Show estimated time
-                estimatedTime.style.display = 'block';
-                estimatedTime.textContent = `Estimated completion: ${userItem.remaining_time}`;
-                
-                // Show QUP option if available
-                if (userItem.can_qup) {
-                    queueSection.style.display = 'block';
-                } else {
-                    queueSection.style.display = 'none';
-                }
-            }
+            // Generate PiQUP code (last 4 characters of timestamp + position)
+            const piqupCode = `${order.timestamp.slice(-4)}${order.position.toString().padStart(2, '0')}`;
 
-            updateUI();
+            document.getElementById('piqupCode').textContent = piqupCode;
+            document.getElementById('piqupCode').style.backgroundColor = backgroundColor;
+            document.getElementById('piqupNotification').style.display = 'block';
+            document.getElementById('orderStatus').style.display = 'none';
+
+            // Clear tracking intervals
+            clearInterval(timerInterval);
+            clearInterval(qupCheckInterval);
         }
 
-        function updateUI() {
-            const userForm = document.getElementById('userForm');
-            const mainBtn = document.getElementById('mainActionBtn');
-
-            if (currentUser.inQueue) {
-                userForm.style.display = 'none';
-                mainBtn.textContent = '❌ Cancel Order';
-                mainBtn.className = 'btn btn-danger';
-                
-                // Make order fields readonly and show current order
-                if (currentUser.orderData) {
-                    document.getElementById('orderText').value = currentUser.orderData.payload?.order || '';
-                }
-                document.getElementById('userName').readOnly = true;
-                document.getElementById('orderText').readOnly = true;
-                document.getElementById('orderPriority').disabled = true;
-                
-            } else {
-                userForm.style.display = 'block';
-                mainBtn.textContent = '🚀 Join Queue';
-                mainBtn.className = 'btn';
-                
-                document.getElementById('queueInfo').style.display = 'none';
-                document.getElementById('qupSection').style.display = 'none';
-                document.getElementById('pickupNotification').style.display = 'none';
-                document.getElementById('progressContainer').style.display = 'none';
-                document.getElementById('estimatedTime').style.display = 'none';
-                
-                document.getElementById('userName').readOnly = false;
-                document.getElementById('orderText').readOnly = false;
-                document.getElementById('orderPriority').disabled = false;
-                document.getElementById('orderText').value = '';
-            }
+        function showOrderStatus() {
+            document.getElementById('orderPlacement').style.display = 'none';
+            document.getElementById('orderStatus').style.display = 'block';
+            document.getElementById('piqupNotification').style.display = 'none';
         }
 
-        function acknowledgePickup() {
-            currentUser.inQueue = false;
-            currentUser.orderData = null;
-            updateUI();
-            document.getElementById('statusText').textContent = 'Thank you! You can place a new order anytime.';
-        }
-
-        async function checkConnection() {
-            try {
-                await apiCall('/health');
-                updateConnectionStatus(true);
-            } catch (error) {
-                updateConnectionStatus(false);
-            }
-        }
-
-        function updateConnectionStatus(connected) {
-            const statusEl = document.getElementById('connectionStatus');
-            connectionStatus = connected ? 'connected' : 'disconnected';
+        function resetToOrderPlacement() {
+            userOrderId = null;
+            localStorage.removeItem('userOrderId');
+            clearInterval(timerInterval);
+            clearInterval(qupCheckInterval);
             
-            if (connected) {
-                statusEl.classList.remove('disconnected');
-            } else {
-                statusEl.classList.add('disconnected');
-            }
+            document.getElementById('orderPlacement').style.display = 'block';
+            document.getElementById('orderStatus').style.display = 'none';
+            document.getElementById('piqupNotification').style.display = 'none';
+            
+            // Clear form
+            document.getElementById('customerName').value = '';
+            document.getElementById('orderDetails').value = '';
         }
 
-        // Auto-save name on input
-        document.getElementById('userName').addEventListener('input', saveUserData);
+        function startOrderTracking() {
+            // Check order status every 5 seconds
+            timerInterval = setInterval(checkOrderStatus, 5000);
+            
+            // Check QUP availability every 10 seconds
+            qupCheckInterval = setInterval(checkQUPAvailability, 10000);
+        }
+
+        function showError(message) {
+            document.getElementById('loginError').textContent = message;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
     </script>
 </body>
 </html>
