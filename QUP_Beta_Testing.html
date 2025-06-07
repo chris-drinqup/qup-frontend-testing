@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Beta Testing - Sign Up</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #4c1d95;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            background: #f9fafb;
+        }
+
+        .form-section h3 {
+            color: #4c1d95;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .alert.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .beta-links {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .beta-links h3 {
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .link-btn {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .link-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .note {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .step {
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #6366f1;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .link-btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚀</div>
+        <h1>QUP Beta Testing</h1>
+        <p class="subtitle">Join the exclusive beta testing program for QUP - the next generation queue management system</p>
+
+        <!-- Step 1: Sign Up -->
+        <div class="form-section" id="signupSection">
+            <h3><span class="step-number">1</span>Create Your Beta Account</h3>
+            
+            <div class="form-group">
+                <label for="signupEmail">Email Address</label>
+                <input type="email" id="signupEmail" placeholder="your.email@company.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" placeholder="Create a secure password" required>
+            </div>
+            
+            <button class="btn" onclick="createBetaUser()" id="signupBtn">
+                🔐 Create Beta Account
+            </button>
+            
+            <div id="signupResult"></div>
+        </div>
+
+        <!-- Step 2: Login Test -->
+        <div class="form-section hidden" id="loginSection">
+            <h3><span class="step-number">2</span>Verify Your Account</h3>
+            
+            <div class="note">
+                📧 <strong>Check your email!</strong> You must click the confirmation link in your email before you can log in.
+            </div>
+            
+            <div class="form-group">
+                <label for="loginEmail">Email Address</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            
+            <button class="btn" onclick="testLogin()" id="loginBtn">
+                ✅ Verify Account Access
+            </button>
+            
+            <div id="loginResult"></div>
+        </div>
+
+        <!-- Step 3: Success -->
+        <div class="beta-links hidden" id="successSection">
+            <h3>🎉 Congratulations! Welcome to QUP Beta Testing!</h3>
+            <p style="margin-bottom: 20px;">You're now part of our exclusive beta testing program. Access the QUP applications below:</p>
+            
+            <a href="https://chris-drinqup.github.io/qup-frontend-testing/index.html" class="link-btn" target="_blank">
+                🛒 QUP Client App
+            </a>
+            
+            <a href="https://chris-drinqup.github.io/qup-frontend-testing/barista.html" class="link-btn" target="_blank">
+                ☕ QUP Barista Dashboard
+            </a>
+            
+            <div style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                <p>Use the same credentials you just created to log into both applications.</p>
+                <p><strong>Happy Testing!</strong> 🚀</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
+
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="alert ${type}">${content}</div>`;
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.getElementById('signupSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('successSection').classList.add('hidden');
+            
+            // Show target section
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        async function createBetaUser() {
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const signupBtn = document.getElementById('signupBtn');
+
+            if (!email || !password) {
+                showResult('signupResult', '⚠️ Please enter both email and password', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showResult('signupResult', '⚠️ Password must be at least 6 characters long', 'error');
+                return;
+            }
+
+            signupBtn.disabled = true;
+            signupBtn.textContent = '🔄 Creating Account...';
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            beta_tester: true,
+                            signup_source: 'qup_beta_signup'
+                        }
+                    }
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                showResult('signupResult', 
+                    `🎉 <strong>Account Created Successfully!</strong><br>
+                     📧 Check your email (${email}) for a confirmation link.<br>
+                     ⏳ You must confirm your email before proceeding to step 2.`, 
+                    'success'
+                );
+
+                // Pre-fill login form
+                document.getElementById('loginEmail').value = email;
+                document.getElementById('loginPassword').value = password;
+
+                // Show login section
+                setTimeout(() => {
+                    showSection('loginSection');
+                    document.getElementById('loginEmail').focus();
+                }, 2000);
+
+            } catch (error) {
+                showResult('signupResult', `❌ <strong>Signup Failed:</strong> ${error.message}`, 'error');
+            } finally {
+                signupBtn.disabled = false;
+                signupBtn.textContent = '🔐 Create Beta Account';
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            if (!email || !password) {
+                showResult('loginResult', '⚠️ Please enter both email and password', 'error');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = '🔄 Verifying...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    if (error.message.includes('Email not confirmed')) {
+                        showResult('loginResult', 
+                            `📧 <strong>Email Not Confirmed</strong><br>
+                             Please check your email and click the confirmation link first.<br>
+                             <small>Check your spam folder if you don't see it.</small>`, 
+                            'error'
+                        );
+                    } else {
+                        showResult('loginResult', 
+                            `❌ <strong>Login Failed:</strong> ${error.message}<br>
+                             <small>Make sure you've confirmed your email first.</small>`, 
+                            'error'
+                        );
+                    }
+                    return;
+                }
+
+                // Success! Show beta access
+                showResult('loginResult', 
+                    `✅ <strong>Account Verified Successfully!</strong><br>
+                     🎉 Welcome to QUP Beta Testing!`, 
+                    'success'
+                );
+
+                // Show success section
+                setTimeout(() => {
+                    showSection('successSection');
+                }, 1500);
+
+            } catch (error) {
+                showResult('loginResult', `❌ <strong>Error:</strong> ${error.message}`, 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '✅ Verify Account Access';
+            }
+        }
+
+        // Handle Enter key presses
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                if (!document.getElementById('signupSection').classList.contains('hidden')) {
+                    createBetaUser();
+                } else if (!document.getElementById('loginSection').classList.contains('hidden')) {
+                    testLogin();
+                }
+            }
+        });
+
+        // Auto-focus first input on page load
+        window.onload = function() {
+            document.getElementById('signupEmail').focus();
+        };
+    </script>
+</body>
+</html>

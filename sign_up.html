@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Demo - Join the Queue Revolution</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #4c63d2;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a3e;
+            --bg-card: #262654;
+            --text-primary: #ffffff;
+            --text-secondary: #a5a5c9;
+            --border: #3a3a6b;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .hero-card {
+            background: var(--bg-card);
+            border-radius: 25px;
+            padding: 40px 35px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 900;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            letter-spacing: -2px;
+        }
+
+        .hero-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .feature {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .form-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+        .form-section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: var(--bg-primary);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn:disabled:hover::before {
+            width: 0;
+            height: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: 600;
+            border: 1px solid;
+            text-align: center;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+            border-color: var(--info);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: var(--text-secondary);
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            padding: 0 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .demo-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--info);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .demo-info h4 {
+            color: var(--info);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .demo-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .success-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 20px;
+            animation: bounce 1s ease-in-out;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .cta-buttons .btn {
+            width: auto;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .hero-card {
+                padding: 30px 25px;
+            }
+
+            .logo {
+                font-size: 3rem;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 10s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-10px) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <div class="container">
+        <!-- Main Registration Screen -->
+        <div id="registrationScreen" class="hero-card fade-in">
+            <div class="logo">QUP</div>
+            <h1 class="hero-title">Join the Queue Revolution</h1>
+            <p class="hero-subtitle">
+                Experience the future of queue management with AI-powered wait times, 
+                dynamic positioning, and real-time updates.
+            </p>
+
+            <!-- Features showcase -->
+            <div class="features-grid">
+                <div class="feature">
+                    <span class="feature-icon">⚡</span>
+                    <div class="feature-title">Super QUP</div>
+                    <div class="feature-description">Skip ahead using intelligent time pool management</div>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🧠</span>
+                    <div class="feature-title">AI Predictions</div>
+                    <div class="feature-description">Machine learning powered wait time estimates</div>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📱</span>
+                    <div class="feature-title">Real-time Updates</div>
+                    <div class="feature-description">Live notifications and position tracking</div>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🎯</span>
+                    <div class="feature-title">4 Queue Modes</div>
+                    <div class="feature-description">FIFO, Super QUP, Negotiation, and Chaos modes</div>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="form-section">
+                <h3>🚀 Start Your Demo Experience</h3>
+                
+                <form id="registrationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" class="form-control" placeholder="First name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" class="form-control" placeholder="Last name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" class="form-control" placeholder="your.email@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="company">Company/Organization</label>
+                        <input type="text" id="company" class="form-control" placeholder="Your company (optional)">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password">Password *</label>
+                            <input type="password" id="password" class="form-control" placeholder="Min 6 characters" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm *</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm password" required>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="registerUser()">
+                        <span id="registerText">🎉 Create Demo Account</span>
+                        <div id="registerLoading" class="loading hidden"></div>
+                    </button>
+                </form>
+
+                <div id="registrationError" class="alert alert-error hidden">
+                    Registration failed. Please try again.
+                </div>
+
+                <div class="demo-info">
+                    <h4>🔍 What happens next?</h4>
+                    <p>
+                        After creating your account, you'll receive an email verification link. 
+                        Once verified, you can access the QUP admin dashboard and experience 
+                        all the enterprise queue management features firsthand!
+                    </p>
+                </div>
+            </div>
+
+            <div class="divider">
+                <span>Already have an account?</span>
+            </div>
+
+            <div class="cta-buttons">
+                <button class="btn btn-secondary" onclick="goToLogin()">
+                    🔑 Sign In to Dashboard
+                </button>
+                <button class="btn btn-secondary" onclick="goToClientDemo()">
+                    📱 Try Customer App
+                </button>
+            </div>
+        </div>
+
+        <!-- Success Screen -->
+        <div id="successScreen" class="hero-card fade-in hidden">
+            <div class="success-screen">
+                <div class="success-icon">🎉</div>
+                <h1 class="hero-title">Welcome to QUP!</h1>
+                <p class="hero-subtitle">
+                    Your demo account has been created successfully. 
+                    Please check your email for the verification link.
+                </p>
+
+                <div class="alert alert-success">
+                    <strong>Account Created!</strong><br>
+                    A verification email has been sent to <span id="userEmail"></span>
+                </div>
+
+                <div class="demo-info">
+                    <h4>📧 Next Steps</h4>
+                    <p>
+                        1. Check your email (including spam/promotions folder)<br>
+                        2. Click the verification link in the email<br>
+                        3. Return here and sign in to access the admin dashboard<br>
+                        4. Explore all the enterprise queue management features!
+                    </p>
+                </div>
+
+                <div class="cta-buttons">
+                    <button class="btn btn-primary" onclick="goToLogin()">
+                        🔑 Go to Admin Dashboard
+                    </button>
+                    <button class="btn btn-secondary" onclick="startOver()">
+                        ← Create Another Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
+
+        // URLs for navigation
+        const ADMIN_DASHBOARD_URL = './admin-dashboard.html'; // Your admin dashboard
+        const CLIENT_DEMO_URL = './client.html'; // Your customer client
+
+        let supabase = null;
+
+        // Initialize app
+        function init() {
+            // Initialize Supabase
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized for demo registration');
+            } catch (error) {
+                console.error('Supabase initialization failed:', error);
+                showAlert('Failed to initialize registration system. Please refresh the page.', 'error');
+                return;
+            }
+
+            // Create floating animation elements
+            createFloatingElements();
+
+            // Add form event listeners
+            setupFormHandlers();
+
+            // Auto-focus on first name
+            document.getElementById('firstName').focus();
+
+            console.log('QUP Demo Registration initialized');
+        }
+
+        function setupFormHandlers() {
+            // Tab navigation with Enter key
+            const fields = ['firstName', 'lastName', 'email', 'company', 'password', 'confirmPassword'];
+            
+            fields.forEach((fieldId, index) => {
+                const field = document.getElementById(fieldId);
+                field.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (index < fields.length - 1) {
+                            document.getElementById(fields[index + 1]).focus();
+                        } else {
+                            registerUser();
+                        }
+                    }
+                });
+            });
+
+            // Real-time password validation
+            document.getElementById('confirmPassword').addEventListener('input', validatePasswordMatch);
+        }
+
+        function validatePasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const confirmField = document.getElementById('confirmPassword');
+            
+            if (confirmPassword && password !== confirmPassword) {
+                confirmField.style.borderColor = 'var(--danger)';
+            } else {
+                confirmField.style.borderColor = 'var(--border)';
+            }
+        }
+
+        async function registerUser() {
+            // Get form data
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const company = document.getElementById('company').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate required fields
+            if (!firstName || !lastName || !email || !password || !confirmPassword) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Validate password
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters long', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'error');
+                return;
+            }
+
+            setLoading(true);
+            hideAlert();
+
+            try {
+                // Create user with Supabase
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            first_name: firstName,
+                            last_name: lastName,
+                            full_name: `${firstName} ${lastName}`,
+                            company: company || null,
+                            user_type: 'demo_user',
+                            created_via: 'demo_registration',
+                            registration_date: new Date().toISOString()
+                        }
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                console.log('Demo user registration successful:', email);
+                
+                // Show success screen
+                document.getElementById('userEmail').textContent = email;
+                showSuccessScreen();
+                
+                // Add success animation
+                setTimeout(() => {
+                    createConfetti();
+                }, 500);
+
+            } catch (error) {
+                console.error('Registration failed:', error);
+                document.getElementById('registrationError').classList.remove('hidden');
+                
+                let errorMessage = 'Registration failed. Please try again.';
+                
+                if (error.message.includes('already registered')) {
+                    errorMessage = 'This email is already registered. Try signing in instead.';
+                } else if (error.message.includes('invalid email')) {
+                    errorMessage = 'Please enter a valid email address.';
+                } else if (error.message.includes('weak password')) {
+                    errorMessage = 'Password is too weak. Please choose a stronger password.';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                showAlert(errorMessage, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function showSuccessScreen() {
+            document.getElementById('registrationScreen').classList.add('hidden');
+            document.getElementById('successScreen').classList.remove('hidden');
+        }
+
+        function startOver() {
+            // Clear form
+            document.getElementById('registrationForm').reset();
+            document.getElementById('registrationError').classList.add('hidden');
+            
+            // Show registration screen
+            document.getElementById('successScreen').classList.add('hidden');
+            document.getElementById('registrationScreen').classList.remove('hidden');
+            
+            // Focus on first field
+            document.getElementById('firstName').focus();
+        }
+
+        function goToLogin() {
+            // Navigate to admin dashboard
+            window.location.href = ADMIN_DASHBOARD_URL;
+        }
+
+        function goToClientDemo() {
+            // Navigate to customer client demo
+            window.location.href = CLIENT_DEMO_URL;
+        }
+
+        function setLoading(loading) {
+            const text = document.getElementById('registerText');
+            const spinner = document.getElementById('registerLoading');
+            const button = text.parentElement;
+            
+            if (loading) {
+                text.style.display = 'none';
+                spinner.classList.remove('hidden');
+                button.disabled = true;
+            } else {
+                text.style.display = 'inline';
+                spinner.classList.add('hidden');
+                button.disabled = false;
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert:not(#registrationError)');
+            existingAlerts.forEach(alert => alert.remove());
+
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} fade-in`;
+            alert.textContent = message;
+
+            const formSection = document.querySelector('.form-section');
+            formSection.appendChild(alert);
+
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 6000);
+        }
+
+        function hideAlert() {
+            document.getElementById('registrationError').classList.add('hidden');
+        }
+
+        function createFloatingElements() {
+            const container = document.getElementById('floatingElements');
+            const colors = ['var(--primary)', 'var(--secondary)', 'var(--success)', 'var(--info)'];
+            
+            for (let i = 0; i < 15; i++) {
+                const element = document.createElement('div');
+                element.className = 'floating-element';
+                element.style.left = Math.random() * 100 + '%';
+                element.style.background = colors[Math.floor(Math.random() * colors.length)];
+                element.style.animationDelay = Math.random() * 10 + 's';
+                element.style.animationDuration = (Math.random() * 10 + 8) + 's';
+                container.appendChild(element);
+            }
+        }
+
+        function createConfetti() {
+            // Simple confetti effect
+            const confettiCount = 50;
+            const container = document.body;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.width = '8px';
+                confetti.style.height = '8px';
+                confetti.style.background = ['#667eea', '#764ba2', '#10b981', '#f59e0b'][Math.floor(Math.random() * 4)];
+                confetti.style.borderRadius = '50%';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '10000';
+                confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                container.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.remove();
+                    }
+                }, 5000);
+            }
+        }
+
+        // Add confetti animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes confetti-fall {
+                to {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

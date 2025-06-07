@@ -3,19 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUP Barista Station</title>
+    <title>QUP Barista Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #4c63d2;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a3e;
+            --bg-card: #262654;
+            --text-primary: #ffffff;
+            --text-secondary: #a5a5c9;
+            --border: #3a3a6b;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
             min-height: 100vh;
-            color: #333;
+            overflow-x: hidden;
         }
 
         .login-container {
@@ -23,746 +43,1345 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: rgba(0,0,0,0.1);
+            backdrop-filter: blur(2px);
         }
 
         .login-form {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            width: 400px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 25px;
+            width: 450px;
+            box-shadow: 0 15px 40px var(--shadow);
             text-align: center;
+            border: 1px solid var(--border);
+            position: relative;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
         }
 
-        .barista-dashboard {
-            display: none;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        .login-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 60px var(--shadow);
         }
 
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .login-form h2 {
+            color: var(--text-primary);
+            margin-bottom: 35px;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        .header h1 {
-            color: #00b894;
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
         }
 
-        .current-order {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .no-orders {
-            color: #666;
-            font-size: 24px;
-            padding: 60px;
-        }
-
-        .order-details {
-            margin-bottom: 30px;
-        }
-
-        .customer-name {
-            font-size: 28px;
-            font-weight: 700;
-            color: #2d3436;
+        .form-group label {
+            display: block;
             margin-bottom: 10px;
-        }
-
-        .order-text {
-            font-size: 20px;
-            color: #636e72;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 4px solid #00b894;
-        }
-
-        .order-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .meta-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .meta-label {
-            font-size: 12px;
-            color: #666;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            letter-spacing: 0.5px;
         }
 
-        .meta-value {
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 15px;
             font-size: 16px;
-            font-weight: 600;
-            color: #2d3436;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 30px;
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .btn {
-            padding: 15px 30px;
+        .login-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
             border: none;
-            border-radius: 12px;
+            padding: 16px 32px;
+            border-radius: 15px;
             cursor: pointer;
+            font-weight: 700;
             font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-            min-width: 120px;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .btn:hover {
+        .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-piqup {
-            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
-            color: white;
-            font-size: 18px;
-            padding: 20px 40px;
-        }
-
-        .btn-complete {
-            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
-            color: white;
-        }
-
-        .btn-cancel {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-            color: white;
-        }
-
-        .btn:disabled {
-            background: #95a5a6;
+        .login-btn:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
 
-        .piqup-display {
-            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 20px 0;
-            text-align: center;
+        .dashboard-container {
             display: none;
+            margin: 20px;
+            min-height: calc(100vh - 40px);
         }
 
-        .piqup-code-display {
-            font-size: 48px;
-            font-weight: 700;
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 10px;
-            display: inline-block;
-            min-width: 200px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 40px var(--shadow);
+            max-width: 1400px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            position: relative;
         }
 
-        .queue-summary {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        }
-
-        .queue-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #00b894;
-        }
-
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
-            font-size: 12px;
-        }
-
-        .upcoming-orders {
-            margin-top: 20px;
-        }
-
-        .upcoming-order {
-            background: #f8f9fa;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 20px;
+            margin: -10px -10px 30px -10px;
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: #00b894;
-        }
-
-        .notification.error {
-            background: #e74c3c;
+        h2 {
+            color: var(--text-primary);
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
         .logout-btn {
-            background: rgba(255,255,255,0.2);
-            color: #00b894;
-            border: 1px solid #00b894;
-            padding: 10px 15px;
-            border-radius: 8px;
+            background: linear-gradient(45deg, var(--danger), #dc2626);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
         }
 
-        .order-timer {
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .datetime-container {
             font-size: 18px;
-            color: #636e72;
-            margin: 10px 0;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+            font-weight: 700;
+            padding: 25px 30px;
+            background: var(--bg-secondary);
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 25px var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .refresh-btn, .debug-btn, .mass-action-btn, .danger-btn {
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 50%, #2e7d32 100%);
+        }
+
+        .debug-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 50%, #6a1b9a 100%);
+        }
+
+        .mass-action-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 50%, #ef6c00 100%);
+        }
+
+        .danger-btn {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 50%, #b71c1c 100%);
+        }
+
+        .refresh-btn:hover, .debug-btn:hover, .mass-action-btn:hover, .danger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+        }
+
+        .websocket-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+
+        .websocket-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .websocket-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .websocket-status.connecting {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px var(--shadow);
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+        }
+
+        .order-table th {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: left;
+            font-size: 16px;
+            padding: 20px 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .order-table td {
+            padding: 20px 25px;
+            text-align: left;
+            background-color: var(--bg-secondary);
+            font-size: 15px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .order-table tr:hover td {
+            background-color: var(--bg-card);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .order-table tr.ready-order td {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .order-table tr.ready-order:hover td {
+            background-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .order-table button {
+            padding: 10px 18px;
+            margin: 3px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-table button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .order-table button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-finalize {
+            background: linear-gradient(45deg, var(--info), #1976d2);
+            color: white;
+        }
+
+        .btn-complete {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(45deg, var(--danger), #dc2626);
+            color: white;
+        }
+
+        .customer-name {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .pickup-code {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #059669;
+            background: rgba(209, 250, 229, 0.8);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(5, 150, 105, 0.2);
+        }
+
+        .live-timer {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #1976d2;
+            animation: pulse 2s infinite;
         }
 
         .status-badge {
-            padding: 5px 10px;
-            border-radius: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
+            text-transform: uppercase;
         }
 
-        .status-processing {
-            background: #d1ecf1;
-            color: #0c5460;
+        .status-next {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
         }
 
         .status-ready {
-            background: #d4edda;
-            color: #155724;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .order-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .order-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            padding: 18px 25px;
+            margin: 15px 0;
+            border-radius: 15px;
+            border: 1px solid var(--danger);
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 25px;
+                border-radius: 20px;
+            }
+
+            .login-form {
+                width: 90%;
+                padding: 35px;
+                border-radius: 20px;
+            }
+
+            .datetime-container {
+                font-size: 16px;
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+
+            .status-buttons {
+                justify-content: center;
+            }
+
+            .order-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .order-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Login Form -->
+    <!-- Login Screen -->
     <div class="login-container" id="loginContainer">
         <div class="login-form">
-            <h2 style="color: #00b894; margin-bottom: 30px;">☕ Barista Login</h2>
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Username</label>
-                <input type="text" id="loginUsername" placeholder="Enter barista username" 
-                       style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px;">
+            <h2>QUP Barista Dashboard</h2>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="Enter your email">
             </div>
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter password" 
-                       style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px;">
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter your password">
             </div>
-            <button onclick="login()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">Login</button>
-            <div id="loginError" style="color: #e74c3c; margin-top: 10px;"></div>
+            <button class="login-btn" id="loginButton">
+                <span id="loginText">Sign In</span>
+                <div id="loginLoading" class="loading" style="display: none;"></div>
+            </button>
+            <div id="loginError" class="error-message"></div>
         </div>
     </div>
 
-    <!-- Barista Dashboard -->
-    <div class="barista-dashboard" id="baristaDashboard">
-        <div class="header">
-            <h1>☕ QUP Barista Station</h1>
-            <div>
-                <span id="baristaName" style="margin-right: 20px; font-weight: 600;"></span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </div>
-
-        <!-- Current Order Processing -->
-        <div class="current-order" id="currentOrderCard">
-            <div id="noOrdersMessage" class="no-orders">
-                ☕ No orders to process<br>
-                <small>Waiting for new orders...</small>
-            </div>
-
-            <div id="orderContent" style="display: none;">
-                <div class="order-details">
-                    <div class="customer-name" id="customerName">Customer Name</div>
-                    <div class="order-text" id="orderText">Order details will appear here</div>
-                </div>
-
-                <div class="order-meta">
-                    <div class="meta-item">
-                        <div class="meta-label">Order ID</div>
-                        <div class="meta-value" id="orderId">-</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Priority</div>
-                        <div class="meta-value" id="orderPriority">-</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Duration</div>
-                        <div class="meta-value" id="orderDuration">-</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Status</div>
-                        <div class="meta-value" id="orderStatus">
-                            <span class="status-badge status-processing">Processing</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-piqup" id="piqupBtn" onclick="markPiQUP()">
-                        🎉 PiQUP Ready
-                    </button>
-                    <button class="btn btn-complete" id="completeBtn" onclick="completeOrder()" disabled>
-                        ✅ Complete
-                    </button>
-                    <button class="btn btn-cancel" onclick="cancelOrder()">
-                        ❌ Cancel
-                    </button>
-                </div>
-
-                <!-- PiQUP Code Display -->
-                <div class="piqup-display" id="piqupDisplay">
-                    <h3>🎉 Order Ready for Pickup!</h3>
-                    <p>Customer PiQUP Code:</p>
-                    <div class="piqup-code-display" id="piqupCodeDisplay">PIQUP</div>
-                    <p>Verify this code with customer before completing order</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Queue Summary -->
-        <div class="queue-summary">
-            <h3 style="margin-bottom: 15px; color: #2d3436;">📊 Queue Summary</h3>
-            
-            <div class="queue-stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalOrdersCount">0</div>
-                    <div class="stat-label">Total Orders</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="pendingOrdersCount">0</div>
-                    <div class="stat-label">Pending</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="readyOrdersCount">0</div>
-                    <div class="stat-label">Ready</div>
+    <!-- Dashboard -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <div class="container">
+            <div class="header">
+                <h2>QUP Barista</h2>
+                <div style="display: flex; align-items: center;">
+                    <span id="userInfo" class="user-info"></span>
+                    <span id="websocketStatus" class="websocket-status disconnected">Real-time: OFF</span>
+                    <button class="logout-btn" onclick="logout()">Sign Out</button>
                 </div>
             </div>
 
-            <div class="upcoming-orders">
-                <h4 style="margin-bottom: 10px; color: #636e72;">Next Orders</h4>
-                <div id="upcomingOrdersList">
-                    <div style="color: #666; padding: 20px; text-align: center;">No upcoming orders</div>
+            <div id="errorNotification" class="error-message"></div>
+
+            <div class="datetime-container">
+                <span id="localDateTime"></span> • <span id="queueCounter">0 orders</span> active
+                <span id="websocketStatus2" class="websocket-status disconnected">WebSocket: Disconnected</span>
+
+                <div class="status-buttons">
+                    <button class="refresh-btn" onclick="fetchQueue()">Manual Refresh</button>
+                    <button class="debug-btn" onclick="debugSystem()">Debug System</button>
+                    <button class="mass-action-btn" onclick="finalizeAllOrders()">Finalize All</button>
+                    <button class="mass-action-btn" onclick="completeAllOrders()">Complete All</button>
+                    <button class="danger-btn" onclick="clearAllOrders()">Clear All</button>
                 </div>
             </div>
+
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Order</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>PiQUP Code</th>
+                        <th style="text-align: center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="queueBody">
+                    <tr>
+                        <td colspan="6" style="text-align:center;">Connecting to real-time updates...</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
 
     <script>
+        // Configuration
         const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
-        let authToken = localStorage.getItem('baristaToken');
-        let currentUser = localStorage.getItem('baristaUser');
-        let currentOrderId = null;
-        let refreshInterval = null;
+        const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
 
-        // Check if already logged in
-        if (authToken && currentUser) {
-            showDashboard();
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Global state
+        let socket = null;
+        let currentUser = null;
+        let developerKey = null;
+        let dateTimeInterval = null;
+        let liveTimerInterval = null;
+        let isActionInProgress = false;
+        let autoRefreshInterval = null;
+
+        // Check if user is already logged in
+        async function init() {
+            console.log('QUP Barista Dashboard initializing...');
+
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    showUserInfo(user);
+                    showDashboard(user);
+                } else {
+                    showLogin();
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showLogin();
+            }
+
+            // Add event listener for login button
+            document.getElementById('loginButton').addEventListener('click', handleLogin);
         }
 
-        async function login() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
+        function showUserInfo(user) {
+            const userInfoSpan = document.getElementById('userInfo');
+            if (userInfoSpan) {
+                userInfoSpan.textContent = user.email;
+                userInfoSpan.style.display = 'inline';
+            }
+        }
 
-            if (!username || !password) {
-                showError('Please enter both username and password');
+        // Authentication
+        async function handleLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!email || !password) {
+                showError('Please enter both email and password');
                 return;
             }
 
+            setLoading(true);
+
             try {
-                const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
                 });
 
-                const data = await response.json();
+                if (error) throw error;
 
-                if (response.ok && data.access_token) {
-                    if (data.user_type === 'user' || data.user_type === 'admin') {
-                        authToken = data.access_token;
-                        currentUser = username;
-                        localStorage.setItem('baristaToken', authToken);
-                        localStorage.setItem('baristaUser', currentUser);
-                        showDashboard();
-                    } else {
-                        showError('Access denied. Server/barista privileges required.');
-                    }
-                } else {
-                    showError(data.error || 'Login failed');
-                }
+                console.log('Supabase login successful');
+                showUserInfo(data.user);
+                showDashboard(data.user);
+
             } catch (error) {
-                showError('Connection error. Please try again.');
+                console.error('Login failed:', error);
+                showError('Login failed: ' + error.message);
+            } finally {
+                setLoading(false);
             }
         }
 
-        function logout() {
-            authToken = null;
-            currentUser = null;
-            currentOrderId = null;
-            localStorage.removeItem('baristaToken');
-            localStorage.removeItem('baristaUser');
-            clearInterval(refreshInterval);
-            
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+
+                // Cleanup
+                if (socket) {
+                    socket.disconnect();
+                    socket = null;
+                }
+                stopAllIntervals();
+
+                currentUser = null;
+                developerKey = null;
+
+                // Clear form fields
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+
+                showLogin();
+
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        }
+
+        function showLogin() {
             document.getElementById('loginContainer').style.display = 'flex';
-            document.getElementById('baristaDashboard').style.display = 'none';
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
+            document.getElementById('dashboardContainer').style.display = 'none';
         }
 
-        function showDashboard() {
+        async function showDashboard(user) {
+            currentUser = user;
+
             document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('baristaDashboard').style.display = 'block';
-            document.getElementById('baristaName').textContent = `Welcome, ${currentUser}`;
-            
-            // Start monitoring queue
-            loadQueue();
-            refreshInterval = setInterval(loadQueue, 5000); // Refresh every 5 seconds
+            document.getElementById('dashboardContainer').style.display = 'block';
+
+            // Get developer key for API access
+            await getDeveloperKey();
+
+            // Connect WebSocket
+            connectWebSocket();
+
+            // Start updates
+            startTimeUpdates();
+            fetchQueue();
+            startAutoRefresh();
+
+            console.log('Dashboard initialized for:', user.email);
         }
 
-        async function loadQueue() {
+        // Get developer key for API access
+        async function getDeveloperKey() {
             try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/list?admin=true`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
+                console.log('Getting developer key...');
 
-                const data = await response.json();
-                if (data.status === 'success') {
-                    updateQueueDisplay(data.queue);
-                    updateQueueStats(data);
-                }
-            } catch (error) {
-                console.error('Error loading queue:', error);
-            }
-        }
-
-        function updateQueueDisplay(queue) {
-            // Find the first non-finalized, non-cancelled order
-            const nextOrder = queue.find(order => !order.finalized && !order.cancelled);
-            
-            if (nextOrder) {
-                showCurrentOrder(nextOrder);
-            } else {
-                showNoOrders();
-            }
-
-            // Update upcoming orders list
-            updateUpcomingOrders(queue);
-        }
-
-        function showCurrentOrder(order) {
-            currentOrderId = order.id;
-            
-            document.getElementById('noOrdersMessage').style.display = 'none';
-            document.getElementById('orderContent').style.display = 'block';
-
-            // Update order details
-            document.getElementById('customerName').textContent = order.payload?.customer || 'Unknown Customer';
-            document.getElementById('orderText').textContent = order.payload?.order || 'No order details';
-            document.getElementById('orderId').textContent = order.id;
-            document.getElementById('orderPriority').textContent = getPriorityText(order.priority);
-            document.getElementById('orderDuration').textContent = order.duration || '0m 0s';
-
-            // Update status and buttons based on order state
-            if (order.finalized) {
-                showPiQUPReady(order);
-            } else {
-                showOrderProcessing();
-            }
-
-            // Auto-start processing when order appears (as per requirement)
-            if (!order.processing_started_at && !order.finalized) {
-                autoStartProcessing(order.id);
-            }
-        }
-
-        function showNoOrders() {
-            currentOrderId = null;
-            document.getElementById('noOrdersMessage').style.display = 'block';
-            document.getElementById('orderContent').style.display = 'none';
-            document.getElementById('piqupDisplay').style.display = 'none';
-        }
-
-        function showOrderProcessing() {
-            document.getElementById('orderStatus').innerHTML = '<span class="status-badge status-processing">Processing</span>';
-            document.getElementById('piqupBtn').disabled = false;
-            document.getElementById('completeBtn').disabled = true;
-            document.getElementById('piqupDisplay').style.display = 'none';
-        }
-
-        function showPiQUPReady(order) {
-            document.getElementById('orderStatus').innerHTML = '<span class="status-badge status-ready">Ready for Pickup</span>';
-            document.getElementById('piqupBtn').disabled = true;
-            document.getElementById('completeBtn').disabled = false;
-            
-            // Generate and display PiQUP code
-            const piqupCode = generatePiQUPCode(order);
-            const piqupColor = generatePiQUPColor(order.id);
-            
-            document.getElementById('piqupCodeDisplay').textContent = piqupCode;
-            document.getElementById('piqupCodeDisplay').style.backgroundColor = piqupColor;
-            document.getElementById('piqupDisplay').style.display = 'block';
-        }
-
-        function generatePiQUPCode(order) {
-            // Generate unique code based on order timestamp and position
-            const timestamp = order.timestamp || new Date().toISOString();
-            const timeCode = timestamp.slice(-4);
-            const positionCode = order.position.toString().padStart(2, '0');
-            return `${timeCode}${positionCode}`;
-        }
-
-        function generatePiQUPColor(orderId) {
-            // Generate unique color for each order
-            const colors = ['#e74c3c', '#f39c12', '#27ae60', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#34495e'];
-            const colorIndex = orderId.length % colors.length;
-            return colors[colorIndex];
-        }
-
-        async function autoStartProcessing(orderId) {
-            try {
-                await fetch(`${API_BASE}/api/v1/queue/processing`, {
+                const response = await fetch(`${API_BASE}/api/auth/developer/login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'start',
-                        id: orderId,
-                        server_id: currentUser
+                        username: 'developer',
+                        password: 'dev123'
                     })
                 });
-            } catch (error) {
-                console.error('Error auto-starting order:', error);
-            }
-        }
 
-        async function markPiQUP() {
-            if (!currentOrderId) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/finalize`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ id: currentOrderId })
-                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
 
                 const data = await response.json();
-                if (response.ok) {
-                    showNotification('Order marked as ready for pickup!', 'success');
-                    // The interface will update automatically on next refresh
+
+                if (data.developer_key) {
+                    developerKey = data.developer_key;
+                    console.log('Developer key obtained');
                 } else {
-                    showNotification('Failed to mark order ready', 'error');
+                    throw new Error(data.error || 'No developer key in response');
                 }
             } catch (error) {
-                showNotification('Error marking order ready', 'error');
+                console.error('Developer key error:', error);
+
+                // Fallback to hardcoded key
+                console.log('Using fallback developer key...');
+                developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
+                console.log('Using fallback developer key');
             }
         }
 
-        async function completeOrder() {
-            if (!currentOrderId) return;
-
-            if (!confirm('Confirm that customer has shown the correct PiQUP code?')) {
-                return;
-            }
-
+        // WebSocket connection
+        function connectWebSocket() {
             try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`,
-                        'X-Admin-Key': 'barista_key'
-                    },
-                    body: JSON.stringify({ id: currentOrderId })
+                console.log('Connecting to WebSocket...');
+
+                socket = io(API_BASE, {
+                    transports: ['websocket', 'polling'],
+                    timeout: 20000,
+                    reconnection: true,
+                    reconnectionDelay: 2000,
+                    reconnectionAttempts: 5,
+                    forceNew: true
                 });
 
-                const data = await response.json();
-                if (response.ok) {
-                    showNotification('Order completed successfully!', 'success');
-                    currentOrderId = null;
-                    // Load next order
-                    setTimeout(loadQueue, 1000);
-                } else {
-                    showNotification('Failed to complete order', 'error');
-                }
-            } catch (error) {
-                showNotification('Error completing order', 'error');
-            }
-        }
+                socket.on('connect', () => {
+                    updateWebSocketStatus('connected');
+                    console.log('WebSocket connected');
 
-        async function cancelOrder() {
-            if (!currentOrderId) return;
-
-            if (!confirm('Are you sure you want to cancel this order?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`,
-                        'X-Admin-Key': 'barista_key'
-                    },
-                    body: JSON.stringify({ id: currentOrderId })
+                    // Subscribe to barista events
+                    socket.emit('subscribe_barista', { barista: currentUser.email });
                 });
 
-                const data = await response.json();
-                if (response.ok) {
-                    showNotification('Order cancelled', 'success');
-                    currentOrderId = null;
-                    setTimeout(loadQueue, 1000);
-                } else {
-                    showNotification('Failed to cancel order', 'error');
-                }
+                socket.on('disconnect', () => {
+                    updateWebSocketStatus('disconnected');
+                    console.log('WebSocket disconnected');
+                });
+
+                socket.on('connect_error', (error) => {
+                    console.error('WebSocket connection error:', error);
+                    updateWebSocketStatus('disconnected');
+                });
+
+                socket.on('order_update', (data) => {
+                    console.log('Order update received:', data);
+                    handleOrderUpdate(data);
+                });
+
+                socket.on('order_created', (data) => {
+                    console.log('New order created:', data);
+                    showOrderNotification(`New order: ${data.orderId}`);
+                    // Fetch fresh queue data
+                    setTimeout(fetchQueue, 500);
+                });
+
+                socket.on('queue_update', (data) => {
+                    console.log('Queue update received:', data);
+                    if (data.queue) {
+                        updateOrdersDisplay(data.queue);
+                    }
+                });
+
+                updateWebSocketStatus('connecting');
+
             } catch (error) {
-                showNotification('Error cancelling order', 'error');
+                console.error('WebSocket initialization failed:', error);
+                updateWebSocketStatus('disconnected');
             }
         }
 
-        function updateQueueStats(data) {
-            document.getElementById('totalOrdersCount').textContent = data.total_elements || 0;
-            
-            const pending = data.queue ? data.queue.filter(o => !o.finalized && !o.cancelled).length : 0;
-            const ready = data.queue ? data.queue.filter(o => o.finalized && !o.cancelled).length : 0;
-            
-            document.getElementById('pendingOrdersCount').textContent = pending;
-            document.getElementById('readyOrdersCount').textContent = ready;
+        function updateWebSocketStatus(status) {
+            const statusElements = [
+                document.getElementById('websocketStatus'),
+                document.getElementById('websocketStatus2')
+            ];
+
+            statusElements.forEach(element => {
+                if (element) {
+                    element.className = `websocket-status ${status}`;
+                    switch (status) {
+                        case 'connected':
+                            element.textContent = 'Real-time: ON';
+                            break;
+                        case 'connecting':
+                            element.textContent = 'Real-time: Connecting...';
+                            break;
+                        case 'disconnected':
+                            element.textContent = 'Real-time: OFF';
+                            break;
+                    }
+                }
+            });
         }
 
-        function updateUpcomingOrders(queue) {
-            const upcomingList = document.getElementById('upcomingOrdersList');
-            
-            // Get next 3 orders after current one
-            const upcoming = queue
-                .filter(order => !order.finalized && !order.cancelled)
-                .slice(1, 4); // Skip first one (current order)
+        function handleOrderUpdate(data) {
+            console.log('Handling order update:', data.action);
 
-            if (upcoming.length === 0) {
-                upcomingList.innerHTML = '<div style="color: #666; padding: 20px; text-align: center;">No upcoming orders</div>';
-                return;
+            // Show notification
+            showOrderNotification(`Order ${data.orderId}: ${data.action}`);
+
+            // Refresh queue after a short delay
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 1000);
             }
-
-            upcomingList.innerHTML = upcoming.map(order => `
-                <div class="upcoming-order">
-                    <div>
-                        <strong>${order.payload?.customer || 'Unknown'}</strong><br>
-                        <small>${order.payload?.order || 'No details'}</small>
-                    </div>
-                    <div style="text-align: right;">
-                        <small>Position ${order.position}</small><br>
-                        <small>${order.remaining_time}</small>
-                    </div>
-                </div>
-            `).join('');
         }
 
-        function getPriorityText(priority) {
-            if (priority <= 100) return '🔥 Express';
-            if (priority <= 300) return '⭐ High';
-            if (priority <= 700) return '📋 Normal';
-            return '⏰ Low';
-        }
+        function showOrderNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'order-notification';
+            notification.innerHTML = `<strong>Real-Time Update</strong><br>${message}`;
 
-        function showError(message) {
-            document.getElementById('loginError').textContent = message;
-        }
+            document.body.appendChild(notification);
 
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
             setTimeout(() => {
                 notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
             }, 3000);
         }
 
-        // Sound notification for new orders (optional)
-        let lastOrderCount = 0;
-        function checkForNewOrders(currentCount) {
-            if (currentCount > lastOrderCount && lastOrderCount > 0) {
-                // New order notification sound could be added here
-                showNotification('New order received!', 'success');
+        // API calls
+        async function apiCall(endpoint, options = {}) {
+            if (!developerKey) {
+                throw new Error('Not authenticated - no developer key available');
             }
-            lastOrderCount = currentCount;
+
+            const url = `${API_BASE}${endpoint}`;
+            const defaultHeaders = {
+                "X-API-Key": developerKey,
+                "Content-Type": "application/json"
+            };
+
+            const finalOptions = {
+                ...options,
+                headers: { ...defaultHeaders, ...(options.headers || {}) }
+            };
+
+            try {
+                console.log(`API Call: ${options.method || 'GET'} ${url}`);
+                const response = await fetch(url, finalOptions);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return data;
+            } catch (error) {
+                console.error(`API call failed for ${endpoint}:`, error);
+                throw error;
+            }
         }
+
+        async function fetchQueue() {
+            if (!developerKey) {
+                console.log('Waiting for authentication...');
+                return;
+            }
+
+            try {
+                console.log('Fetching queue data...');
+                const data = await apiCall(`/api/v1/queue/list?admin=true&t=${Date.now()}`);
+
+                if (data.status === "success") {
+                    console.log(`Queue fetched: ${data.queue?.length || 0} items`);
+                    updateOrdersDisplay(data.queue || []);
+                } else {
+                    console.error("Queue fetch failed:", data.message);
+                    showError("Failed to fetch queue data");
+                }
+            } catch (error) {
+                console.error("Error fetching queue:", error);
+                showError(`Queue fetch error: ${error.message}`);
+            }
+        }
+
+        function updateOrdersDisplay(queue) {
+            const tableBody = document.getElementById("queueBody");
+            if (!tableBody) return;
+
+            // Filter orders: only show the NEXT order to work on (not finalized) AND finalized orders (ready for pickup)
+            const filteredOrders = queue.filter(item => !item.cancelled);
+            
+            // Sort by timestamp to get the order they came in
+            filteredOrders.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
+            // Get the next order to work on (first non-finalized order)
+            const nextOrder = filteredOrders.find(order => !order.finalized);
+            
+            // Get all finalized orders (ready for pickup)
+            const readyOrders = filteredOrders.filter(order => order.finalized);
+            
+            // Combine: next order + ready orders
+            const ordersToShow = [];
+            if (nextOrder) ordersToShow.push(nextOrder);
+            ordersToShow.push(...readyOrders);
+
+            updateQueueCounter(ordersToShow.length);
+
+            if (ordersToShow.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center; color: #666; font-style: italic;">
+                            No orders to work on
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const html = ordersToShow.map((item, index) => {
+                const orderDisplay = (item.payload?.order) ? item.payload.order : item.id;
+                const customerName = extractCustomerName(item);
+                let processingTime = "0:00";
+                let pickupCode = "";
+                let actions = '';
+                let rowClass = '';
+                let statusBadge = '';
+
+                // Calculate processing time
+                if (item.timestamp) {
+                    const startTime = new Date(item.timestamp);
+                    const now = new Date();
+                    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                    processingTime = formatDuration(elapsedSeconds);
+                }
+
+                if (item.finalized) {
+                    // Order is ready for pickup
+                    rowClass = 'ready-order';
+                    statusBadge = '<span class="status-badge status-ready">Ready</span>';
+                    pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
+                    actions = `
+                        <button class="btn-complete" onclick="completeOrder('${item.id}')">
+                            Complete
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                } else {
+                    // Order is next to work on
+                    statusBadge = '<span class="status-badge status-next">Next</span>';
+                    pickupCode = "In Progress";
+                    actions = `
+                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
+                            PiQUP Ready
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                }
+
+                return `
+                    <tr class="${rowClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
+                        <td><span class="customer-name">${sanitizeHTML(customerName)}</span></td>
+                        <td>${sanitizeHTML(orderDisplay)}</td>
+                        <td><span class="live-timer">${processingTime}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}</td>
+                        <td style="text-align: center">${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableBody.innerHTML = html;
+        }
+
+        function extractCustomerName(order) {
+            // Try to get customer name from email
+            if (order.payload?.customer_email) {
+                return order.payload.customer_email.split('@')[0];
+            }
+            
+            // Try to get from user_id
+            if (order.user_id) {
+                return order.user_id.split('@')[0];
+            }
+            
+            // Fallback to order ID
+            return order.id.split('_')[0] || 'Customer';
+        }
+
+        function updateQueueCounter(count) {
+            const counterElement = document.getElementById("queueCounter");
+            if (counterElement) {
+                counterElement.textContent = `${count} orders`;
+            }
+        }
+
+        // Order actions
+        async function finalizeOrder(orderId) {
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log(`Finalizing order: ${orderId}`);
+
+            try {
+                const pickupCode = generatePickupCode();
+
+                await apiCall("/api/v1/queue/finalize", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        id: orderId,
+                        pickup_code: pickupCode
+                    })
+                });
+
+                console.log(`Order ${orderId} finalized with code: ${pickupCode}`);
+                showOrderNotification(`Order finalized! Pickup code: ${pickupCode}`);
+
+                // Notify customers via WebSocket
+                if (socket && socket.connected) {
+                    socket.emit('order_finalized', {
+                        orderId: orderId,
+                        pickupCode: pickupCode
+                    });
+                }
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error finalizing order:", error);
+                showError(`Failed to finalize order: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function completeOrder(orderId) {
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log(`Completing order: ${orderId}`);
+
+            try {
+                await apiCall("/api/v1/queue/complete", {
+                    method: "POST",
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                console.log(`Order ${orderId} completed`);
+                showOrderNotification(`Order completed: ${orderId}`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error completing order:", error);
+                showError(`Failed to complete order: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function cancelOrder(orderId) {
+            if (isActionInProgress) return;
+            if (!confirm(`Cancel order ${orderId}?`)) return;
+
+            isActionInProgress = true;
+            console.log(`Cancelling order: ${orderId}`);
+
+            try {
+                await apiCall("/api/v1/queue/cancel", {
+                    method: "POST",
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                console.log(`Order ${orderId} cancelled`);
+                showOrderNotification(`Order cancelled: ${orderId}`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error cancelling order:", error);
+                showError(`Failed to cancel order: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        // Mass actions
+        async function finalizeAllOrders() {
+            if (!confirm("Finalize ALL active orders?")) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Finalizing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+                const activeOrders = data.queue.filter(item => !item.finalized && !item.cancelled);
+
+                let successCount = 0;
+                for (const order of activeOrders) {
+                    try {
+                        const pickupCode = generatePickupCode();
+                        await apiCall("/api/v1/queue/finalize", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id, pickup_code: pickupCode })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`Failed to finalize ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Finalized ${successCount}/${activeOrders.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Mass finalize failed:", error);
+                showError(`Mass finalize failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function completeAllOrders() {
+            if (!confirm("Complete ALL finalized orders?")) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Completing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+                const finalizedOrders = data.queue.filter(item => item.finalized && !item.cancelled);
+
+                let successCount = 0;
+                for (const order of finalizedOrders) {
+                    try {
+                        await apiCall("/api/v1/queue/complete", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`Failed to complete ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Completed ${successCount}/${finalizedOrders.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Mass complete failed:", error);
+                showError(`Mass complete failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function clearAllOrders() {
+            if (!confirm('Clear all orders? This cannot be undone!')) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Clearing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+
+                let successCount = 0;
+                for (const order of data.queue) {
+                    try {
+                        await apiCall("/api/v1/queue/cancel", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (error) {
+                        console.warn(`Failed to clear ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Cleared ${successCount}/${data.queue.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Clear all failed:", error);
+                showError(`Clear all failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        // Debug functions
+        async function debugSystem() {
+            console.log("DEBUGGING SYSTEM...");
+
+            try {
+                const queueData = await apiCall("/api/v1/queue/list?admin=true");
+                console.log(`API Queue: ${queueData.queue?.length || 0} orders`);
+                console.log("Queue details:", queueData.queue);
+
+                const wsStatus = socket?.connected ? 'Connected' : 'Disconnected';
+                console.log(`WebSocket: ${wsStatus}`);
+
+                alert(`DEBUG RESULTS:\n\nAPI Queue: ${queueData.queue?.length || 0} orders\nWebSocket: ${wsStatus}\nAuth: ${developerKey ? 'OK' : 'MISSING'}\n\nCheck console for detailed logs.`);
+
+            } catch (error) {
+                console.error("Debug failed:", error);
+                alert(`Debug failed: ${error.message}`);
+            }
+        }
+
+        // Utility functions
+        function generatePickupCode(timestamp) {
+            const now = timestamp ? new Date(timestamp).getTime() : Date.now();
+            return (now % 10000).toString().padStart(4, '0');
+        }
+
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function sanitizeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const formattedTime = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateTimeElement = document.getElementById("localDateTime");
+            if (dateTimeElement) {
+                dateTimeElement.textContent = formattedTime;
+            }
+        }
+
+        function updateLiveTimers() {
+            const timerElements = document.querySelectorAll('.live-timer');
+            timerElements.forEach(timer => {
+                const row = timer.closest('tr');
+                const startTime = row?.getAttribute('data-start-time');
+                if (startTime) {
+                    const start = new Date(startTime);
+                    const now = new Date();
+                    const elapsedSeconds = Math.floor((now - start) / 1000);
+                    timer.textContent = formatDuration(elapsedSeconds);
+                }
+            });
+        }
+
+        function startTimeUpdates() {
+            stopAllIntervals();
+            dateTimeInterval = setInterval(updateDateTime, 1000);
+            liveTimerInterval = setInterval(updateLiveTimers, 1000);
+        }
+
+        function stopAllIntervals() {
+            if (dateTimeInterval) {
+                clearInterval(dateTimeInterval);
+                dateTimeInterval = null;
+            }
+            if (liveTimerInterval) {
+                clearInterval(liveTimerInterval);
+                liveTimerInterval = null;
+            }
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+
+            // Auto-refresh queue every 5 seconds to catch new orders
+            autoRefreshInterval = setInterval(() => {
+                if (!isActionInProgress) {
+                    fetchQueue();
+                }
+            }, 5000);
+        }
+
+        function setLoading(loading) {
+            const text = document.getElementById('loginText');
+            const spinner = document.getElementById('loginLoading');
+            const button = text.parentElement;
+
+            if (loading) {
+                text.style.display = 'none';
+                spinner.style.display = 'inline-block';
+                button.disabled = true;
+            } else {
+                text.style.display = 'inline';
+                spinner.style.display = 'none';
+                button.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            console.error("Error:", message);
+
+            const errorDiv = document.getElementById("errorNotification");
+            if (errorDiv) {
+                errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+                errorDiv.style.display = "block";
+                setTimeout(() => {
+                    errorDiv.style.display = "none";
+                }, 8000);
+            }
+
+            // Also show in login screen if visible
+            const loginError = document.getElementById("loginError");
+            if (loginError && document.getElementById('loginContainer').style.display !== 'none') {
+                loginError.innerHTML = `<strong>Error:</strong> ${message}`;
+                loginError.style.display = "block";
+                setTimeout(() => {
+                    loginError.style.display = "none";
+                }, 5000);
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const loginContainer = document.getElementById('loginContainer');
+                if (loginContainer && loginContainer.style.display !== 'none') {
+                    handleLogin();
+                }
+            }
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (socket) socket.disconnect();
+            stopAllIntervals();
+        });
     </script>
 </body>
 </html>
