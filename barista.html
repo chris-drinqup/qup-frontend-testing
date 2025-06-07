@@ -561,7 +561,7 @@
                     font-size: 12px;
                     line-height: 1.4;
                 }
-                
+
                 .websocket-status {
                     display: block;
                     margin: 8px auto 0;
@@ -795,11 +795,7 @@
                 }
             } catch (error) {
                 console.error('Developer key error:', error);
-
-                // Fallback to hardcoded key
-                console.log('Using fallback developer key...');
-                developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
-                console.log('Using fallback developer key');
+                showError('Unable to authenticate with API. Please contact administrator.');
             }
         }
 
