@@ -605,15 +605,9 @@
             <div class="card">
                 <h3>Live Queue</h3>
                 <div class="btn-group">
-                    <button class="btn btn-primary" id="refreshQueueBtn">
-                        <span>🔄</span> Refresh
-                    </button>
-                    <button class="btn btn-success" id="exportQueueBtn">
-                        <span>📁</span> Export
-                    </button>
-                    <button class="btn btn-warning" id="clearCompletedBtn">
-                        <span>🧹</span> Clear Completed
-                    </button>
+                    <button class="btn btn-primary" id="refreshQueueBtn">Refresh</button>
+                    <button class="btn btn-success" id="exportQueueBtn">Export</button>
+                    <button class="btn btn-warning" id="clearCompletedBtn">Clear Completed</button>
                 </div>
                 <div id="queueContainer">
                     <div id="queueLoading" class="alert alert-info">Loading queue...</div>
@@ -624,11 +618,11 @@
         <!-- Settings Tab -->
         <div id="settingsTab" class="tab-content">
             <div class="card">
-                <h3>⚙️ System Configuration</h3>
+                <h3>System Configuration</h3>
                 <div class="settings-grid">
                     <!-- Queue Configuration -->
                     <div class="settings-section">
-                        <h4>📋 Queue Settings</h4>
+                        <h4>Queue Settings</h4>
                         <div class="form-group">
                             <label for="queueName">Queue Name:</label>
                             <input type="text" id="queueName" class="form-control" value="Production Queue">
@@ -654,7 +648,7 @@
 
                     <!-- Time Management -->
                     <div class="settings-section">
-                        <h4>⏰ Time Management</h4>
+                        <h4>Time Management</h4>
                         <div class="form-group">
                             <label for="defaultTimeEstimate">Default Time Estimate (seconds):</label>
                             <input type="number" id="defaultTimeEstimate" class="form-control" value="120">
@@ -679,7 +673,7 @@
 
                     <!-- Priority Settings -->
                     <div class="settings-section">
-                        <h4>🎯 Priority Settings</h4>
+                        <h4>Priority Settings</h4>
                         <div class="form-group">
                             <label for="basePriority">Base Priority:</label>
                             <input type="number" id="basePriority" class="form-control" value="500">
@@ -700,7 +694,7 @@
 
                     <!-- Super QUP Settings -->
                     <div class="settings-section">
-                        <h4>⚡ Super QUP Settings</h4>
+                        <h4>Super QUP Settings</h4>
                         <div class="form-group">
                             <label for="superQupCost">Super QUP Cost:</label>
                             <input type="number" id="superQupCost" class="form-control" step="0.01" value="1.50">
@@ -719,78 +713,15 @@
                         </div>
                     </div>
 
-                    <!-- Negotiation Settings -->
-                    <div class="settings-section">
-                        <h4>💰 Negotiation Settings</h4>
-                        <div class="form-group">
-                            <label for="baseNegotiationPrice">Base Price:</label>
-                            <input type="number" id="baseNegotiationPrice" class="form-control" step="0.01" value="5.00">
-                        </div>
-                        <div class="form-group">
-                            <label for="maxNegotiationPrice">Max Price:</label>
-                            <input type="number" id="maxNegotiationPrice" class="form-control" step="0.01" value="15.00">
-                        </div>
-                        <div class="form-group">
-                            <label for="negotiationTimeLimit">Time Limit (seconds):</label>
-                            <input type="number" id="negotiationTimeLimit" class="form-control" value="300">
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="enableNegotiation" class="form-control">
-                            <label for="enableNegotiation">Enable Negotiation Mode</label>
-                        </div>
-                    </div>
-
-                    <!-- WebSocket Settings -->
-                    <div class="settings-section">
-                        <h4>🌐 WebSocket Settings</h4>
-                        <div class="form-group">
-                            <label for="wsPort">WebSocket Port:</label>
-                            <input type="number" id="wsPort" class="form-control" value="8080">
-                        </div>
-                        <div class="form-group">
-                            <label for="wsTimeout">Connection Timeout (ms):</label>
-                            <input type="number" id="wsTimeout" class="form-control" value="30000">
-                        </div>
-                        <div class="form-group">
-                            <label for="maxConnections">Max Connections:</label>
-                            <input type="number" id="maxConnections" class="form-control" value="1000">
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="enableWebSocket" class="form-control" checked>
-                            <label for="enableWebSocket">Enable WebSocket</label>
-                        </div>
-                    </div>
-
-                    <!-- Performance Settings -->
-                    <div class="settings-section">
-                        <h4>⚡ Performance Settings</h4>
-                        <div class="form-group">
-                            <label for="refreshInterval">Refresh Interval (ms):</lab>
-                            <input type="number" id="refreshInterval" class="form-control" value="5000">
-                        </div>
-                        <div class="form-group">
-                            <label for="batchSize">Batch Processing Size:</label>
-                            <input type="number" id="batchSize" class="form-control" value="25">
-                        </div>
-                        <div class="form-group">
-                            <label for="cacheTimeout">Cache Timeout (seconds):</label>
-                            <input type="number" id="cacheTimeout" class="form-control" value="600">
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="enableCaching" class="form-control" checked>
-                            <label for="enableCaching">Enable Caching</label>
-                        </div>
-                    </div>
-
                     <!-- Notification Settings -->
                     <div class="settings-section">
-                        <h4>🔔 Notification Settings</h4>
+                        <h4>Notification Settings</h4>
                         <div class="form-group">
                             <label for="notificationDelay">Notification Delay (ms):</label>
                             <input type="number" id="notificationDelay" class="form-control" value="1000">
                         </div>
                         <div class="form-group">
-                            <label for="emailNotificationThreshold">Email Threshold (queue ze):</label>
+                            <label for="emailNotificationThreshold">Email Threshold (queue size):</label>
                             <input type="number" id="emailNotificationThreshold" class="form-control" value="50">
                         </div>
                         <div class="checkbox-group">
@@ -803,36 +734,15 @@
                         </div>
                     </div>
 
-                    <!-- Security Settings -->
-                    <div class="settings-section">
-                        <h4>🔒 Security Settings</h4>
-                        <div class="form-group">
-                            <label for="apiRateLimit">API Rate Limi(requests/minute):</label>
-                            <input type="number" id="apiRateLimit" class="form-control" value="120">
-                        </div>
-                        <div class="form-group">
-                            <label for="sessionTimeout">Session Timeout (minutes):</label>
-                            <input type="number" id="sessionTimeout" class="form-control" value="60">
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="enableRateLimit" class="form-control" checked>
-                            <label for="enableRateLimit">Enable Rate Limiting</label>
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="enableAuditLog" class="form-control" checked>
-                            <label for="enableAuditLog">Enable Audit Logging</label>
-                        </div>
-                    </div>
-
                     <!-- Debug Settings -->
                     <div class="settings-section">
-                        <h4>🐛 Debug Settings</h4>
+                        <h4>Debug Settings</h4>
                         <div class="form-group">
                             <label for="logLevel">Log Level:</label>
                             <select id="logLevel" class="form-control">
                                 <option value="error">Error</option>
                                 <option value="warn">Warning</option>
-                                <option value="info" seleed>Info</option>
+                                <option value="info" selected>Info</option>
                                 <option value="debug">Debug</option>
                                 <option value="trace">Trace</option>
                             </select>
@@ -849,19 +759,12 @@
                 </div>
 
                 <div class="config-actions">
-                    <button class="btn btn-primary" id="saveAllSettingsBtn">
-                        <span>💾</span> Save All Settings
-                    </button>
-                  <button class="btn btn-warning" id="loadSettingsBtn">
-                        <span>🔄</span> Reload from Server
-                    </button>
-                    <button class="btn btn-info" id="exportSettingsBtn">
-                        <span>📁</span> Export Settings
-                    </button>
-                    <button class="btn btn-danger" id="resetAllSettingsBtn">
-                        <span>⚠️</span> Reset to Defaults
-                    </button>
-                </d        </div>
+                    <button class="btn btn-primary" id="saveAllSettingsBtn">Save All Settings</button>
+                    <button class="btn btn-warning" id="loadSettingsBtn">Reload from Server</button>
+                    <button class="btn btn-info" id="exportSettingsBtn">Export Settings</button>
+                    <button class="btn btn-danger" id="resetAllSettingsBtn">Reset to Defaults</button>
+                </div>
+            </div>
         </div>
 
         <!-- Order Operations Tab -->
@@ -882,28 +785,20 @@
                             <label for="customerEmail">Customer Email:</label>
                             <input type="email" id="customerEmail" class="form-control" placeholder="customer@example.com">
                         </div>
-                        <button type="button" class="btn btn-primary" id="addOrderBtn">
-                            <span>➕</span> Add Order
-                        </button>
+                        <button type="button" class="btn btn-primary" id="addOrderBtn">Add Order</button>
                     </form>
                 </div>
 
                 <div class="card">
                     <h3>Order Actions</h3>
                     <div class="form-group">
-                        <label for="actionOrderId">OrdeID:</label>
+                        <label for="actionOrderId">Order ID:</label>
                         <input type="text" id="actionOrderId" class="form-control" placeholder="Enter order ID">
                     </div>
                     <div class="btn-group" style="flex-direction: column;">
-                        <button class="btn btn-success" id="finalizeOrderBtn">
-                            <span>✅</span> Finalize Order
-                        </button>
-                        <button class="btn btn-primary" id="completeOrderBtn">
-                            <spa🏁</span> Complete Order
-                        </button>
-                        <button class="btn btn-danger" id="cancelOrderBtn">
-                            <span>❌</span> Cancel Order
-                        </button>
+                        <button class="btn btn-success" id="finalizeOrderBtn">Finalize Order</button>
+                        <button class="btn btn-primary" id="completeOrderBtn">Complete Order</button>
+                        <button class="btn btn-danger" id="cancelOrderBtn">Cancel Order</button>
                     </div>
                 </div>
             </div>
@@ -913,23 +808,19 @@
         <div id="systemTab" class="tab-content">
             <div class="card">
                 <h3>System Health</h3>
-                <div id="systemHealth">Loadiystem status...</div>
+                <div id="systemHealth">Loading system status...</div>
             </div>
         </div>
 
         <!-- Live Monitor Tab -->
         <div id="monitorTab" class="tab-content">
             <div class="card">
-                <h3>🔴 Live System Variables</h3>
+                <h3>Live System Variables</h3>
                 <div class="btn-group">
-                    <button class="btn btn-primary" id="refreshMonitorBtn">
-                        <span>🔄</span> Refresh All Data
-                    </button>
-                    <button class="btn btn-success" id="exportMonitorBtn">
-                    <span>📁</span> Export Variables
-                    </button>
+                    <button class="btn btn-primary" id="refreshMonitorBtn">Refresh All Data</button>
+                    <button class="btn btn-success" id="exportMonitorBtn">Export Variables</button>
                     <button class="btn btn-info" id="toggleAutoRefreshBtn">
-                        <span id="autoRefreshIcon">⏸️</span> <span id="autoRefreshText">Stop Auto-Refresh</span>
+                        <span id="autoRefreshText">Stop Auto-Refresh</span>
                     </button>
                 </div>
                 <div id="monitorContent">Loading all system variables...</div>
@@ -937,7 +828,8 @@
         </div>
 
         <!-- Audit Logs Tab -->
-        <div id="logsTab" class="tab-conten          <div class="card">
+        <div id="logsTab" class="tab-content">
+            <div class="card">
                 <h3>Audit Logs</h3>
                 <div id="logsContainer">
                     <div class="alert alert-info">Click refresh to load audit trail</div>
@@ -950,7 +842,7 @@
     </div>
 
     <script>
-        // Global state
+        // Global state variables
         let adminKey = null;
         let socket = null;
         let currentConfig = {};
@@ -961,7 +853,7 @@
         let currentUser = null;
         let systemData = {};
 
-        // Configuration
+        // Configuration constants
         const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
         const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
@@ -985,32 +877,16 @@
             superQupTimeBonus: 60,
             superQupPriorityBonus: 200,
             enableSuperQup: true,
-            baseNegotiationPrice: 5.00,
-            maxNegotiationPrice: 15.00,
-            negotiationTimeLimit: 300,
-            enableNegotiation: false,
-            wsPort: 8080,
-            wsTimeout: 30000,
-            maxConnections: 1000,
-            enableWebSocket: true,
-            refreshInterval: 5000,
-            batchSize: 25,
-            cacheTimeout: 600,
-            enableCaching: true,
             notificationDelay: 1000,
             emailNotificationThreshold: 50,
             enableNotifications: true,
             enableEmailNotifications: false,
-            apiRateLimit: 120,
-            sessionTimeout: 60,
-            enableRateLimit: true,
-            enableAuditLog: true,
             logLevel: 'info',
             enableDebugMode: false,
             enableVerboseLogging: false
         };
 
-        // Initialize app
+        // Initialize application
         function init() {
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1311,7 +1187,7 @@
 
         async function saveAllSettings() {
             const settings = getCurrentSettings();
-            
+
             try {
                 const response = await apiCall('/api/v1/config/update', {
                     method: 'POST',
@@ -1427,15 +1303,12 @@
 
         function toggleAutoRefresh() {
             autoRefreshEnabled = !autoRefreshEnabled;
-            const icon = document.getElementById('autoRefreshIcon');
             const text = document.getElementById('autoRefreshText');
 
             if (autoRefreshEnabled) {
-                icon.textContent = '⏸️';
                 text.textContent = 'Stop Auto-Refresh';
                 showAlert('Auto-refresh enabled', 'success');
             } else {
-                icon.textContent = '▶️';
                 text.textContent = 'Start Auto-Refresh';
                 showAlert('Auto-refresh disabled', 'info');
             }
@@ -1444,7 +1317,7 @@
         async function updateMetrics() {
             try {
                 const response = await apiCall('/api/v1/queue/list?admin=true');
-                if e.ok) {
+                if (response.ok) {
                     const data = await response.json();
                     document.getElementById('totalOrders').textContent = data.total_elements || 0;
                     document.getElementById('activeOrders').textContent = data.active_elements || 0;
@@ -1492,6 +1365,7 @@
                     return;
                 }
 
+                // FIXED: Proper HTML escaping function
                 function escapeHtml(str) {
                     return String(str)
                         .replace(/&/g, '&amp;')
@@ -1761,103 +1635,6 @@
             }
         }
 
-        function renderValue(value, key) {
-            key = key || '';
-
-            if (value === null) return '<span style="color: var(--text-secondary); font-style: italic;">null</span>';
-            if (value === undefined) return '<span style="color: var(--text-secondary); font-style: italic;">undefined</span>';
-            if (typeof value === 'boolean') return '<span style="color: var(--success); font-weight: 600;">' + value + '</span>';
-            if (typeof value === 'number') return '<span style="color: var(--info); font-weight: 600;">' + value.toLocaleString() + '</span>';
-            if (typeof value === 'string') {
-                const escapedValue = String(value)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-
-                if (value.startsWith('http://') || value.startsWith('https://')) {
-                    return '<span style="color: var(--info); text-decoration: underline;">"' + escapedValue + '"</span>';
-                } else if (value === 'true' || value === 'false') {
-                    return '<span style="color: var(--success);">"' + escapedValue + '"</span>';
-                } else if (!isNaN(value) && value !== '') {
-                    return '<span style="color: var(--info);">"' + escapedValue + '"</span>';
-                } else {
-                    return '<span style="color: var(--warning);">"' + escapedValue + '"</span>';
-                }
-            }
-            if (Array.isArray(value)) return '<span style="color: var(--text-secondary); font-style: italic;">[Array: ' + value.length + ' items]</span>';
-            if (typeof value === 'object') return '<span style="color: var(--text-secondary); font-style: italic;">{Object: ' + Object.keys(value).length + ' props}</span>';
-
-            const fallbackValue = String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-            return '<span style="color: var(--text-secondary);">' + fallbackValue + '</span>';
-        }
-
-        function renderVariableList(obj, category) {
-            if (!obj || typeof obj !== 'object') {
-                return '<div style="color: var(--text-secondary); font-style: italic; padding: 10px;">No data available</div>';
-            }
-
-            if (obj.error) {
-                const errorMsg = String(obj.error)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-                return '<div style="color: var(--danger); font-style: italic; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;">Error: ' + errorMsg + '</div>';
-            }
-
-            let html = '';
-
-            function processObject(obj, prefix) {
-                prefix = prefix || '';
-
-                try {
-                    const entries = Object.entries(obj);
-                    for (let i = 0; i < entries.length; i++) {
-                        const [key, value] = entries[i];
-                        const fullKey = prefix ? prefix + '.' + key : key;
-
-                        const safeKey = String(key)
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#39;');
-
-                        const displayKey = safeKey.split('_').join(' ');
-
-                        if (typeof value === 'object' && value !== null && !Array.isArray(value) && Object.keys(value).length < 8) {
-                            const paddingLeft = prefix ? '25px' : '0px';
-                            html += '<div style="margin-bottom: 12px; padding-left: ' + paddingLeft + ';">';
-                            html += '<div style="color: var(--text-primary); font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; text-transform: capitalize;">' + displayKey + ':</div>';
-                            html += '<div style="margin-left: 18px; border-left: 2px solid var(--border); padding-left: 15px;">';
-                            processObject(value, fullKey);
-                            html += '</div></div>';
-                        } else {
-                            const paddingLeft = prefix ? '25px' : '0px';
-                            html += '<div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 12px; margin: 2px 0; border-radius: 6px; background: rgba(255,255,255,0.02); border-left: 3px solid var(--border); margin-left: ' + paddingLeft + ';">';
-                            html += '<span style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem; min-width: 140px; margin-right: 15px; text-transform: capitalize; word-break: break-word;">' + displayKey + '</span>';
-                            html += '<span style="font-family: \'Courier New\', Monaco, monospace; font-size: 0.88rem; text-align: right; flex: 1; word-break: break-all; line-height: 1.3;">' + renderValue(value, key) + '</span>';
-                            html += '</div>';
-                        }
-                    }
-                } catch (error) {
-                    html += '<div style="color: var(--danger); font-style: italic; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;">Error processing object: ' + error.message + '</div>';
-                }
-            }
-
-            processObject(obj);
-
-            return html || '<div style="color: var(--text-secondary); font-style: italic; padding: 10px;">No variables found</div>';
-        }
-
         function renderMonitorDisplay(data) {
             try {
                 let html = '';
@@ -1866,52 +1643,10 @@
                 html += new Date().toLocaleTimeString();
                 html += '</div>';
 
-                html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px;">';
-
-                html += '<div style="background: var(--bg-secondary border: 1px solid var(--border); border-radius: 12px; padding: 25px;">';
-                html += '<h4 style="color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">🏥 System Health</h4>';
-                html += renderVariableList(data.health, 'health');
-                html += '</div>';
-
-                html += '<div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 25px;">';
-                html += '<h4 style="color: var(--imary); margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">📋 Queue System</h4>';
-                html += renderVariableList(data.queue, 'queue');
-                html += '</div>';
-
-                html += '<div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 25px;">';
-                html += '<h4 style="color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">🌐 WebSocket</h4>';
-                html += renderVariablt(data.websocket, 'websocket');
-                html += '</div>';
-
-                html += '<div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 25px;">';
-                html += '<h4 style="color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">⚙️ Configuration</h4>';
-                html += renderVariableList(data.config, 'config');
-                html += '</div>';
-
-                html += '<div style="background: var(-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 25px;">';
-                html += '<h4 style="color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">🎛️ Current Settings</h4>';
-                html += renderVariableList(data.current_settings, 'settings');
-                html += '</div>';
-
-                html += '<div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 25px;">';
-                html'<h4 style="color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">💻 Client State</h4>';
-                html += renderVariableList(data.client_state, 'client');
-                html += '</div>';
-
-                if (data.queue && data.queue.time_management) {
-                    html += '<div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 25px;">';
-                    html += '<h4 style="color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; font-weight: 700;">⏰ Time Management</h4>';
-                    html += renderVariableList(data.queue.time_management, 'time');
-                    html += '</div>';
-                }
-
-                html += '</div>';
-
-                html += '<div style="margin-top: 35px;">';
-                html += '<h4 style="color: var(--primary); margin-bottom: 20px; font-size: 1.2rem; font-weight: 700;">📄 Raw JSON Data</h4>';
-                html += '<div style="background: var(--bg-ary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-height: 500px; overflow-y: auto;">';
+                htm+= '<div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-height: 500px; overflow-y: auto;">';
                 html += '<pre style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; margin: 0; font-family: \'Courier New\', Monaco, monospace;">';
 
+                // FIXED: Proper HTML escaping for JSON display
                 const jsonString = JSON.stringify(data, null, 2)
                     .replace(/&/g, '&amp;')
                     .replace(/</g, '&lt;')
@@ -1920,7 +1655,6 @@
                 html += jsonString;
 
                 html += '</pre>';
-                html += '</div>';
                 html += '</div>';
 
                 document.getElementById('monitorContent').innerHTML = html;
@@ -2023,6 +1757,10 @@
             }
         }
 
+        // Global function for queue actions
+        window.quickAction = quickAction;
+
+        // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
