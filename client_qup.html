@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP - Order Here</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #4c63d2;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --qup: #ff6b6b;
+            --qup-dark: #ff5252;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a3e;
+            --bg-card: #262654;
+            --text-primary: #ffffff;
+            --text-secondary: #a5a5c9;
+            --border: #3a3a6b;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 40px var(--shadow);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .queue-mode {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background: rgba(102, 126, 234, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .queue-mode.fifo {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+            border-color: #9ca3af;
+        }
+
+        .queue-mode.super_qup {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--qup);
+            border-color: var(--qup);
+        }
+
+        .queue-mode.negotiation {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .queue-mode.chaos {
+            background: linear-gradient(45deg, rgba(255, 107, 107, 0.2), rgba(245, 158, 11, 0.2));
+            color: #ff8c42;
+            border-color: #ff8c42;
+        }
+
+        .queue-mode-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .connection-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .connection-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: var(--bg-card);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .skipper-codes {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .skipper-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, var(--danger), #dc2626);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn:disabled:hover::before {
+            width: 0;
+            height: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        .order-status {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .order-status h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .status-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .qup-controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qup-controls h3 {
+            color: var(--qup);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .qup-icon {
+            font-size: 1.5rem;
+            color: var(--qup);
+        }
+
+        .qup-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .qup-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qup-btn-plus {
+            background: linear-gradient(45deg, var(--qup), var(--qup-dark));
+            color: white;
+        }
+
+        .qup-btn-minus {
+            background: linear-gradient(45deg, var(--warning), #d97706);
+            color: white;
+        }
+
+        .qup-btn-max {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+            font-size: 1.2rem;
+            width: 60px;
+        }
+
+        .qup-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .qup-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qup-info {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid var(--qup);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .swap-options {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .swap-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: var(--bg-card);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .swap-option:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .swap-option-name {
+            font-weight: 600;
+        }
+
+        .swap-option-time {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .pickup-code {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pickup-code:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+        }
+
+        .screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(16, 185, 129, 0.9);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            animation: flashEffect 0.8s ease-in-out;
+        }
+
+        @keyframes flashEffect {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .countdown {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--warning);
+            margin: 10px 0;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .user-info {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-email {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .notification-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 15px 40px var(--shadow);
+            z-index: 1000;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification-popup.show {
+            transform: translateX(0);
+        }
+
+        .notification-popup.accept {
+            border-color: var(--success);
+        }
+
+        .notification-popup.warning {
+            border-color: var(--warning);
+        }
+
+        .notification-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .notification-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .notification-btn.accept {
+            background: var(--success);
+            color: white;
+        }
+
+        .notification-btn.decline {
+            background: var(--danger);
+            color: white;
+        }
+
+        .position-indicator {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .time-savings {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: var(--success);
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 30px 25px;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .qup-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .qup-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+
+            .qup-btn-max {
+                width: 55px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="card">
+            <div class="logo">QUP</div>
+            <div class="subtitle">Sign in to place your order</div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" class="form-control" placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" class="form-control" placeholder="Enter your password">
+            </div>
+
+            <button class="btn btn-primary" onclick="handleLogin()">
+                <span id="loginText">Sign In</span>
+                <div id="loginLoading" class="loading hidden"></div>
+            </button>
+
+            <div id="loginError" class="alert alert-error hidden">
+                Login failed. Please check your credentials.
+            </div>
+
+            <div style="margin-top: 20px; font-size: 0.9rem; color: var(--text-secondary);">
+                Need an account? Contact your administrator.<br>
+                <button type="button" style="background: none; border: none; color: var(--primary); cursor: pointer; text-decoration: underline; margin-top: 10px;" onclick="skipAuth()">
+                    Skip Login (Test Mode)
+                </button>
+            </div>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="appScreen" class="card hidden">
+            <div class="logo">QUP</div>
+            <div class="subtitle">Place Your Order</div>
+
+            <div class="user-info">
+                <span id="userEmail" class="user-email"></span>
+                <button class="logout-btn" onclick="logout()">Sign Out</button>
+            </div>
+
+            <div class="connection-status" id="connectionStatus">
+                <div class="connection-dot"></div>
+                <span>Connecting...</span>
+            </div>
+
+            <!-- Queue Mode Indicator -->
+            <div class="queue-mode" id="queueMode">
+                <div class="queue-mode-icon"></div>
+                <span id="queueModeText">Loading...</span>
+            </div>
+
+            <!-- Order Form -->
+            <div id="orderForm">
+                <div class="form-group">
+                    <label for="customerName">Your Name:</label>
+                    <input type="text" id="customerName" class="form-control"
+                           placeholder="Enter your name (e.g., John Smith)">
+                </div>
+
+                <div class="form-group">
+                    <label for="orderDescription">What would you like to order?</label>
+                    <input type="text" id="orderDescription" class="form-control"
+                           placeholder="e.g., Large coffee with milk, no sugar">
+                </div>
+
+                <!-- Negotiation Mode Options -->
+                <div id="negotiationOptions" class="checkbox-group hidden">
+                    <h4 style="color: var(--text-primary); margin-bottom: 10px;">Negotiation Options</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="availableToWait" onchange="updateNegotiationOptions()">
+                        <label for="availableToWait">I'm available to wait (earn QUP coins)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="availableToSkip" onchange="updateNegotiationOptions()">
+                        <label for="availableToSkip">I want to skip ahead (spend QUP coins)</label>
+                    </div>
+                </div>
+
+                <!-- FIFO Skipper Codes -->
+                <div id="skipperCodes" class="hidden">
+                    <label style="color: var(--text-primary); margin-bottom: 10px; display: block;">Skipper Codes (Optional)</label>
+                    <div class="skipper-codes">
+                        <input type="text" id="minorSkipperCode" class="skipper-input" placeholder="Minor Code">
+                        <input type="text" id="majorSkipperCode" class="skipper-input" placeholder="Major Code">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="placeOrder()">
+                    <span id="orderButtonText">Place Order</span>
+                    <div id="orderLoading" class="loading hidden"></div>
+                </button>
+            </div>
+
+            <!-- Order Status -->
+            <div id="orderStatus" class="order-status hidden">
+                <h3>Your Order</h3>
+                <div class="status-item">
+                    <span class="status-label">Customer:</span>
+                    <span class="status-value" id="orderCustomerName">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Order:</span>
+                    <span class="status-value" id="orderDetails">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Position:</span>
+                    <span class="status-value">
+                        <span class="position-indicator" id="orderPosition">-</span>
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Status:</span>
+                    <span class="status-value" id="orderCurrentStatus">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Est. Wait:</span>
+                    <span class="status-value countdown" id="orderWaitTime">-</span>
+                </div>
+            </div>
+
+            <!-- QUP Controls -->
+            <div id="qupControls" class="qup-controls hidden">
+                <h3>
+                    <span class="qup-icon">⚡</span>
+                    QUP Controls
+                </h3>
+                
+                <!-- Super QUP Controls -->
+                <div id="superQupControls" class="hidden">
+                    <div class="qup-buttons">
+                        <button class="qup-btn qup-btn-max" id="qupMaxBtn" onclick="performMaxQUP()" title="Jump to highest possible position">
+                            ↑↑
+                        </button>
+                        <button class="qup-btn qup-btn-plus" id="qupPlusBtn" onclick="performQUP('plus')" title="Move up one position">
+                            +
+                        </button>
+                        <button class="qup-btn qup-btn-minus" id="qupMinusBtn" onclick="performQUP('minus')" title="Move down one position">
+                            -
+                        </button>
+                    </div>
+                    <div class="qup-info" id="qupInfo">
+                        Pool time available: <span id="poolTimeDisplay">0</span>s
+                    </div>
+                    <div id="timeSavings" class="time-savings hidden">
+                        Time saved by moving up: <span id="timeSavingsAmount">0</span> minutes
+                    </div>
+                </div>
+
+                <!-- Negotiation QUP Controls -->
+                <div id="negotiationQupControls" class="hidden">
+                    <div id="swapOptions" class="swap-options">
+                        <h4 style="color: var(--text-primary); margin-bottom: 10px;">Available Swaps</h4>
+                        <div id="swapList">
+                            <div style="text-align: center; color: var(--text-secondary); font-style: italic;">
+                                No swaps available
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chaos QUP Controls -->
+                <div id="chaosQupControls" class="hidden">
+                    <div class="qup-buttons">
+                        <button class="qup-btn qup-btn-plus" onclick="performChaosQUP('up')" title="Move up (swap with person ahead)">
+                            +
+                        </button>
+                        <button class="qup-btn qup-btn-minus" onclick="performChaosQUP('down')" title="Move down (swap with person behind)">
+                            -
+                        </button>
+                    </div>
+                    <div class="qup-info">
+                        In Chaos mode, you can swap positions with anyone!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pickup Code Display -->
+            <div id="pickupSection" class="hidden">
+                <div class="alert alert-success">
+                    Your order is ready for PiQUP!
+                </div>
+                <div class="pickup-code" id="pickupCode" onclick="flashScreen()">----</div>
+                <div style="color: var(--text-secondary); margin-bottom: 20px;">
+                    Show this code to the barista
+                </div>
+            </div>
+
+            <!-- Order Complete -->
+            <div id="completeSection" class="hidden">
+                <div class="alert alert-success">
+                    Order completed! Thank you for using QUP.
+                </div>
+                <button class="btn btn-primary" onclick="startNewOrder()">
+                    Place Another Order
+                </button>
+            </div>
+
+            <div id="alerts"></div>
+        </div>
+    </div>
+
+    <!-- Notification Popup for Negotiation Swaps -->
+    <div id="notificationPopup" class="notification-popup">
+        <div id="notificationContent">
+            <h4 id="notificationTitle" style="color: var(--text-primary); margin-bottom: 10px;"></h4>
+            <p id="notificationMessage" style="color: var(--text-secondary);"></p>
+        </div>
+        <div class="notification-buttons" id="notificationButtons">
+            <button class="notification-btn accept" onclick="acceptSwap()">Accept</button>
+            <button class="notification-btn decline" onclick="declineSwap()">Decline</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - YOUR SUPABASE DETAILS
+        const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
+
+        // Initialize Supabase
+        let supabase = null;
+
+        function initializeSupabase() {
+            try {
+                if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL' ||
+                    !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+                    console.error('Supabase configuration missing. Please update SUPABASE_URL and SUPABASE_ANON_KEY');
+                    showAlert('Supabase configuration missing. Please contact administrator.', 'error');
+                    return false;
+                }
+
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized');
+                return true;
+            } catch (error) {
+                console.error('Supabase initialization failed:', error);
+                showAlert('Failed to initialize authentication system.', 'error');
+                return false;
+            }
+        }
+
+        // Global state
+        let socket = null;
+        let currentUser = null;
+        let currentOrder = null;
+        let currentOrderData = null;
+        let developerKey = null;
+        let waitTimeInterval = null;
+        let estimatedCompletionTime = null;
+        let orderStatusInterval = null;
+        let queueMode = 'fifo';
+        let queueConfig = {};
+        let availableSwaps = [];
+        let myPosition = -1;
+        let pendingSwapRequest = null;
+
+        // API Configuration - YOUR GCP QUP API SERVER
+        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
+
+        // Initialize app
+        async function init() {
+            console.log('QUP Client initializing...');
+
+            // Initialize Supabase first
+            if (!initializeSupabase()) {
+                showLogin();
+                return;
+            }
+
+            // Check if user is already logged in
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    showApp(user);
+                } else {
+                    showLogin();
+                }
+            } catch (error) {
+                console.error('Failed to check user session:', error);
+                showLogin();
+            }
+        }
+
+        // Authentication functions
+        async function handleLogin() {
+            if (!supabase) {
+                showAlert('Authentication system not ready. Please refresh the page.', 'error');
+                return;
+            }
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!email || !password) {
+                showAlert('Please enter both email and password', 'error');
+                return;
+            }
+
+            setLoading('login', true);
+            hideElement('loginError');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                console.log('Supabase login successful');
+                showApp(data.user);
+
+            } catch (error) {
+                console.error('Login failed:', error);
+                showElement('loginError');
+                showAlert('Login failed: ' + error.message, 'error');
+            } finally {
+                setLoading('login', false);
+            }
+        }
+
+        async function logout() {
+            if (!supabase) return;
+
+            try {
+                await supabase.auth.signOut();
+                console.log('Logged out');
+
+                // Cleanup
+                if (socket) {
+                    socket.disconnect();
+                    socket = null;
+                }
+                if (waitTimeInterval) {
+                    clearInterval(waitTimeInterval);
+                    waitTimeInterval = null;
+                }
+                if (orderStatusInterval) {
+                    clearInterval(orderStatusInterval);
+                    orderStatusInterval = null;
+                }
+
+                currentUser = null;
+                currentOrder = null;
+                currentOrderData = null;
+                developerKey = null;
+
+                showLogin();
+
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        }
+
+        // App initialization
+        async function showApp(user) {
+            currentUser = user;
+
+            hideElement('loginScreen');
+            showElement('appScreen');
+            document.getElementById('userEmail').textContent = user.email;
+
+            // Generate unique user ID to prevent name conflicts
+            const timestamp = Date.now();
+            const emailHash = btoa(user.email).substring(0, 8);
+            const uniqueUserId = `${emailHash}_${timestamp}`;
+            currentUser.uniqueId = uniqueUserId;
+
+            // Pre-fill customer name from email
+            const customerNameField = document.getElementById('customerName');
+            if (customerNameField && user.email) {
+                // Extract name from email (before @)
+                const emailUsername = user.email.split('@')[0];
+                // Convert underscores/dots to spaces and capitalize
+                const suggestedName = emailUsername.replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                customerNameField.value = suggestedName;
+            }
+
+            // Get developer key for API access
+            await getDeveloperKey();
+
+            // Fetch queue configuration to determine mode
+            await fetchQueueConfig();
+
+            // Connect WebSocket
+            connectWebSocket();
+
+            console.log('App initialized for:', user.email);
+            console.log('Unique user ID:', uniqueUserId);
+        }
+
+        function showLogin() {
+            hideElement('appScreen');
+            showElement('loginScreen');
+
+            // Clear form
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Get developer key for API access
+        async function getDeveloperKey() {
+            try {
+                console.log('Getting developer key from:', API_BASE);
+
+                const response = await fetch(`${API_BASE}/api/auth/developer/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'developer',
+                        password: 'dev123'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.developer_key) {
+                    developerKey = data.developer_key;
+                    console.log('Developer key obtained');
+                } else {
+                    throw new Error(data.error || 'No developer key in response');
+                }
+            } catch (error) {
+                console.error('Developer key error:', error);
+
+                // Fallback: try to use the hardcoded developer key from your system
+                console.log('Trying fallback developer key...');
+                developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
+                console.log('Using fallback developer key');
+
+                showAlert('Using fallback API access - some features may be limited', 'info');
+            }
+        }
+
+        // Fetch queue configuration to determine mode and settings
+        async function fetchQueueConfig() {
+            try {
+                if (!developerKey) return;
+
+                const response = await fetch(`${API_BASE}/api/v1/queue/list?admin=true`, {
+                    headers: { 'X-API-Key': developerKey }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.queue_mode) {
+                        queueMode = data.queue_mode;
+                        queueConfig = data.config || {};
+                        updateQueueModeDisplay();
+                        updateFormForQueueMode();
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch queue config:', error);
+            }
+        }
+
+        function updateQueueModeDisplay() {
+            const queueModeElement = document.getElementById('queueMode');
+            const queueModeTextElement = document.getElementById('queueModeText');
+            
+            if (queueModeElement && queueModeTextElement) {
+                // Remove existing mode classes
+                queueModeElement.className = 'queue-mode';
+                
+                switch (queueMode) {
+                    case 'fifo':
+                        queueModeElement.classList.add('fifo');
+                        queueModeTextElement.textContent = 'FIFO Mode (First In, First Out)';
+                        break;
+                    case 'super_qup':
+                        queueModeElement.classList.add('super_qup');
+                        queueModeTextElement.textContent = 'Super QUP Mode (Pool Time System)';
+                        break;
+                    case 'negotiation':
+                        queueModeElement.classList.add('negotiation');
+                        queueModeTextElement.textContent = 'Negotiation Mode (Voluntary Swapping)';
+                        break;
+                    case 'chaos':
+                        queueModeElement.classList.add('chaos');
+                        queueModeTextElement.textContent = 'Chaos Mode (Free Movement)';
+                        break;
+                    default:
+                        queueModeTextElement.textContent = 'Queue Mode: ' + queueMode;
+                }
+            }
+        }
+
+        function updateFormForQueueMode() {
+            // Hide all mode-specific options first
+            hideElement('negotiationOptions');
+            hideElement('skipperCodes');
+
+            switch (queueMode) {
+                case 'fifo':
+                    // Show skipper codes for FIFO mode
+                    showElement('skipperCodes');
+                    break;
+                case 'negotiation':
+                    // Show negotiation options
+                    showElement('negotiationOptions');
+                    break;
+                case 'super_qup':
+                case 'chaos':
+                    // No special form options needed
+                    break;
+            }
+        }
+
+        function updateNegotiationOptions() {
+            const availableToWait = document.getElementById('availableToWait').checked;
+            const availableToSkip = document.getElementById('availableToSkip').checked;
+            
+            // You can only select one option at a time
+            if (availableToWait && availableToSkip) {
+                // If both are checked, uncheck the other one
+                document.getElementById('availableToWait').checked = false;
+            }
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            try {
+                console.log('Connecting to WebSocket at:', API_BASE);
+
+                socket = io(API_BASE, {
+                    transports: ['websocket', 'polling'],
+                    timeout: 20000,
+                    reconnection: true,
+                    reconnectionDelay: 2000,
+                    reconnectionAttempts: 5,
+                    forceNew: true
+                });
+
+                socket.on('connect', () => {
+                    updateConnectionStatus(true);
+                    console.log('WebSocket connected to:', API_BASE);
+
+                    // Subscribe to order updates for this user
+                    if (currentOrder) {
+                        socket.emit('subscribe', { orderId: currentOrder });
+                        console.log('Subscribed to order updates for:', currentOrder);
+                    }
+                });
+
+                socket.on('disconnect', () => {
+                    updateConnectionStatus(false);
+                    console.log('WebSocket disconnected');
+                });
+
+                socket.on('connect_error', (error) => {
+                    console.error('WebSocket connection error:', error);
+                    updateConnectionStatus(false);
+                });
+
+                socket.on('order_update', (data) => {
+                    console.log('Order update received:', data);
+                    handleOrderUpdate(data);
+                });
+
+                socket.on('subscribed_order_update', (data) => {
+                    console.log('Subscribed order update:', data);
+                    handleOrderUpdate(data);
+                });
+
+                socket.on('queue_update', (data) => {
+                    console.log('Queue update received:', data);
+                    // Check if our order status changed
+                    if (currentOrder && data.queue) {
+                        const myOrder = data.queue.find(order => order.id === currentOrder);
+                        if (myOrder) {
+                            handleMyOrderUpdate(myOrder);
+                        }
+                    }
+                });
+
+                socket.on('swap_request', (data) => {
+                    console.log('Swap request received:', data);
+                    handleSwapRequest(data);
+                });
+
+                socket.on('swap_response', (data) => {
+                    console.log('Swap response received:', data);
+                    handleSwapResponse(data);
+                });
+
+                socket.on('error', (error) => {
+                    console.error('WebSocket error:', error);
+                });
+
+            } catch (error) {
+                console.error('WebSocket connection failed:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.className = 'connection-status connected';
+                status.innerHTML = '<div class="connection-dot"></div><span>Connected</span>';
+            } else {
+                status.className = 'connection-status disconnected';
+                status.innerHTML = '<div class="connection-dot"></div><span>Disconnected</span>';
+            }
+        }
+
+        // Order management
+        async function placeOrder() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const description = document.getElementById('orderDescription').value.trim();
+
+            if (!customerName) {
+                showAlert('Please enter your name', 'error');
+                return;
+            }
+
+            if (!description) {
+                showAlert('Please enter your order description', 'error');
+                return;
+            }
+
+            if (!developerKey) {
+                showAlert('API not ready. Please try again.', 'error');
+                return;
+            }
+
+            setLoading('order', true);
+
+            try {
+                // Use unique user ID to prevent conflicts
+                const orderId = `${currentUser.uniqueId}_${Date.now()}`;
+
+                const orderPayload = {
+                    order: description,
+                    customer_email: currentUser.email,
+                    customer_name: customerName,
+                    items: [{ name: description, quantity: 1 }]
+                };
+
+                // Add negotiation data if in negotiation mode
+                if (queueMode === 'negotiation') {
+                    const availableToWait = document.getElementById('availableToWait').checked;
+                    const availableToSkip = document.getElementById('availableToSkip').checked;
+                    
+                    orderPayload.negotiation_data = {
+                        willing_to_wait: availableToWait,
+                        willing_to_skip: availableToSkip
+                    };
+                }
+
+                // Add skipper codes if in FIFO mode
+                if (queueMode === 'fifo') {
+                    const minorCode = document.getElementById('minorSkipperCode').value.trim();
+                    const majorCode = document.getElementById('majorSkipperCode').value.trim();
+                    
+                    if (minorCode || majorCode) {
+                        orderPayload.skipper_codes = {
+                            minor: minorCode,
+                            major: majorCode
+                        };
+                    }
+                }
+
+                const response = await fetch(`${API_BASE}/api/v1/queue/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        id: orderId,
+                        payload: orderPayload,
+                        user_id: currentUser.uniqueId,
+                        priority: 500
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentOrder = orderId;
+
+                    // Subscribe to order updates
+                    if (socket && socket.connected) {
+                        socket.emit('subscribe', { orderId: orderId });
+                        console.log('Subscribed to order updates for:', orderId);
+                    }
+
+                    // Emit order created event to notify baristas
+                    if (socket && socket.connected) {
+                        socket.emit('order_created', {
+                            orderId: orderId,
+                            orderData: {
+                                id: orderId,
+                                payload: orderPayload,
+                                user_id: currentUser.uniqueId,
+                                priority: 500
+                            }
+                        });
+                        console.log('Notified baristas of new order');
+                    }
+
+                    // Show order status
+                    showOrderStatus(customerName, description, data);
+                    hideElement('orderForm');
+
+                    // Start periodic order status checking
+                    startOrderStatusPolling();
+
+                    console.log('Order placed:', orderId);
+                    showAlert('Order placed successfully!', 'success');
+
+                } else {
+                    throw new Error(data.error || 'Failed to place order');
+                }
+
+            } catch (error) {
+                console.error('Order failed:', error);
+                showAlert('Order failed: ' + error.message, 'error');
+            } finally {
+                setLoading('order', false);
+            }
+        }
+
+        function showOrderStatus(customerName, description, orderData) {
+            document.getElementById('orderCustomerName').textContent = customerName;
+            document.getElementById('orderDetails').textContent = description;
+            document.getElementById('orderCurrentStatus').textContent = 'Waiting in queue';
+            document.getElementById('orderPosition').textContent = orderData.position || '?';
+
+            // Calculate estimated completion time
+            if (orderData.estimated_time) {
+                estimatedCompletionTime = new Date(Date.now() + (orderData.estimated_time * 1000));
+                startWaitTimeCountdown();
+            }
+
+            showElement('orderStatus');
+        }
+
+        function startWaitTimeCountdown() {
+            if (waitTimeInterval) {
+                clearInterval(waitTimeInterval);
+            }
+
+            waitTimeInterval = setInterval(() => {
+                if (!estimatedCompletionTime) return;
+
+                const now = new Date();
+                const timeLeft = estimatedCompletionTime - now;
+
+                if (timeLeft <= 0) {
+                    document.getElementById('orderWaitTime').textContent = 'Any moment now...';
+                    clearInterval(waitTimeInterval);
+                    waitTimeInterval = null;
+                } else {
+                    const minutes = Math.floor(timeLeft / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    document.getElementById('orderWaitTime').textContent = `${minutes}m ${seconds}s`;
+                }
+            }, 1000);
+        }
+
+        // NEW: Periodic order status polling
+        function startOrderStatusPolling() {
+            if (orderStatusInterval) {
+                clearInterval(orderStatusInterval);
+            }
+
+            orderStatusInterval = setInterval(async () => {
+                if (!currentOrder || !developerKey) return;
+
+                try {
+                    console.log('Polling order status...');
+                    const response = await fetch(`${API_BASE}/api/v1/queue/list?admin=true`, {
+                        headers: { 'X-API-Key': developerKey }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.queue) {
+                        const myOrder = data.queue.find(order => order.id === currentOrder);
+                        if (myOrder) {
+                            console.log('Found my order in polling:', myOrder);
+                            handleMyOrderUpdate(myOrder);
+                            updateQUPControls(myOrder, data.queue);
+                        } else {
+                            // Order not found in queue - completed!
+                            console.log('Order not found in queue - order completed');
+
+                            // Stop polling immediately
+                            clearInterval(orderStatusInterval);
+                            orderStatusInterval = null;
+
+                            // Show completion and auto-return to order form
+                            showOrderComplete();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to poll order status:', error);
+                }
+            }, 3000); // Poll every 3 seconds
+        }
+
+        function updateQUPControls(myOrder, fullQueue) {
+            currentOrderData = myOrder;
+            myPosition = myOrder.position;
+
+            // Show QUP controls based on queue mode and position
+            if (myOrder.finalized) {
+                hideElement('qupControls');
+                return;
+            }
+
+            const canShowQUP = shouldShowQUPControls(myOrder, fullQueue);
+            
+            if (canShowQUP) {
+                showElement('qupControls');
+                updateQUPControlsForMode(myOrder, fullQueue);
+            } else {
+                hideElement('qupControls');
+            }
+        }
+
+        function shouldShowQUPControls(myOrder, fullQueue) {
+            switch (queueMode) {
+                case 'fifo':
+                    // No QUP in FIFO mode
+                    return false;
+                    
+                case 'super_qup':
+                    // Show if not in first 2 positions and there's pool time
+                    return myOrder.position > 1 && (myOrder.qup_time_available || 0) > 0;
+                    
+                case 'negotiation':
+                    // Show if there are potential swaps available
+                    return myOrder.position > 1 && findAvailableSwaps(myOrder, fullQueue).length > 0;
+                    
+                case 'chaos':
+                    // Always show in chaos mode (unless first or only person)
+                    return fullQueue.length > 1 && !(myOrder.position === 0 && fullQueue.length === 1);
+                    
+                default:
+                    return false;
+            }
+        }
+
+        function updateQUPControlsForMode(myOrder, fullQueue) {
+            // Hide all mode-specific controls first
+            hideElement('superQupControls');
+            hideElement('negotiationQupControls');
+            hideElement('chaosQupControls');
+
+            switch (queueMode) {
+                case 'super_qup':
+                    showElement('superQupControls');
+                    updateSuperQUPControls(myOrder);
+                    break;
+                    
+                case 'negotiation':
+                    showElement('negotiationQupControls');
+                    updateNegotiationQUPControls(myOrder, fullQueue);
+                    break;
+                    
+                case 'chaos':
+                    showElement('chaosQupControls');
+                    updateChaosQUPControls(myOrder, fullQueue);
+                    break;
+            }
+        }
+
+        function updateSuperQUPControls(myOrder) {
+            const poolTime = myOrder.qup_time_available || 0;
+            document.getElementById('poolTimeDisplay').textContent = Math.floor(poolTime);
+
+            // Enable/disable buttons based on position and pool time
+            const plusBtn = document.getElementById('qupPlusBtn');
+            const minusBtn = document.getElementById('qupMinusBtn');
+            const maxBtn = document.getElementById('qupMaxBtn');
+
+            // Plus button: can move up if not at front and have pool time
+            plusBtn.disabled = myOrder.position <= 0 || poolTime <= 0;
+
+            // Minus button: can move down if moved up before
+            minusBtn.disabled = true; // TODO: Track QUP history
+
+            // Max button: can jump to max position if have enough pool time
+            maxBtn.disabled = myOrder.position <= 1 || poolTime <= 0;
+
+            // Show time savings if moved up
+            if (myOrder.position > 0) {
+                const nextOrderTime = 120; // Estimate - would come from queue data
+                const timeSavingsMinutes = Math.floor(nextOrderTime / 60);
+                if (timeSavingsMinutes > 0) {
+                    document.getElementById('timeSavingsAmount').textContent = timeSavingsMinutes;
+                    showElement('timeSavings');
+                }
+            }
+        }
+
+        function updateNegotiationQUPControls(myOrder, fullQueue) {
+            const swaps = findAvailableSwaps(myOrder, fullQueue);
+            availableSwaps = swaps;
+
+            const swapList = document.getElementById('swapList');
+            if (swaps.length === 0) {
+                swapList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-style: italic;">No swaps available</div>';
+            } else {
+                swapList.innerHTML = swaps.map(swap => `
+                    <div class="swap-option" onclick="requestSwap('${swap.id}')">
+                        <div>
+                            <div class="swap-option-name">${swap.name}</div>
+                            <div class="swap-option-time">Position ${swap.position} → Save ${swap.timeSavings} minutes</div>
+                        </div>
+                        <div>→</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateChaosQUPControls(myOrder, fullQueue) {
+            // In chaos mode, always show both buttons unless at extremes
+            const plusBtn = document.querySelector('#chapControls .qup-btn-plus');
+            const minusBtn = document.querySelector('#chaosQupControls .qup-btn-minus');
+
+            plusBtn.disabled = myOrder.position <= 0;
+            minusBtn.disabled = myOrder.position >= fullQueue.length - 1;
+        }
+
+        function findAvailableSwaps(myOrder, fullQueue) {
+            if (queueMode !== 'negotiation') return [];
+
+            const swaps = [];
+            for (const order of fullQueue) {
+                if (order.id === myOrder.id) continue;
+                if (order.position >= myOrder.position) continue; // Only look at people ahead
+                
+                // Check if they're willing to wait
+                if (order.payload?.negotiation_data?.willing_to_wait) {
+                    const timeSavings = Math.floor((myOrder.position - order.position) * 2); // Estimate
+                    swaps.push({
+                        id: order.id,
+                        name: order.payload?.customer_name || order.user_id.split('_')[0],
+                        position: order.position,
+                        timeSavings: timeSavings
+                    });
+                }
+            }
+            
+            return swaps;
+        }
+
+        // QUP Operations
+        async function performQUP(direction) {
+            if (!currentOrder || !developerKey) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/queue/qup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.uniqueId,
+                        qup_type: 'super',
+                        direction: direction
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`QUP successful! ${data.message}`, 'success');
+                    // Status will be updated via WebSocket or polling
+                } else {
+                    showAlert(`QUP failed: ${data.error}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('QUP failed:', error);
+                showAlert('QUP operation failed', 'error');
+            }
+        }
+
+        async function performMaxQUP() {
+            if (!currentOrder || !developerKey) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/queue/qup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.uniqueId,
+                        qup_type: 'super',
+                        max_jump: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`Max QUP successful! ${data.message}`, 'success');
+                } else {
+                    showAlert(`Max QUP failed: ${data.error}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('Max QUP failed:', error);
+                showAlert('Max QUP operation failed', 'error');
+            }
+        }
+
+        async function performChaosQUP(direction) {
+            if (!currentOrder || !developerKey) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/queue/qup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.uniqueId,
+                        qup_type: 'chaos',
+                        direction: direction
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`Chaos QUP successful! ${data.message}`, 'success');
+                } else {
+                    showAlert(`Chaos QUP failed: ${data.error}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('Chaos QUP failed:', error);
+                showAlert('Chaos QUP operation failed', 'error');
+            }
+        }
+
+        async function requestSwap(targetUserId) {
+            if (!socket || !socket.connected) {
+                showAlert('WebSocket not connected. Cannot send swap request.', 'error');
+                return;
+            }
+
+            try {
+                socket.emit('swap_request', {
+                    from_user: currentUser.uniqueId,
+                    to_user: targetUserId,
+                    from_order: currentOrder,
+                    message: 'Would you like to swap positions with me?'
+                });
+
+                showAlert('Swap request sent!', 'info');
+
+            } catch (error) {
+                console.error('Failed to send swap request:', error);
+                showAlert('Failed to send swap request', 'error');
+            }
+        }
+
+        function handleSwapRequest(data) {
+            pendingSwapRequest = data;
+
+            const popup = document.getElementById('notificationPopup');
+            document.getElementById('notificationTitle').textContent = 'Swap Request';
+            document.getElementById('notificationMessage').textContent = 
+                `${data.from_user} wants to swap positions with you. ${data.message}`;
+            
+            popup.className = 'notification-popup accept show';
+            
+            // Auto-hide after 30 seconds
+            setTimeout(() => {
+                if (pendingSwapRequest === data) {
+                    declineSwap();
+                }
+            }, 30000);
+        }
+
+        function acceptSwap() {
+            if (!pendingSwapRequest || !socket) return;
+
+            socket.emit('swap_response', {
+                request_id: pendingSwapRequest.request_id,
+                accepted: true,
+                from_user: pendingSwapRequest.from_user,
+                to_user: pendingSwapRequest.to_user
+            });
+
+            hideNotification();
+            showAlert('Swap accepted!', 'success');
+            pendingSwapRequest = null;
+        }
+
+        function declineSwap() {
+            if (!pendingSwapRequest || !socket) return;
+
+            socket.emit('swap_response', {
+                request_id: pendingSwapRequest.request_id,
+                accepted: false,
+                from_user: pendingSwapRequest.from_user,
+                to_user: pendingSwapRequest.to_user
+            });
+
+            hideNotification();
+            pendingSwapRequest = null;
+        }
+
+        function handleSwapResponse(data) {
+            if (data.accepted) {
+                showAlert('Swap request accepted! Positions will be updated.', 'success');
+                // Perform the actual swap via API
+                performNegotiationSwap(data.to_user);
+            } else {
+                showAlert('Swap request declined.', 'warning');
+            }
+        }
+
+        async function performNegotiationSwap(targetUserId) {
+            if (!currentOrder || !developerKey) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/queue/qup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUser.uniqueId,
+                        qup_type: 'negotiation',
+                        target_user: targetUserId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`Negotiation swap successful! ${data.message}`, 'success');
+                } else {
+                    showAlert(`Negotiation swap failed: ${data.error}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('Negotiation swap failed:', error);
+                showAlert('Negotiation swap operation failed', 'error');
+            }
+        }
+
+        function hideNotification() {
+            const popup = document.getElementById('notificationPopup');
+            popup.classList.remove('show');
+        }
+
+        function handleOrderUpdate(data) {
+            if (!currentOrder || data.orderId !== currentOrder) return;
+
+            console.log('Handling order update for my order:', data.action);
+
+            switch (data.action) {
+                case 'finalized':
+                case 'pickup_ready':
+                    // Refresh order status to get PiQUP code (only if not already showing)
+                    if (document.getElementById('pickupSection').classList.contains('hidden')) {
+                        checkForPickupCode();
+                    }
+                    break;
+
+                case 'completed':
+                    showOrderComplete();
+                    break;
+
+                case 'cancelled':
+                    showAlert('Your order has been cancelled', 'error');
+                    startNewOrder();
+                    break;
+
+                case 'position_changed':
+                    // Update position display
+                    if (data.details && data.details.new_position !== undefined) {
+                        document.getElementById('orderPosition').textContent = data.details.new_position;
+                        myPosition = data.details.new_position;
+                    }
+                    break;
+            }
+        }
+
+        function handleMyOrderUpdate(orderData) {
+            console.log('My order data updated:', orderData);
+
+            // Update position
+            if (orderData.position !== undefined) {
+                document.getElementById('orderPosition').textContent = orderData.position + 1; // Display as 1-based
+                myPosition = orderData.position;
+            }
+
+            // Update wait time
+            if (orderData.remaining_seconds) {
+                const minutes = Math.floor(orderData.remaining_seconds / 60);
+                const seconds = orderData.remaining_seconds % 60;
+                document.getElementById('orderWaitTime').textContent = `${minutes}m ${seconds}s`;
+            }
+
+            if (orderData.finalized && orderData.pickup_code && orderData.pickup_code !== 'PENDING') {
+                // Only show pickup code if not already showing it
+                if (document.getElementById('pickupSection').classList.contains('hidden')) {
+                    showPickupCode(orderData.pickup_code);
+                }
+            } else if (orderData.status === 'completed') {
+                showOrderComplete();
+            } else if (orderData.cancelled) {
+                showAlert('Your order has been cancelled', 'error');
+                startNewOrder();
+            } else {
+                // Update status and position if still waiting
+                if (!orderData.finalized) {
+                    updateOrderPosition(orderData);
+                }
+            }
+        }
+
+        function updateOrderPosition(orderData) {
+            // Update estimated completion time if provided
+            if (orderData.estimated_completion) {
+                estimatedCompletionTime = new Date(orderData.estimated_completion);
+                if (!waitTimeInterval) {
+                    startWaitTimeCountdown();
+                }
+            }
+        }
+
+        async function checkForPickupCode() {
+            try {
+                console.log('Checking for pickup code...');
+
+                const response = await fetch(`${API_BASE}/api/v1/queue/list?admin=true`, {
+                    headers: { 'X-API-Key': developerKey }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.queue) {
+                    const myOrder = data.queue.find(order => order.id === currentOrder);
+                    if (myOrder) {
+                        console.log('Found my order:', myOrder);
+                        if (myOrder.finalized && myOrder.pickup_code && myOrder.pickup_code !== 'PENDING') {
+                            showPickupCode(myOrder.pickup_code);
+                        } else if (myOrder.finalized) {
+                            // Order is finalized but no pickup code yet, wait a bit and check again
+                            setTimeout(checkForPickupCode, 1000);
+                        }
+                    }
+                } else {
+                    console.error('Failed to get order details:', data.error);
+                }
+            } catch (error) {
+                console.error('Failed to check pickup code:', error);
+                // Retry after a short delay
+                setTimeout(checkForPickupCode, 2000);
+            }
+        }
+
+        function showPickupCode(code) {
+            document.getElementById('orderCurrentStatus').textContent = 'Ready for PiQUP';
+            document.getElementById('pickupCode').textContent = code;
+
+            hideElement('orderStatus');
+            hideElement('qupControls');
+            showElement('pickupSection');
+
+            // Stop timers but KEEP polling to detect completion
+            if (waitTimeInterval) {
+                clearInterval(waitTimeInterval);
+                waitTimeInterval = null;
+            }
+
+            // Make sure we're still polling for completion
+            if (!orderStatusInterval && currentOrder) {
+                startOrderStatusPolling();
+            }
+
+            console.log('PiQUP code received:', code);
+            showAlert(`Your order is ready! PiQUP code: ${code}`, 'success');
+        }
+
+        function showOrderComplete() {
+            hideElement('orderStatus');
+            hideElement('pickupSection');
+            hideElement('qupControls');
+            // Don't show the complete section, just go straight back to order form
+
+            // Stop all intervals
+            if (waitTimeInterval) {
+                clearInterval(waitTimeInterval);
+                waitTimeInterval = null;
+            }
+            if (orderStatusInterval) {
+                clearInterval(orderStatusInterval);
+                orderStatusInterval = null;
+            }
+
+            console.log('Order completed');
+            showAlert('Order completed! Thank you for using QUP.', 'success');
+
+            // Go directly back to order form after 1 second
+            setTimeout(() => {
+                startNewOrder();
+            }, 1000);
+        }
+
+        function startNewOrder() {
+            // Reset state
+            currentOrder = null;
+            currentOrderData = null;
+            estimatedCompletionTime = null;
+            myPosition = -1;
+            availableSwaps = [];
+            pendingSwapRequest = null;
+
+            // Stop all intervals
+            if (waitTimeInterval) {
+                clearInterval(waitTimeInterval);
+                waitTimeInterval = null;
+            }
+            if (orderStatusInterval) {
+                clearInterval(orderStatusInterval);
+                orderStatusInterval = null;
+            }
+
+            // Reset UI
+            document.getElementById('orderDescription').value = '';
+            // Keep customer name for convenience
+            hideElement('orderStatus');
+            hideElement('pickupSection');
+            hideElement('completeSection');
+            hideElement('qupControls');
+            showElement('orderForm');
+
+            // Reset form options
+            updateFormForQueueMode();
+
+            console.log('Ready for new order');
+        }
+
+        // Utility functions
+        function showElement(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function hideElement(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function setLoading(type, loading) {
+            if (type === 'login') {
+                const text = document.getElementById('loginText');
+                const spinner = document.getElementById('loginLoading');
+
+                if (loading) {
+                    text.style.display = 'none';
+                    spinner.classList.remove('hidden');
+                } else {
+                    text.style.display = 'inline';
+                    spinner.classList.add('hidden');
+                }
+            } else if (type === 'order') {
+                const text = document.getElementById('orderButtonText');
+                const spinner = document.getElementById('orderLoading');
+                const button = text.parentElement;
+
+                if (loading) {
+                    text.style.display = 'none';
+                    spinner.classList.remove('hidden');
+                    button.disabled = true;
+                } else {
+                    text.style.display = 'inline';
+                    spinner.classList.add('hidden');
+                    button.disabled = false;
+                }
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alerts');
+
+            // Clear existing alerts of the same message to prevent duplicates
+            const existingAlerts = alertsContainer.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => {
+                if (alert.textContent === message) {
+                    alert.remove();
+                }
+            });
+
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} fade-in`;
+            alert.textContent = message;
+
+            alertsContainer.appendChild(alert);
+
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Handle Enter key in form fields
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('email').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('password').focus();
+                }
+            });
+
+            document.getElementById('password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+
+            document.getElementById('customerName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('orderDescription').focus();
+                }
+            });
+
+            document.getElementById('orderDescription').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    placeOrder();
+                }
+            });
+        });
+
+        // Flash screen effect when clicking PiQUP code
+        function flashScreen() {
+            // Create flash overlay
+            const flashDiv = document.createElement('div');
+            flashDiv.className = 'screen-flash';
+            document.body.appendChild(flashDiv);
+
+            // Remove after animation completes
+            setTimeout(() => {
+                if (document.body.contains(flashDiv)) {
+                    document.body.removeChild(flashDiv);
+                }
+            }, 800);
+
+            console.log('PiQUP code flashed!');
+        }
+
+        // Test mode function (bypasses Supabase)
+        function skipAuth() {
+            console.log('Entering test mode (bypassing Supabase auth)');
+            const testUser = {
+                email: 'test@example.com',
+                id: 'test-user-' + Date.now()
+            };
+            showApp(testUser);
+        }
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
