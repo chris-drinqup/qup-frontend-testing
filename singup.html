@@ -614,7 +614,7 @@
                     <p>Use the same credentials you just created to log into both applications:</p>
                     
                     <div style="margin: 20px 0;">
-                        <a href="https://chris-drinqup.github.io/qup-frontend-testing/index.html" class="link-btn" target="_blank">
+                        <a href="https://chris-drinqup.github.io/qup-frontend-testing/client.html" class="link-btn" target="_blank">
                             🛒 QUP Customer App
                         </a>
                         <a href="https://chris-drinqup.github.io/qup-frontend-testing/barista.html" class="link-btn" target="_blank">
@@ -768,7 +768,7 @@
                 if (error.message.includes('already registered')) {
                     errorMessage = '⚠️ This email is already registered. Try signing in instead.';
                 } else if (error.message.includes('invalid email')) {
-                    errorMessage = '⚠️ Please enter a valid email address.';
+                    errorMessage = '⚠️ Please enter a valid eress.';
                 } else if (error.message.includes('weak password')) {
                     errorMessage = '⚠️ Password is too weak. Please choose a stronger password.';
                 } else if (error.message) {
@@ -782,7 +782,7 @@
         }
 
         async function testLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
+          email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
             if (!email || !password) {
@@ -795,7 +795,7 @@
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
-                    password: password
+                    pasd: password
                 });
 
                 if (error) {
@@ -806,7 +806,7 @@
                              <small>Check your spam folder if you don't see it.</small>`,
                             'error'
                         );
-                    } else {
+                  } else {
                         showResult('loginResult',
                             `❌ <strong>Login Failed:</strong> ${error.message}<br>
                              <small>Make sure you've confirmed your email first.</small>`,
@@ -818,7 +818,7 @@
 
                 // Success! Show welcome screen
                 showResult('loginResult',
-                    `✅ <strong>Account Verified Successfully!</strong><br>
+                    `✅ <strong>Accountified Successfully!</strong><br>
                      🎉 Welcome to QUP Beta Testing!`,
                     'success'
                 );
@@ -832,7 +832,7 @@
             } catch (error) {
                 showResult('loginResult', `❌ <strong>Error:</strong> ${error.message}`, 'error');
             } finally {
-                setLoading('login', false);
+                setLoading('lo, false);
             }
         }
 
@@ -842,7 +842,7 @@
 
         function startOver() {
             // Clear forms
-           ocument.getElementById('firstName').value = '';
+            document.getElementById('firstName').value = '';
             document.getElementById('lastName').value = '';
             document.getElementById('signupEmail').value = '';
             document.getElementById('company').value = '';
@@ -857,7 +857,7 @@
         }
 
         function goToCustomerApp() {
-            window.open('https://chris-drinqup.github.io/qup-frontend-testing/index.html', '_blank');
+            window.open('https://chris-drinqup.github.io/qup-frontend-testing/client.html', '_blank');
         }
 
         function goToBaristaDashboard() {

@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Admin Dashboard v2.1</title>
+    <!-- Cache busting -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; color: #333;
+        }
+
+        /* Login Styles */
+        .login-container {
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; background: rgba(0,0,0,0.1);
+        }
+        .login-form {
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 20px; width: 450px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .login-form h2 { text-align: center; margin-bottom: 30px; color: #4c1d95; }
+
+        /* Logo styles */
+        .logo-container {
+            text-align: center; margin-bottom: 20px;
+        }
+        .logo-img {
+            max-width: 120px; max-height: 80px; border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .logo-upload {
+            margin-top: 10px;
+        }
+        .logo-upload input[type="file"] {
+            display: none;
+        }
+        .logo-upload-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white; border: none; padding: 8px 16px; border-radius: 8px;
+            cursor: pointer; font-size: 12px; font-weight: 600;
+        }
+
+        /* Server Selection */
+        .server-selector { margin-bottom: 25px; text-align: center; }
+        .server-toggle { display: inline-flex; background: #f3f4f6; border-radius: 12px; padding: 4px; gap: 4px; }
+        .server-option {
+            padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 600; transition: all 0.3s ease; background: transparent;
+        }
+        .server-option.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Dashboard Styles */
+        .dashboard-container {
+            display: none; max-width: 1600px; margin: 0 auto; padding: 20px;
+        }
+        .header {
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+            padding: 25px; border-radius: 20px; margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1); display: flex;
+            justify-content: space-between; align-items: center; flex-wrap: wrap;
+        }
+        .header h1 { color: #4c1d95; font-size: 2rem; }
+        .header-logo { max-height: 50px; margin-right: 15px; border-radius: 8px; }
+        .header-left { display: flex; align-items: center; }
+        .header-controls { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .server-indicator {
+            padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;
+        }
+        .server-indicator.local { background: #dcfce7; color: #166534; }
+        .server-indicator.production { background: #fef3c7; color: #92400e; }
+
+        .dashboard {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .card h2 { color: #4c1d95; margin-bottom: 20px; }
+        .card.full-width { grid-column: 1 / -1; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px; border: 2px solid #e5e7eb;
+            border-radius: 10px; font-size: 14px;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white; border: none; padding: 12px 24px; border-radius: 10px;
+            cursor: pointer; font-weight: 600; font-size: 14px; margin-right: 10px;
+            margin-bottom: 10px; transition: all 0.3s ease;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .btn.danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .btn.warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .btn.secondary { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
+
+        /* Tables */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .data-table th { background-color: #f9fafb; font-weight: 600; }
+        .data-table tr:hover { background-color: #f9fafb; }
+
+        /* Alerts */
+        .alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 15px; font-weight: 500; }
+        .alert.success { background-color: #d1fae5; color: #065f46; }
+        .alert.error { background-color: #fee2e2; color: #991b1b; }
+        .alert.info { background-color: #dbeafe; color: #1e40af; }
+        .alert.warning { background-color: #fef3c7; color: #92400e; }
+
+        /* Tabs */
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap; }
+        .tab {
+            padding: 12px 20px; cursor: pointer; border: none; background: none;
+            font-weight: 600; color: #6b7280; transition: all 0.3s ease;
+        }
+        .tab.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .loading { text-align: center; padding: 20px; color: #6b7280; }
+
+        /* Status indicators */
+        .status-bar {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 15px; margin-bottom: 20px;
+            display: flex; gap: 20px; flex-wrap: wrap;
+        }
+        .status-item {
+            color: white; font-weight: 600; display: flex; align-items: center; gap: 8px;
+        }
+        .status-item.connected { color: #4ade80; }
+        .status-item.error { color: #f87171; }
+        .status-item.warning { color: #fbbf24; }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px; margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 15px; border-radius: 10px; text-align: center;
+        }
+        .stat-number { font-size: 1.8rem; font-weight: bold; color: #4c1d95; }
+        .stat-label { font-size: 0.9rem; color: #6b7280; margin-top: 5px; }
+
+        /* Badge styles */
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 12px;
+            font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+        }
+        .badge.admin { background: #fef3c7; color: #92400e; }
+        .badge.user { background: #dbeafe; color: #1e40af; }
+        .badge.operator { background: #d1fae5; color: #065f46; }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 5% auto; padding: 30px; border-radius: 20px;
+            width: 90%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal h3 { color: #4c1d95; margin-bottom: 20px; }
+        .close {
+            color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .close:hover { color: #000; }
+    </style>
+</head>
+<body>
+    <!-- Login Container -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <div class="logo-container">
+                <img id="loginLogo" class="logo-img" style="display: none;">
+                <div class="logo-upload">
+                    <input type="file" id="logoUpload" accept="image/*">
+                    <button type="button" class="logo-upload-btn" onclick="document.getElementById('logoUpload').click()">
+                        📁 Upload Logo
+                    </button>
+                </div>
+            </div>
+
+            <h2>🚀 QUP Admin Login v2.1</h2>
+
+            <div class="server-selector">
+                <div class="server-toggle">
+                    <button class="server-option" id="localBtn">
+                        🏠 Local (8080)
+                    </button>
+                    <button class="server-option active" id="productionBtn">
+                        ☁️ Production (GCP)
+                    </button>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9rem; color: #6b7280;">
+                    <span id="serverUrl">https://qupcore-supercode-692478335867.us-central1.run.app</span>
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" value="admin">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" value="user123">
+            </div>
+
+            <button class="btn" style="width: 100%;" id="loginBtn">Login</button>
+            <button class="btn warning" style="width: 100%; margin-top: 10px;" id="testBtn">Test Connection</button>
+
+            <div id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <div class="header">
+            <div class="header-left">
+                <img id="headerLogo" class="header-logo" style="display: none;">
+                <h1>🎯 QUP Admin Dashboard</h1>
+            </div>
+            <div class="header-controls">
+                <div class="server-indicator" id="serverIndicator">☁️ Production Server</div>
+                <span id="adminUser" style="font-weight: 600;">Welcome, admin</span>
+                <button class="btn secondary" id="switchBtn">Switch Server</button>
+                <button class="btn danger" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            <div class="status-item" id="serverStatus">🔴 Checking server...</div>
+            <div class="status-item" id="databaseStatus">🔴 Checking database...</div>
+            <div class="status-item" id="authStatus">🔴 Checking auth...</div>
+        </div>
+
+        <div class="dashboard">
+            <!-- System Status Card -->
+            <div class="card">
+                <h2>📊 System Status</h2>
+                <button class="btn" id="refreshStatusBtn">🔄 Refresh Status</button>
+                <button class="btn" id="healthCheckBtn">🏥 Health Check</button>
+                <div id="systemStatus" class="loading">Click refresh to check system status...</div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card">
+                <h2>⚡ Quick Actions</h2>
+                <button class="btn" id="queueRefreshBtn">📋 Refresh Queue</button>
+                <button class="btn success" id="addTestOrderBtn">➕ Add Test Order</button>
+                <button class="btn warning" id="clearQueueBtn">🧹 Clear Queue</button>
+                <div id="quickActionsResult"></div>
+            </div>
+
+            <!-- User Management Card -->
+            <div class="card">
+                <h2>👥 User Management</h2>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab(event, 'users-list')">Users List</button>
+                    <button class="tab" onclick="switchTab(event, 'users-add')">Add User</button>
+                    <button class="tab" onclick="switchTab(event, 'users-manage')">Password Reset</button>
+                </div>
+
+                <!-- Users List Tab -->
+                <div id="users-list" class="tab-content active">
+                    <button class="btn" onclick="loadUsers()">🔄 Refresh Users</button>
+                    <div id="usersList" class="loading">Click refresh to load users...</div>
+                </div>
+
+                <!-- Add User Tab -->
+                <div id="users-add" class="tab-content">
+                    <form onsubmit="createUser(event)">
+                        <div class="form-group">
+                            <label>Username:</label>
+                            <input type="text" id="newUsername" placeholder="new_user" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password:</label>
+                            <input type="password" id="newPassword" placeholder="secure_password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Role:</label>
+                            <select id="newRole">
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                                <option value="operator">Operator</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn success">👤 Create User</button>
+                    </form>
+                    <div id="createUserResult"></div>
+                </div>
+
+                <!-- Password Reset Tab -->
+                <div id="users-manage" class="tab-content">
+                    <form onsubmit="resetPassword(event)">
+                        <div class="form-group">
+                            <label>Username:</label>
+                            <input type="text" id="resetUsername" placeholder="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password:</label>
+                            <input type="password" id="resetNewPassword" placeholder="new_password" required>
+                        </div>
+                        <button type="submit" class="btn warning">🔑 Reset Password</button>
+                    </form>
+                    <div id="resetPasswordResult"></div>
+                </div>
+            </div>
+
+            <!-- System Configuration Card -->
+            <div class="card">
+                <h2>⚙️ System Configuration</h2>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab(event, 'config-view')">Current Config</button>
+                    <button class="tab" onclick="switchTab(event, 'config-edit')">Edit Settings</button>
+                    <button class="tab" onclick="switchTab(event, 'config-time')">Time Management</button>
+                </div>
+
+                <!-- Config View Tab -->
+                <div id="config-view" class="tab-content active">
+                    <button class="btn" onclick="loadConfig()">🔄 Refresh Config</button>
+                    <button class="btn secondary" onclick="exportConfig()">📤 Export Config</button>
+                    <div id="configDisplay" class="loading">Click refresh to load configuration...</div>
+                </div>
+
+                <!-- Config Edit Tab -->
+                <div id="config-edit" class="tab-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Default Priority:</label>
+                            <input type="number" id="configDefaultPriority" value="500">
+                        </div>
+                        <div class="form-group">
+                            <label>Default Time Estimate:</label>
+                            <input type="number" id="configDefaultTime" value="120">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Queue Mode:</label>
+                            <select id="configQueueMode">
+                                <option value="fifo">FIFO</option>
+                                <option value="super_qup">Super QUP</option>
+                                <option value="negotiation">Negotiation</option>
+                                <option value="chaos">Chaos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Max Queue Size:</label>
+                            <input type="number" id="configMaxQueueSize" value="1000">
+                        </div>
+                    </div>
+                    <button class="btn success" onclick="updateConfig()">💾 Save Configuration</button>
+                    <div id="configUpdateResult"></div>
+                </div>
+
+                <!-- Time Management Tab -->
+                <div id="config-time" class="tab-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Pool Overhead %:</label>
+                            <input type="number" id="configPoolOverhead" value="10.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Drift Clear %:</label>
+                            <input type="number" id="configDriftClear" value="5.0" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Max QUP Time (seconds):</label>
+                            <input type="number" id="configMaxQupTime" value="1800">
+                        </div>
+                        <div class="form-group">
+                            <label>Reserve Cap (minutes):</label>
+                            <input type="number" id="configReserveCap" value="5">
+                        </div>
+                    </div>
+                    <button class="btn success" onclick="updateTimeConfig()">⏰ Save Time Settings</button>
+                    <div id="timeConfigResult"></div>
+                </div>
+            </div>
+
+            <!-- Queue Management Card -->
+            <div class="card">
+                <h2>📋 Queue Management</h2>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab(event, 'queue-view')">Current Queue</button>
+                    <button class="tab" onclick="switchTab(event, 'queue-add')">Add Element</button>
+                    <button class="tab" onclick="switchTab(event, 'queue-test')">QUP Testing</button>
+                </div>
+
+                <!-- Queue View Tab -->
+                <div id="queue-view" class="tab-content active">
+                    <button class="btn" onclick="loadQueue()">🔄 Refresh Queue</button>
+                    <button class="btn warning" onclick="clearQueue()">🧹 Clear Queue</button>
+                    <button class="btn secondary" onclick="showTimeStats()">⏰ Time Stats</button>
+                    <div id="queueList" class="loading">Click refresh to load queue...</div>
+                </div>
+
+                <!-- Add Element Tab -->
+                <div id="queue-add" class="tab-content">
+                    <form onsubmit="addQueueElement(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Element ID:</label>
+                                <input type="text" id="elementId" placeholder="order-001" required>
+                            </div>
+                            <div class="form-group">
+                                <label>User ID:</label>
+                                <input type="text" id="elementUserId" placeholder="customer1" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Priority:</label>
+                                <input type="number" id="elementPriority" value="500">
+                            </div>
+                            <div class="form-group">
+                                <label>Server ID:</label>
+                                <input type="text" id="elementServerId" placeholder="barista-1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Payload (JSON):</label>
+                            <textarea id="elementPayload" rows="3" placeholder='{"customer_name":"John Doe","items":[{"name":"Latte","quantity":1}],"total":4.50}'></textarea>
+                        </div>
+                        <button type="submit" class="btn success">📋 Add to Queue</button>
+                    </form>
+                    <div id="addElementResult"></div>
+                </div>
+
+                <!-- QUP Testing Tab -->
+                <div id="queue-test" class="tab-content">
+                    <form onsubmit="performQup(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Element ID (from queue):</label>
+                                <input type="text" id="qupElementId" placeholder="order-001" required>
+                            </div>
+                            <div class="form-group">
+                                <label>QUP Type:</label>
+                                <select id="qupType">
+                                    <option value="super">Super QUP</option>
+                                    <option value="chaos">Chaos QUP</option>
+                                    <option value="negotiation">Negotiation QUP</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Target Position (for negotiation):</label>
+                            <input type="number" id="qupTargetPosition" placeholder="1">
+                        </div>
+                        <button type="submit" class="btn">🚀 Perform QUP</button>
+                    </form>
+                    <div id="qupResults"></div>
+                </div>
+            </div>
+
+            <!-- System Analytics Card -->
+            <div class="card full-width">
+                <h2>📊 System Analytics & Logs</h2>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab(event, 'analytics-overview')">Overview</button>
+                    <button class="tab" onclick="switchTab(event, 'analytics-ml')">ML Stats</button>
+                    <button class="tab" onclick="switchTab(event, 'analytics-logs')">System Logs</button>
+                </div>
+
+                <!-- Analytics Overview Tab -->
+                <div id="analytics-overview" class="tab-content active">
+                    <button class="btn" onclick="loadAnalytics()">🔄 Refresh Analytics</button>
+                    <button class="btn" onclick="runFullHealthCheck()">🏥 Full Health Check</button>
+                    <div id="analyticsDisplay" class="loading">Click refresh to load analytics...</div>
+                </div>
+
+                <!-- ML Stats Tab -->
+                <div id="analytics-ml" class="tab-content">
+                    <button class="btn" onclick="loadMLStats()">🔄 Refresh ML Stats</button>
+                    <button class="btn warning" onclick="retrainML()">🧠 Retrain Models</button>
+                    <div id="mlStatsDisplay" class="loading">Click refresh to load ML statistics...</div>
+                </div>
+
+                <!-- System Logs Tab -->
+                <div id="analytics-logs" class="tab-content">
+                    <button class="btn" onclick="loadSystemLogs()">🔄 Refresh Logs</button>
+                    <div id="systemLogsDisplay" class="loading">Click refresh to check system logs...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for confirmations -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure?</p>
+            <div style="margin-top: 20px;">
+                <button class="btn success" id="modalConfirm">Confirm</button>
+                <button class="btn secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // GLOBAL VARIABLES & CONFIGURATION
+        // ========================================
+        console.log('🚀 QUP Admin Dashboard v2.1 Loading...');
+
+        // Configuration
+        let currentServer = 'production';
+        let API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
+        const API_KEY = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
+
+        // Auth state
+        let authToken = null;
+        let currentUser = null;
+
+        // Logo state
+        let currentLogo = null;
+
+        // Server configuration
+        const servers = {
+            local: {
+                url: 'http://localhost:8080',
+                name: '🏠 Local Server',
+                class: 'local'
+            },
+            production: {
+                url: 'https://qupcore-supercode-692478335867.us-central1.run.app',
+                name: '☁️ Production (GCP)',
+                class: 'production'
+            }
+        };
+
+        // ========================================
+        // UTILITY FUNCTIONS
+        // ========================================
+
+        function selectServer(serverType) {
+            console.log('Selecting server:', serverType);
+            currentServer = serverType;
+            API_BASE = servers[serverType].url;
+
+            // Update UI
+            document.querySelectorAll('.server-option').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(serverType + 'Btn').classList.add('active');
+            document.getElementById('serverUrl').textContent = API_BASE;
+        }
+
+        function showAlert(message, type = 'info', containerId = null) {
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.insertBefore(alert, container.firstChild);
+                    setTimeout(() => alert.remove(), 5000);
+                }
+            }
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': API_KEY
+                }
+            };
+
+            if (authToken) {
+                defaultOptions.headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            const finalOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: { ...defaultOptions.headers, ...options.headers }
+            };
+
+            try {
+                const response = await fetch(url, finalOptions);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                return data;
+            } catch (error) {
+                console.error(`API Error (${endpoint}):`, error.message);
+                throw error;
+            }
+        }
+
+        // ========================================
+        // LOGO MANAGEMENT
+        // ========================================
+
+        function setupLogoUpload() {
+            const logoUpload = document.getElementById('logoUpload');
+            logoUpload.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        currentLogo = e.target.result;
+                        updateLogoDisplay();
+                        // Store in localStorage for persistence
+                        localStorage.setItem('qup-admin-logo', currentLogo);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    showAlert('Please select a valid image file', 'error');
+                }
+            });
+
+            // Load saved logo
+            const savedLogo = localStorage.getItem('qup-admin-logo');
+            if (savedLogo) {
+                currentLogo = savedLogo;
+                updateLogoDisplay();
+            }
+        }
+
+        function updateLogoDisplay() {
+            const loginLogo = document.getElementById('loginLogo');
+            const headerLogo = document.getElementById('headerLogo');
+            
+            if (currentLogo) {
+                loginLogo.src = currentLogo;
+                loginLogo.style.display = 'block';
+                headerLogo.src = currentLogo;
+                headerLogo.style.display = 'block';
+            } else {
+                loginLogo.style.display = 'none';
+                headerLogo.style.display = 'none';
+            }
+        }
+
+        // ========================================
+        // TAB MANAGEMENT
+        // ========================================
+
+        function switchTab(event, tabId) {
+            const card = event.target.closest('.card');
+            card.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            card.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ========================================
+        // AUTHENTICATION FUNCTIONS
+        // ========================================
+
+        function testConnection() {
+            console.log('Testing connection to:', API_BASE);
+            const errorElement = document.getElementById('loginError');
+            errorElement.innerHTML = '<div class="alert info">Testing connection...</div>';
+
+            apiCall('/health')
+                .then(data => {
+                    console.log('Connection test successful:', data);
+                    errorElement.innerHTML = '<div class="alert success">✅ Server connected successfully!</div>';
+                })
+                .catch(error => {
+                    console.error('Connection test failed:', error);
+                    errorElement.innerHTML = `<div class="alert error">❌ Connection failed: ${error.message}</div>`;
+                });
+        }
+
+        function performLogin() {
+            console.log('Attempting login...');
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorElement = document.getElementById('loginError');
+
+            if (!username || !password) {
+                errorElement.innerHTML = '<div class="alert error">Please enter both username and password</div>';
+                return;
+            }
+
+            errorElement.innerHTML = '<div class="alert info">Logging in...</div>';
+
+            apiCall('/api/v1/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password })
+            })
+            .then(data => {
+                console.log('Login successful:', data);
+                if (data.access_token) {
+                    authToken = data.access_token;
+                    currentUser = username;
+                    showDashboard();
+                } else {
+                    throw new Error('No access token received');
+                }
+            })
+            .catch(error => {
+                console.error('Login failed:', error);
+                errorElement.innerHTML = `<div class="alert error">❌ Login failed: ${error.message}</div>`;
+            });
+        }
+
+        function performLogout() {
+            console.log('Logging out...');
+            authToken = null;
+            currentUser = null;
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('dashboardContainer').style.display = 'none';
+            document.getElementById('loginError').innerHTML = '';
+        }
+
+        function showDashboard() {
+            console.log('Showing dashboard for user:', currentUser);
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'block';
+            document.getElementById('adminUser').textContent = `Welcome, ${currentUser}`;
+            document.getElementById('serverIndicator').textContent = servers[currentServer].name;
+            document.getElementById('serverIndicator').className = `server-indicator ${servers[currentServer].class}`;
+
+            // Initialize dashboard
+            checkSystemStatus();
+            loadUsers();
+            loadConfig();
+        }
+
+        function switchServerView() {
+            console.log('Switching server view...');
+            const newServer = currentServer === 'local' ? 'production' : 'local';
+            selectServer(newServer);
+            document.getElementById('serverIndicator').textContent = servers[newServer].name;
+            document.getElementById('serverIndicator').className = `server-indicator ${servers[newServer].class}`;
+            checkSystemStatus();
+        }
+
+        // ========================================
+        // SYSTEM STATUS FUNCTIONS
+        // ========================================
+
+        async function checkSystemStatus() {
+            console.log('Checking system status...');
+            const statusChecks = [
+                { id: 'serverStatus', endpoint: '/health', name: 'Server' },
+                { id: 'databaseStatus', endpoint: '/debug/supabase', name: 'Database' },
+                { id: 'authStatus', endpoint: '/debug/auth', name: 'Auth' }
+            ];
+
+            for (const check of statusChecks) {
+                try {
+                    const response = await apiCall(check.endpoint);
+                    const element = document.getElementById(check.id);
+
+                    if (check.endpoint === '/health') {
+                        element.innerHTML = response.status === 'healthy' ? '🟢 Server Online' : '🟡 Server Issues';
+                        element.className = `status-item ${response.status === 'healthy' ? 'connected' : 'warning'}`;
+                    } else if (check.endpoint === '/debug/supabase') {
+                        element.innerHTML = response.status === 'connected' ? '🟢 Database Connected' : '🟡 Database Issues';
+                        element.className = `status-item ${response.status === 'connected' ? 'connected' : 'warning'}`;
+                    } else if (check.endpoint === '/debug/auth') {
+                        element.innerHTML = response.admin_user_exists ? '🟢 Auth Ready' : '🟡 Auth Partial';
+                        element.className = `status-item ${response.admin_user_exists ? 'connected' : 'warning'}`;
+                    }
+                } catch (error) {
+                    const element = document.getElementById(check.id);
+                    element.innerHTML = `🔴 ${check.name} Error`;
+                    element.className = 'status-item error';
+                }
+            }
+        }
+
+        async function runHealthCheck() {
+            console.log('Running health check...');
+            try {
+                const response = await apiCall('/health');
+
+                let html = '<div class="alert success">✅ System is healthy</div>';
+                html += `<p><strong>Status:</strong> ${response.status}</p>`;
+                html += `<p><strong>Version:</strong> ${response.version || 'Unknown'}</p>`;
+                html += `<p><strong>Enterprise Features:</strong> ${response.enterprise_app_created ? 'Active' : 'Inactive'}</p>`;
+
+                if (response.features) {
+                    html += '<h4>Feature Status:</h4><ul>';
+                    Object.entries(response.features).forEach(([key, value]) => {
+                        html += `<li>${key.replace(/_/g, ' ')}: ${value ? '✅ Enabled' : '❌ Disabled'}</li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                document.getElementById('systemStatus').innerHTML = html;
+                showAlert('Health check completed successfully', 'success');
+            } catch (error) {
+                document.getElementById('systemStatus').innerHTML = `<div class="alert error">Health check failed: ${error.message}</div>`;
+            }
+        }
+
+        async function runFullHealthCheck() {
+            console.log('Running full health check...');
+            try {
+                const response = await apiCall('/health');
+
+                let html = '<div class="alert success">✅ System is healthy</div>';
+                html += `<p><strong>Status:</strong> ${response.status}</p>`;
+                html += `<p><strong>Version:</strong> ${response.version || 'Unknown'}</p>`;
+                html += `<p><strong>Enterprise Features:</strong> ${response.enterprise_app_created ? 'Active' : 'Inactive'}</p>`;
+
+                if (response.features) {
+                    html += '<h4>Feature Status:</h4><div class="stats-grid">';
+                    Object.entries(response.features).forEach(([key, value]) => {
+                        html += `<div class="stat-card">
+                            <div class="stat-number">${value ? '✅' : '❌'}</div>
+                            <div class="stat-label">${key.replace(/_/g, ' ')}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                if (response.time_management) {
+                    html += '<h4>Time Management Status:</h4><div class="stats-grid">';
+                    Object.entries(response.time_management).forEach(([key, value]) => {
+                        let displayValue = typeof value === 'number' ? value.toFixed(2) : value;
+                        html += `<div class="stat-card">
+                            <div class="stat-number">${displayValue}</div>
+                            <div class="stat-label">${key.replace(/_/g, ' ')}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                document.getElementById('analyticsDisplay').innerHTML = html;
+                showAlert('Full health check completed successfully', 'success');
+            } catch (error) {
+                document.getElementById('analyticsDisplay').innerHTML = `<div class="alert error">Full health check failed: ${error.message}</div>`;
+            }
+        }
+
+        // ========================================
+        // QUEUE OPERATIONS
+        // ========================================
+
+        async function refreshQueue() {
+            console.log('Refreshing queue...');
+            try {
+                const response = await apiCall('/api/v1/queue/list?admin=true');
+                const queue = response.queue || [];
+
+                showAlert(`Queue refreshed: ${queue.length} elements`, 'success');
+                console.log('Queue data:', response);
+            } catch (error) {
+                showAlert(`Failed to refresh queue: ${error.message}`, 'error');
+            }
+        }
+
+        async function addTestOrder() {
+            console.log('Adding test order...');
+            try {
+                const testOrder = {
+                    id: `test-order-${Date.now()}`,
+                    user_id: 'admin-test',
+                    priority: 300,
+                    payload: {
+                        customer_name: 'Test Customer',
+                        items: [{ name: 'Test Latte', quantity: 1, price: 4.50 }],
+                        total: 4.50
+                    }
+                };
+
+                const response = await apiCall('/api/v1/queue/add', {
+                    method: 'POST',
+                    body: JSON.stringify(testOrder)
+                });
+
+                document.getElementById('quickActionsResult').innerHTML =
+                    `<div class="alert success">Test order added! ID: ${testOrder.id}, Position: ${response.position || 'Unknown'}</div>`;
+            } catch (error) {
+                document.getElementById('quickActionsResult').innerHTML =
+                    `<div class="alert error">Failed to add test order: ${error.message}</div>`;
+            }
+        }
+
+        async function clearQueue() {
+            console.log('Clearing queue...');
+            if (!confirm('Are you sure you want to clear the entire queue?')) return;
+
+            try {
+                const response = await apiCall('/api/v1/queue/list?admin=true');
+                const queue = response.queue || [];
+
+                let cleared = 0;
+                for (const element of queue) {
+                    try {
+                        await apiCall('/api/v1/queue/complete', {
+                            method: 'POST',
+                            body: JSON.stringify({ id: element.id })
+                        });
+                        cleared++;
+                    } catch (error) {
+                        console.warn('Failed to clear element:', element.id);
+                    }
+                }
+
+                document.getElementById('quickActionsResult').innerHTML =
+                    `<div class="alert success">Cleared ${cleared} elements from queue</div>`;
+            } catch (error) {
+                document.getElementById('quickActionsResult').innerHTML =
+                    `<div class="alert error">Failed to clear queue: ${error.message}</div>`;
+            }
+        }
+
+        async function loadQueue() {
+            try {
+                const response = await apiCall('/api/v1/queue/list?admin=true');
+                const queue = response.queue || [];
+
+                if (queue.length === 0) {
+                    document.getElementById('queueList').innerHTML = '<div class="alert info">Queue is empty</div>';
+                    return;
+                }
+
+                let html = `<div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${response.total_elements || 0}</div>
+                        <div class="stat-label">Total Elements</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${response.active_elements || 0}</div>
+                        <div class="stat-label">Active Elements</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${response.queue_mode || 'Unknown'}</div>
+                        <div class="stat-label">Mode</div>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr><th>ID</th><th>Position</th><th>Priority</th><th>Time</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>`;
+
+                queue.forEach(element => {
+                    html += `<tr>
+                        <td><strong>${element.id}</strong></td>
+                        <td>${element.position}</td>
+                        <td>${element.priority}</td>
+                        <td>${element.remaining_time || element.assigned_time + 's'}</td>
+                        <td>${element.status || 'waiting'}</td>
+                        <td>
+                            <button class="btn success" onclick="completeElement('${element.id}')">Complete</button>
+                            <button class="btn danger" onclick="cancelElement('${element.id}')">Cancel</button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                document.getElementById('queueList').innerHTML = html;
+                showAlert(`Loaded queue with ${queue.length} elements`, 'success', 'queue-view');
+            } catch (error) {
+                document.getElementById('queueList').innerHTML = `<div class="alert error">Failed to load queue: ${error.message}</div>`;
+            }
+        }
+
+        async function addQueueElement(event) {
+            event.preventDefault();
+
+            const elementData = {
+                id: document.getElementById('elementId').value,
+                user_id: document.getElementById('elementUserId').value,
+                priority: parseInt(document.getElementById('elementPriority').value),
+                server_id: document.getElementById('elementServerId').value,
+                payload: JSON.parse(document.getElementById('elementPayload').value || '{}')
+            };
+
+            try {
+                const response = await apiCall('/api/v1/queue/add', {
+                    method: 'POST',
+                    body: JSON.stringify(elementData)
+                });
+
+                document.getElementById('addElementResult').innerHTML = `<div class="alert success">Element "${elementData.id}" added to queue! Position: ${response.position || 'Unknown'}</div>`;
+                document.querySelector('#queue-add form').reset();
+                loadQueue();
+            } catch (error) {
+                document.getElementById('addElementResult').innerHTML = `<div class="alert error">Failed to add element: ${error.message}</div>`;
+            }
+        }
+
+        async function performQup(event) {
+            event.preventDefault();
+
+            const elementId = document.getElementById('qupElementId').value;
+            const qupType = document.getElementById('qupType').value;
+            const targetPosition = document.getElementById('qupTargetPosition').value;
+
+            const qupData = { id: elementId, qup_type: qupType };
+            if (targetPosition && qupType === 'negotiation') {
+                qupData.target_position = parseInt(targetPosition);
+            }
+
+            try {
+                const response = await apiCall('/api/v1/queue/qup', {
+                    method: 'POST',
+                    body: JSON.stringify(qupData)
+                });
+
+                document.getElementById('qupResults').innerHTML = `<div class="alert success">QUP successful: ${response.message}</div>`;
+                loadQueue();
+            } catch (error) {
+                document.getElementById('qupResults').innerHTML = `<div class="alert error">QUP failed: ${error.message}</div>`;
+            }
+        }
+
+        async function completeElement(elementId) {
+            try {
+                await apiCall('/api/v1/queue/complete', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: elementId })
+                });
+                showAlert(`Element ${elementId} completed`, 'success', 'queue-view');
+                loadQueue();
+            } catch (error) {
+                showAlert(`Failed to complete element: ${error.message}`, 'error', 'queue-view');
+            }
+        }
+
+        async function cancelElement(elementId) {
+            try {
+                await apiCall('/api/v1/queue/cancel', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: elementId })
+                });
+                showAlert(`Element ${elementId} cancelled`, 'success', 'queue-view');
+                loadQueue();
+            } catch (error) {
+                showAlert(`Failed to cancel element: ${error.message}`, 'error', 'queue-view');
+            }
+        }
+
+        async function showTimeStats() {
+            try {
+                const response = await apiCall('/api/v1/queue/time-stats');
+                const stats = response.time_management || {};
+
+                let html = '<h4>Time Management Statistics:</h4><div class="stats-grid">';
+                Object.entries(stats).forEach(([key, value]) => {
+                    let displayValue = typeof value === 'number' ? value.toFixed(2) : value;
+                    html += `<div class="stat-card">
+                        <div class="stat-number">${displayValue}</div>
+                        <div class="stat-label">${key.replace(/_/g, ' ')}</div>
+                    </div>`;
+                });
+                html += '</div>';
+
+                document.getElementById('queueList').innerHTML = html;
+            } catch (error) {
+                showAlert(`Failed to load time stats: ${error.message}`, 'error', 'queue-view');
+            }
+        }
+
+        // ========================================
+        // USER MANAGEMENT FUNCTIONS
+        // ========================================
+
+        async function loadUsers() {
+            try {
+                const response = await apiCall('/api/users');
+                const users = response.users || [];
+
+                if (users.length === 0) {
+                    document.getElementById('usersList').innerHTML = '<div class="alert info">No users found</div>';
+                    return;
+                }
+
+                let html = `<div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${users.length}</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${users.filter(u => u.active).length}</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${users.filter(u => u.role === 'admin').length}</div>
+                        <div class="stat-label">Admins</div>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Username</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>`;
+
+                users.forEach(user => {
+                    const createdDate = new Date(user.created_at).toLocaleDateString();
+                    html += `<tr>
+                        <td><strong>${user.username}</strong></td>
+                        <td><span class="badge ${user.role}">${user.role}</span></td>
+                        <td>${user.active ? '🟢 Active' : '🔴 Inactive'}</td>
+                        <td>${createdDate}</td>
+                        <td>
+                            ${user.username !== 'admin' ? `<button class="btn danger" onclick="deleteUser('${user.username}')">Delete</button>` : '<span style="color: #6b7280;">Protected</span>'}
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                document.getElementById('usersList').innerHTML = html;
+            showAlert(`Loaded ${users.length} users`, 'success', 'users-list');
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = `<div class="alert error">Failed to load users: ${error.message}</div>`;
+            }
+        }
+
+        async function createUser(event) {
+            event.preventDefault();
+
+            const userData = {
+                username: document.getElementById('newUsername').value,
+                password: document.getElementById('newPassword').value,
+                role: document.getElementById('newRole').value
+            };
+
+            try {
+                await apiCall('/api/users', {
+                    method: 'POST',
+                    body: JSON.stringify(userData)
+                });
+
+                document.getElementById('createUserResult').innerHTML = `<div class="alert success">User "${userData.username}" created successfully!</div>`;
+                document.querySelector('#users-add form').reset();
+                loadUsers();
+            } catch (error) {
+                document.getElementById('createUserResult').innerHTML = `<div class="alert error">Failed to create user: ${error.message}</div>`;
+            }
+        }
+
+        async function deleteUser(username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"?`)) return;
+
+            try {
+                await apiCall(`/api/users/${username}`, {
+                    method: 'DELETE'
+                });
+
+                showAlert(`User "${username}" deleted successfully`, 'success', 'users-list');
+                loadUsers();
+            } catch (error) {
+                showAlert(`Failed to delete user: ${error.message}`, 'error', 'users-list');
+            }
+        }
+
+        async function resetPassword(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('resetUsername').value;
+            const newPassword = document.getElementById('resetNewPassword').value;
+
+            try {
+                // This would need a password reset endpoint in your API
+                showAlert('Password reset functionality would be implemented here', 'warning', 'users-manage');
+                document.querySelector('#users-manage form').reset();
+            } catch (error) {
+                document.getElementById('resetPasswordResult').innerHTML = `<div class="alert error">Failed to reset password: ${error.message}</div>`;
+            }
+        }
+
+        // ========================================
+        // CONFIGURATION FUNCTIONS
+        // ========================================
+
+        async function loadConfig() {
+            try {
+                const response = await apiCall('/api/configure');
+                const config = response.config || {};
+
+                // Populate form fields
+                document.getElementById('configDefaultPriority').value = config.default_priority || 500;
+                document.getElementById('configDefaultTime').value = config.default_time_estimate || 120;
+                document.getElementById('configQueueMode').value = config.mode || 'fifo';
+                document.getElementById('configMaxQueueSize').value = config.max_queue_size || 1000;
+                document.getElementById('configPoolOverhead').value = config.qup_overhead_percent || 10.0;
+                document.getElementById('configDriftClear').value = config.drift_clear_percent || 5.0;
+                document.getElementById('configMaxQupTime').value = config.max_qup_time || 1800;
+                document.getElementById('configReserveCap').value = config.reserve_cap_minutes || 5;
+
+                // Display current config
+                let html = '<h4>Current Configuration:</h4><div class="stats-grid">';
+                Object.entries(config).forEach(([key, value]) => {
+                    html += `<div class="stat-card">
+                        <div class="stat-number">${value}</div>
+                        <div class="stat-label">${key.replace(/_/g, ' ')}</div>
+                    </div>`;
+                });
+                html += '</div>';
+
+                document.getElementById('configDisplay').innerHTML = html;
+                showAlert('Configuration loaded successfully', 'success', 'config-view');
+            } catch (error) {
+                document.getElementById('configDisplay').innerHTML = `<div class="alert error">Failed to load configuration: ${error.message}</div>`;
+            }
+        }
+
+        async function updateConfig() {
+            const configData = {
+                default_priority: parseInt(document.getElementById('configDefaultPriority').value),
+                default_time_estimate: parseInt(document.getElementById('configDefaultTime').value),
+                mode: document.getElementById('configQueueMode').value,
+                max_queue_size: parseInt(document.getElementById('configMaxQueueSize').value)
+            };
+
+            try {
+                await apiCall('/api/configure', {
+                    method: 'POST',
+                    body: JSON.stringify(configData)
+                });
+
+                document.getElementById('configUpdateResult').innerHTML = `<div class="alert success">Configuration updated successfully!</div>`;
+                loadConfig();
+            } catch (error) {
+                document.getElementById('configUpdateResult').innerHTML = `<div class="alert error">Failed to update configuration: ${error.message}</div>`;
+            }
+        }
+
+        async function updateTimeConfig() {
+            const timeConfigData = {
+                qup_overhead_percent: parseFloat(document.getElementById('configPoolOverhead').value),
+                drift_clear_percent: parseFloat(document.getElementById('configDriftClear').value),
+                max_qup_time: parseInt(document.getElementById('configMaxQupTime').value),
+                reserve_cap_minutes: parseInt(document.getElementById('configReserveCap').value)
+            };
+
+            try {
+                await apiCall('/api/configure', {
+                    method: 'POST',
+                    body: JSON.stringify(timeConfigData)
+                });
+
+                document.getElementById('timeConfigResult').innerHTML = `<div class="alert success">Time management settings updated successfully!</div>`;
+                loadConfig();
+            } catch (error) {
+                document.getElementById('timeConfigResult').innerHTML = `<div class="alert error">Failed to update time settings: ${error.message}</div>`;
+            }
+        }
+
+        function exportConfig() {
+            apiCall('/api/configure')
+                .then(response => {
+                    const configJson = JSON.stringify(response.config, null, 2);
+                    const blob = new Blob([configJson], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'qup_config.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showAlert('Configuration exported successfully', 'success', 'config-view');
+                })
+                .catch(error => {
+                    showAlert(`Failed to export configuration: ${error.message}`, 'error', 'config-view');
+                });
+        }
+
+        // ========================================
+        // ANALYTICS FUNCTIONS
+        // ========================================
+
+        async function loadAnalytics() {
+            try {
+                const response = await apiCall('/api/analytics');
+                const analytics = response.analytics || {};
+
+                let html = '<h4>System Analytics:</h4>';
+
+                // Queue Stats
+                if (analytics.queue_stats) {
+                    html += '<div class="stats-grid">';
+                    Object.entries(analytics.queue_stats).forEach(([key, value]) => {
+                        let displayValue = typeof value === 'number' ? value.toFixed(2) : value;
+                        html += `<div class="stat-card">
+                            <div class="stat-number">${displayValue}</div>
+                            <div class="stat-label">${key.replace(/_/g, ' ')}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                // Time Management
+                if (analytics.time_management) {
+                    html += '<h5>Time Management:</h5><div class="stats-grid">';
+                    Object.entries(analytics.time_management).forEach(([key, value]) => {
+                        let displayValue = typeof value === 'number' ? value.toFixed(2) : value;
+                        html += `<div class="stat-card">
+                            <div class="stat-number">${displayValue}</div>
+                            <div class="stat-label">${key.replace(/_/g, ' ')}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                document.getElementById('analyticsDisplay').innerHTML = html;
+                showAlert('Analytics loaded successfully', 'success', 'analytics-overview');
+            } catch (error) {
+                document.getElementById('analyticsDisplay').innerHTML = `<div class="alert error">Failed to load analytics: ${error.message}</div>`;
+            }
+        }
+
+        async function loadMLStats() {
+            try {
+                const response = await apiCall('/api/ml/stats');
+                const mlStats = response.ml_stats || {};
+
+                let html = '<h4>Machine Learning Statistics:</h4>';
+                html += `<div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${mlStats.models_count || 0}</div>
+                        <div class="stat-label">Active Models</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${mlStats.training_data_points || 0}</div>
+                        <div class="stat-label">Training Data Points</div>
+                    </div>
+                </div>`;
+
+                if (mlStats.models) {
+                    html += '<h5>Model Details:</h5>';
+                    Object.entries(mlStats.models).forEach(([key, model]) => {
+                        html += `<div class="alert info">
+                            <strong>${key}:</strong> Avg Time: ${model.avg_time?.toFixed(2)}s,
+                            Data Points: ${model.data_points},
+                            Last Trained: ${new Date(model.last_trained).toLocaleDateString()}
+                        </div>`;
+                    });
+                }
+
+                document.getElementById('mlStatsDisplay').innerHTML = html;
+            } catch (error) {
+                document.getElementById('mlStatsDisplay').innerHTML = `<div class="alert error">Failed to load ML stats: ${error.message}</div>`;
+            }
+        }
+
+        async function retrainML() {
+            if (!confirm('Are you sure you want to retrain all ML models? This may take some time.')) return;
+
+            try {
+                const response = await apiCall('/api/ml/retrain', { method: 'POST' });
+                showAlert(`ML retraining completed: ${response.models_retrained || 0} models retrained`, 'success', 'analytics-ml');
+                loadMLStats();
+            } catch (error) {
+                showAlert(`ML retraining failed: ${error.message}`, 'error', 'analytics-ml');
+            }
+        }
+
+        async function loadSystemLogs() {
+            try {
+                // This would be implemented with a proper logs endpoint
+                let html = '<h4>System Logs:</h4>';
+                html += '<div class="alert info">System logs functionality would be implemented with a proper logs endpoint</div>';
+                html += '<div class="stats-grid">';
+                html += `<div class="stat-card">
+                    <div class="stat-number">🟢</div>
+                    <div class="stat-label">Server Status</div>
+                </div>`;
+               html += `<div class="stat-card">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Error Count</div>
+                </div>`;
+                html += `<div class="stat-card">
+                    <div class="stat-number">${new Date().toLocaleTimeString()}</div>
+                    <div class="stat-label">Last Check</div>
+                </div>`;
+                html += '</div>';
+
+                document.getElementById('systemLogsDisplay').innerHTML = html;
+                showAlert('System logs checked successfully', 'success', 'analytics-logs');
+            } catch (error) {
+                document.getElementById('systemLogsDisplay').innerHTML = `<div class="alert error">Failed to load system logs: ${error.message}</div>`;
+            }
+        }
+
+        // ========================================
+        // MODAL FUNCTIONS
+        // ========================================
+
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // ========================================
+        // EVENT LISTENERS SETUP
+        // ========================================
+
+        function setupEventListeners() {
+            console.log('Setting up event listeners...');
+
+            // Server selection
+            document.getElementById('localBtn').addEventListener('click', () => selectServer('local'));
+            document.getElementById('productionBtn').addEventListener('click', () => selectServer('production'));
+
+            // Authentication
+            document.getElementById('loginBtn').addEventListener('click', performLogin);
+            document.getElementById('testBtn').addEventListener('click', testConnection);
+            document.getElementById('logoutBtn').addEventListener('click', performLogout);
+            document.getElementById('switchBtn').addEventListener('click', switchServerView);
+
+            // System operations
+            document.getElementById('refreshStatusBtn').addEventListener('click', checkSystemStatus);
+            document.getElementById('healthCheckBtn').addEventListener('click', runHealthCheck);
+
+            // Queue operations
+            document.getElementById('queueRefreshBtn').addEventListener('click', refreshQueue);
+            document.getElementById('addTestOrderBtn').addEventListener('click', addTestOrder);
+            document.getElementById('clearQueueBtn').addEventListener('click', clearQueue);
+
+            // Enter key for login
+            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performLogin();
+                }
+            });
+
+            console.log('✅ All event listeners set up successfully');
+        }
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 QUP Admin Dashboard v2.1OM Content Loaded');
+
+            // Set production as default
+            selectServer('production');
+
+            // Setup logo upload functionality
+            setupLogoUpload();
+
+            // Setup all event listeners
+            setupEventListeners();
+
+            console.log('✅ QUP Admin Dashboard v2.1 initialized successfully');
+            console.log('📊 Current configuration:', {
+                server: currentServer,
+                apiBase: API_BASE,
+                hasApiKey: !!API_KEY,
+            logoLoaded: !!currentLogo
+            });
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('confirmModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('💥 JavaScript Error:', e.error);
+            console.error('📍 Location:', eename, 'Line:', e.lineno);
+        });
+
+        console.log('📝 QUP Admin Dashboard v2.1 script loaded successfully');
+    </script>
+</body>
+</html>

@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Client Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Login Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .login-form {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            width: 450px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .login-form h2 {
+            color: #4c1d95;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4c1d95;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .btn.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-container {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header h1 {
+            color: #4c1d95;
+            font-size: 2rem;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #4c1d95;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-display {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .status-checking {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .status-not-in-queue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-in-queue {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .pickup-notification {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .pickup-code {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 15px 0;
+            letter-spacing: 4px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .order-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .order-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .order-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .order-input:read-only {
+            background-color: #f9fafb;
+            color: #6b7280;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .alert.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .alert.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .logo {
+            max-width: 200px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .refresh-info {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .pickup-code {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Container -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <h2>🛒 QUP Client Login</h2>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter your username" onkeypress="handleLoginKeyPress(event)">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" onkeypress="handleLoginKeyPress(event)">
+            </div>
+            <button class="btn" style="width: 100%;" onclick="performLogin()">Login</button>
+            <div id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <div class="header">
+            <h1>🛒 QUP Orders</h1>
+            <div>
+                <span id="welcomeUser" style="font-weight: 600; margin-right: 15px;"></span>
+                <button class="logout-btn" onclick="performLogout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="statusDisplay" class="status-display status-checking">
+                Checking your order status...
+            </div>
+
+            <!-- Pickup Notification (hidden by default) -->
+            <div id="pickupNotification" class="pickup-notification" style="display: none;">
+                <h2>🎉 Your Order is Ready!</h2>
+                <div id="pickupCode" class="pickup-code">----</div>
+                <p>Show this code to pick up your order</p>
+            </div>
+
+            <!-- Order Form -->
+            <div class="order-form">
+                <input type="text" id="orderText" class="order-input" placeholder="What would you like to order?" maxlength="200" 
+                       oninput="handleTyping()" onblur="handleStopTyping()" onkeypress="handleOrderKeyPress(event)">
+                <div style="text-align: center;">
+                    <button id="orderButton" class="btn" onclick="handleOrderAction()" disabled>
+                        Submit Order
+                    </button>
+                </div>
+            </div>
+
+            <!-- Countdown Display -->
+            <div id="countdownDisplay" style="display: none; text-align: center; margin-top: 20px; font-size: 1.2rem; color: #4c1d95;">
+                <strong>⏰ Estimated wait time: <span id="countdownTime">--:--</span></strong>
+            </div>
+
+            <div class="refresh-info">
+                Status updates automatically every 5 seconds
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
+        const API_KEY = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
+
+        // State variables
+        let authToken = null;
+        let currentUser = null;
+        let isLoggedIn = false;
+        let inQueue = false;
+        let currentOrderId = null;
+        let isTyping = false;
+        let typingTimeout = null;
+        let countdownInterval = null;
+
+        // Utility function for API calls
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': API_KEY
+                }
+            };
+
+            if (authToken) {
+                defaultOptions.headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            const finalOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: { ...defaultOptions.headers, ...options.headers }
+            };
+
+            try {
+                const response = await fetch(url, finalOptions);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                return data;
+            } catch (error) {
+                console.error(`API Error (${endpoint}):`, error.message);
+                throw error;
+            }
+        }
+
+        // Handle typing detection
+        function handleTyping() {
+            isTyping = true;
+            
+            // Enable submit button if user is typing and not in queue
+            if (!inQueue) {
+                const orderButton = document.getElementById('orderButton');
+                const orderText = document.getElementById('orderText');
+                
+                if (orderText.value.trim().length > 0) {
+                    orderButton.disabled = false;
+                } else {
+                    orderButton.disabled = true;
+                }
+            }
+            
+            // Clear existing timeout
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+            
+            // Set timeout to stop typing detection after 3 seconds of inactivity
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+            }, 3000);
+        }
+
+        function handleStopTyping() {
+            // Small delay to allow for final input processing
+            setTimeout(() => {
+                isTyping = false;
+                
+                // Make sure submit button state is correct when done typing
+                if (!inQueue) {
+                    const orderButton = document.getElementById('orderButton');
+                    const orderText = document.getElementById('orderText');
+                    
+                    if (orderText.value.trim().length > 0) {
+                        orderButton.disabled = false;
+                    } else {
+                        orderButton.disabled = true;
+                    }
+                }
+            }, 100);
+        }
+
+        // Handle Enter key for order submission
+        function handleOrderKeyPress(event) {
+            if (event.key === 'Enter' && !inQueue) {
+                const orderButton = document.getElementById('orderButton');
+                if (!orderButton.disabled) {
+                    handleOrderAction();
+                }
+            }
+        }
+        function showAlert(message, type = 'info') {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
+
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+
+            const card = document.querySelector('.card');
+            card.appendChild(alert);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Enter key support for login
+        function handleLoginKeyPress(event) {
+            if (event.key === 'Enter') {
+                performLogin();
+            }
+        }
+
+        // Login function
+        async function performLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorElement = document.getElementById('loginError');
+
+            if (!username || !password) {
+                errorElement.innerHTML = '<div class="alert error">Please enter both username and password</div>';
+                return;
+            }
+
+            errorElement.innerHTML = '<div class="alert info">Logging in...</div>';
+
+            try {
+                const data = await apiCall('/api/v1/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (data.access_token) {
+                    authToken = data.access_token;
+                    currentUser = username;
+                    isLoggedIn = true;
+
+                    console.log('✅ Client login successful:', { username, role: data.user_type });
+                    showDashboard();
+                } else {
+                    throw new Error('No access token received');
+                }
+            } catch (error) {
+                console.error('❌ Login failed:', error);
+                errorElement.innerHTML = `<div class="alert error">❌ Login failed: ${error.message}</div>`;
+            }
+        }
+
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'block';
+            document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser}`;
+            
+            // Initialize form state
+            const orderButton = document.getElementById('orderButton');
+            const orderText = document.getElementById('orderText');
+            orderButton.disabled = true; // Disabled until user types something
+            
+            // Initialize dashboard
+            fetchQueue();
+            
+            // Set up auto-refresh
+            setInterval(fetchQueue, 5000);
+        }
+
+        // Logout function
+        function performLogout() {
+            authToken = null;
+            currentUser = null;
+            isLoggedIn = false;
+            inQueue = false;
+            currentOrderId = null;
+            
+            // Clear countdown timer
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('dashboardContainer').style.display = 'none';
+            document.getElementById('loginError').innerHTML = '';
+            
+            // Reset form completely
+            const orderText = document.getElementById('orderText');
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            
+            orderText.value = '';
+            orderText.readOnly = false;
+            orderText.disabled = false;
+            countdownDisplay.style.display = 'none';
+            document.getElementById('pickupNotification').style.display = 'none';
+        }
+
+        // Main order action handler
+        async function handleOrderAction() {
+            if (inQueue) {
+                await cancelOrder();
+            } else {
+                await submitOrder();
+            }
+        }
+
+        // Submit new order
+        async function submitOrder() {
+            const orderText = document.getElementById('orderText').value.trim();
+            
+            if (!orderText) {
+                showAlert('Please enter a description for your order', 'error');
+                return;
+            }
+
+            try {
+                console.log('🛒 Submitting order:', orderText);
+                
+                // IMMEDIATELY lock the interface after submit
+                const orderInput = document.getElementById('orderText');
+                const orderButton = document.getElementById('orderButton');
+                
+                // Lock input immediately
+                orderInput.readOnly = true;
+                orderButton.textContent = 'Submitting...';
+                orderButton.disabled = true;
+                
+                // Stop typing detection since we're now locked
+                isTyping = false;
+                if (typingTimeout) {
+                    clearTimeout(typingTimeout);
+                }
+                
+                // Generate unique order ID for this user
+                const orderId = `${currentUser}-${Date.now()}`;
+                
+                const response = await apiCall('/api/v1/queue/add', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        id: orderId,
+                        user_id: currentUser,
+                        payload: { order: orderText }
+                    })
+                });
+
+                console.log('✅ Order submitted successfully:', response);
+                currentOrderId = orderId;
+                inQueue = true;
+                
+                // Update UI to show submitted state
+                orderButton.textContent = 'Cancel Order';
+                orderButton.disabled = false;
+                orderButton.className = 'btn danger';
+                
+                const statusDisplay = document.getElementById('statusDisplay');
+                statusDisplay.className = 'status-display status-in-queue';
+                statusDisplay.textContent = '⏳ Your order is being prepared...';
+                
+                showAlert('Order submitted successfully!', 'success');
+                
+                // Immediately fetch queue to update status
+                fetchQueue();
+                
+            } catch (error) {
+                console.error('❌ Error submitting order:', error);
+                
+                // On error, unlock the interface
+                const orderInput = document.getElementById('orderText');
+                const orderButton = document.getElementById('orderButton');
+                
+                orderInput.readOnly = false;
+                orderButton.textContent = 'Submit Order';
+                orderButton.disabled = false;
+                orderButton.className = 'btn success';
+                
+                showAlert(`Failed to submit order: ${error.message}`, 'error');
+            }
+        }
+
+        // Cancel order
+        async function cancelOrder() {
+            if (!currentOrderId) {
+                showAlert('No active order to cancel', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to cancel your order?')) {
+                return;
+            }
+
+            try {
+                console.log('❌ Cancelling order:', currentOrderId);
+                
+                const response = await apiCall('/api/v1/queue/cancel', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: currentOrderId })
+                });
+
+                console.log('✅ Order cancelled successfully:', response);
+                
+                // Reset to initial state immediately
+                inQueue = false;
+                currentOrderId = null;
+                isTyping = false;
+                
+                const orderInput = document.getElementById('orderText');
+                const orderButton = document.getElementById('orderButton');
+                const statusDisplay = document.getElementById('statusDisplay');
+                const pickupNotification = document.getElementById('pickupNotification');
+                
+                // Unlock and clear interface
+                orderInput.readOnly = false;
+                orderInput.value = '';
+                orderButton.textContent = 'Submit Order';
+                orderButton.disabled = false;
+                orderButton.className = 'btn success';
+                
+                statusDisplay.className = 'status-display status-not-in-queue';
+                statusDisplay.textContent = '📝 Submit a new order below';
+                
+                pickupNotification.style.display = 'none';
+                
+                showAlert('Order cancelled successfully', 'info');
+                
+                // Immediately fetch queue to confirm cancellation
+                fetchQueue();
+                
+            } catch (error) {
+                console.error('❌ Error cancelling order:', error);
+                showAlert(`Failed to cancel order: ${error.message}`, 'error');
+            }
+        }
+
+        // Fetch and update queue status
+        async function fetchQueue() {
+            if (!isLoggedIn || !authToken) {
+                console.warn('Not logged in or no auth token');
+                return;
+            }
+
+            // Skip refresh if user is actively typing AND not in queue
+            // If in queue, always allow refresh for status updates
+            if (isTyping && !inQueue) {
+                console.log('⏸️ Skipping refresh - user is typing and not in queue');
+                return;
+            }
+
+            try {
+                console.log('🔄 Fetching queue status...');
+                
+                const data = await apiCall('/api/v1/queue/list');
+
+                if (data.status === 'success' && data.queue) {
+                    console.log('✅ Queue fetched successfully:', data.queue.length, 'items');
+                    updateOrderStatus(data.queue);
+                } else {
+                    throw new Error(data.message || 'Failed to fetch queue');
+                }
+            } catch (error) {
+                console.error('❌ Error fetching queue:', error);
+                
+                // Only update status display if we're not in a locked state
+                if (!inQueue) {
+                    const statusDisplay = document.getElementById('statusDisplay');
+                    statusDisplay.className = 'status-display status-checking';
+                    statusDisplay.textContent = 'Error checking status. Retrying...';
+                }
+
+                // If authentication failed, logout
+                if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    showAlert('Session expired. Please login again.', 'error');
+                    setTimeout(performLogout, 2000);
+                }
+            }
+        }
+
+        // Update order status display
+        function updateOrderStatus(queue) {
+            const statusDisplay = document.getElementById('statusDisplay');
+            const orderButton = document.getElementById('orderButton');
+            const orderText = document.getElementById('orderText');
+            const pickupNotification = document.getElementById('pickupNotification');
+            const pickupCode = document.getElementById('pickupCode');
+            const countdownDisplay = document.getElementById('countdownDisplay');
+
+            // Find current user's order in queue
+            const userOrder = queue.find(item => item.user_id === currentUser && !item.cancelled);
+
+            if (userOrder) {
+                inQueue = true;
+                currentOrderId = userOrder.id;
+
+                if (userOrder.finalized) {
+                    // Order is ready for pickup - SHOW PIQUP CODE
+                    statusDisplay.className = 'status-display status-ready';
+                    statusDisplay.textContent = '🎉 Your order is ready for pickup!';
+                    
+                    // Show pickup notification with code
+                    const code = userOrder.pickup_code || userOrder.timestamp?.slice(-4) || '0000';
+                    pickupCode.textContent = code;
+                    pickupNotification.style.display = 'block';
+                    
+                    // Hide countdown and stop timer
+                    countdownDisplay.style.display = 'none';
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                    
+                    // Lock the form completely - order is finalized
+                    orderText.value = userOrder.payload?.order || '';
+                    orderText.readOnly = true;
+                    orderText.disabled = true; // COMPLETELY disable input
+                    orderButton.textContent = 'Order Finalized';
+                    orderButton.disabled = true;
+                    orderButton.className = 'btn';
+                    
+                    // Stop typing detection since we're finalized
+                    isTyping = false;
+                    
+                } else {
+                    // Order is submitted and waiting - PAUSE SCREEN WITH COUNTDOWN
+                    statusDisplay.className = 'status-display status-in-queue';
+                    statusDisplay.textContent = '⏳ Your order is being prepared...';
+                    
+                    pickupNotification.style.display = 'none';
+                    
+                    // Show countdown timer
+                    countdownDisplay.style.display = 'block';
+                    startCountdown(userOrder.remaining_seconds || 0);
+                    
+                    // Lock input but show submitted order and allow cancellation
+                    orderText.value = userOrder.payload?.order || '';
+                    orderText.readOnly = true;  // PAUSE - can't input more
+                    orderText.disabled = true;  // COMPLETELY disable input
+                    orderButton.textContent = 'Cancel Order';
+                    orderButton.disabled = false;
+                    orderButton.className = 'btn danger';
+                    
+                    // Stop typing detection since we're locked
+                    isTyping = false;
+                }
+            } else {
+                // No active order - ALLOW NEW INPUT ONLY if we're not already locked
+                const wasInQueue = inQueue;
+                inQueue = false;
+                currentOrderId = null;
+                
+                statusDisplay.className = 'status-display status-not-in-queue';
+                statusDisplay.textContent = '📝 Submit a w order below';
+                
+                pickupNotification.style.display = 'none';
+                countdownDisplay.style.display = 'none';
+                
+                // Stop countdown timer
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // Only unlock if we were previously in queue (don't interfere with active typing)
+                if (wasInQueue || orderText.readOnly) {
+                    orderText.readOnly = false;
+                    orderText.disabled = false;  // Re-enable input
+                    orderText.value = '';
+                    orderButton.textContent = 'Submit Order';
+                    orderButton.disabled = true; // Disabled until user types something
+                    orderButton.className = 'btn success';
+                    isTyping = false;  // Reset typing state
+                }
+            }
+        }
+
+        // Initialize the application
+        window.onload = function() {
+            console.log('🛒 QUP Client Dashboard loaded');
+            
+            // Check if already logged in
+            const savedToken = localStorage.getItem('qup-client-token');
+            const savedUser = localStorage.getItem('qup-client-user');
+            
+            if (savedToken && savedUser) {
+                authToken = savedToken;
+                currentUser = savedUser;
+                isLoggedIn = true;
+                showDhboard();
+            } else {
+                // Make sure login form is shown and submit button is properly initialized
+                const orderButton = document.getElementById('orderButton');
+                if (orderButton) {
+                    orderButton.disabled = true;
+                }
+            }
+        };
+
+        // Save login state
+        function saveLoginState() {
+            if (authToken && currentUser) {
+                localStorage.setItem('qup-client-token', authToken);
+                localStorage.setItem('qup-client-user', currentUser);
+            }
+        }
+
+        // Clear login state
+        function clearLoginState() {
+            localStorage.removeItem('qup-client-token');
+            localStorage.removeItem('qup-client-user');
+        }
+
+        // Update login/logout functions to handle state persistence
+        function enhanceShowDashboard() {
+            const originalShowDashboard = showDashboard;
+            return function() {
+                saveLoginState();
+                originalShowDashboard();
+            };
+        }
+
+        function enhancePerformLogout() {
+            const originalPerformLogout = performLogout;
+            return function() {
+                clearLoginState();
+                originalPerformLogout();
+            };
+        }
+
+        // Apply enhancements after functions are defined
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof showDashboard === 'function') {
+                const originalShowDashboard = showDashboard;
+                showDashboard = function() {
+                    saveLoginState();
+                    originalShowDashboard();
+                };
+            }
+            
+            if (typeof performLogout === 'function') {
+                const originalPerformLogout = performLogout;
+                performLogout = function() {
+                    clearLoginState();
+                    originalPerformLogout();
+                };
+            }
+        });
+
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('💥 JavaScript Error:', e.error);
+        });
+    </script>
+</body>
+</html>

@@ -173,6 +173,46 @@
             letter-spacing: -0.5px;
         }
 
+        .user-info-display {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .user-email {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .logout-btn-small {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn-small:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .login-form-fields {
+            display: block;
+        }
+
+        .login-form-fields.hidden {
+            display: none;
+        }
+
         .logout-btn {
             background: linear-gradient(45deg, var(--danger), #dc2626);
             color: white;
@@ -203,6 +243,48 @@
             border: 1px solid var(--border);
             box-shadow: 0 8px 25px var(--shadow);
             backdrop-filter: blur(10px);
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .refresh-btn, .debug-btn, .mass-action-btn, .danger-btn {
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 50%, #2e7d32 100%);
+        }
+
+        .debug-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 50%, #6a1b9a 100%);
+        }
+
+        .mass-action-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 50%, #ef6c00 100%);
+        }
+
+        .danger-btn {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 50%, #b71c1c 100%);
+        }
+
+        .refresh-btn:hover, .debug-btn:hover, .mass-action-btn:hover, .danger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.4);
         }
 
         .websocket-status {
@@ -269,15 +351,6 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
 
-        .order-table tr.ready-order td {
-            background-color: rgba(16, 185, 129, 0.1);
-            border-left: 4px solid var(--success);
-        }
-
-        .order-table tr.ready-order:hover td {
-            background-color: rgba(16, 185, 129, 0.2);
-        }
-
         .order-table button {
             padding: 10px 18px;
             margin: 3px;
@@ -303,26 +376,6 @@
             transform: none;
         }
 
-        .btn-finalize {
-            background: linear-gradient(45deg, var(--info), #1976d2);
-            color: white;
-        }
-
-        .btn-complete {
-            background: linear-gradient(45deg, var(--success), #059669);
-            color: white;
-        }
-
-        .btn-cancel {
-            background: linear-gradient(45deg, var(--danger), #dc2626);
-            color: white;
-        }
-
-        .customer-name {
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
         .pickup-code {
             font-family: 'Courier New', monospace;
             font-weight: bold;
@@ -340,24 +393,9 @@
             animation: pulse 2s infinite;
         }
 
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-next {
-            background: rgba(251, 191, 36, 0.2);
-            color: var(--warning);
-            border: 1px solid var(--warning);
-        }
-
-        .status-ready {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-            border: 1px solid var(--success);
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .order-notification {
@@ -407,11 +445,6 @@
             to { transform: rotate(360deg); }
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -440,14 +473,20 @@
                 font-size: 28px;
             }
 
-            .order-header {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
+            .status-buttons {
+                justify-content: center;
             }
 
-            .order-actions {
-                flex-direction: column;
+            .order-table th,
+            .order-table td {
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            .order-table button {
+                padding: 8px 14px;
+                font-size: 12px;
+                margin: 2px;
             }
         }
     </style>
@@ -484,28 +523,34 @@
                     <button class="logout-btn" onclick="logout()">Sign Out</button>
                 </div>
             </div>
-
+            
             <div id="errorNotification" class="error-message"></div>
-
+            
             <div class="datetime-container">
-                <span id="localDateTime"></span> • <span id="queueCounter">0 orders</span> active
+                <span id="localDateTime"></span> • <span id="queueCounter">0 orders</span> in queue
                 <span id="websocketStatus2" class="websocket-status disconnected">WebSocket: Disconnected</span>
+                
+                <div class="status-buttons">
+                    <button class="refresh-btn" onclick="fetchQueue()">Manual Refresh</button>
+                    <button class="debug-btn" onclick="debugSystem()">Debug System</button>
+                    <button class="mass-action-btn" onclick="finalizeAllOrders()">Finalize All</button>
+                    <button class="mass-action-btn" onclick="completeAllOrders()">Complete All</button>
+                    <button class="danger-btn" onclick="clearAllOrders()">Clear All</button>
+                </div>
             </div>
-
+            
             <table class="order-table">
                 <thead>
                     <tr>
-                        <th>Customer</th>
                         <th>Order</th>
-                        <th>Time</th>
-                        <th>Status</th>
+                        <th>Processing Time</th>
                         <th>PiQUP Code</th>
                         <th style="text-align: center">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="queueBody">
                     <tr>
-                        <td colspan="6" style="text-align:center;">Connecting to real-time updates...</td>
+                        <td colspan="4" style="text-align:center;">Connecting to real-time updates...</td>
                     </tr>
                 </tbody>
             </table>
@@ -533,7 +578,7 @@
         // Check if user is already logged in
         async function init() {
             console.log('QUP Barista Dashboard initializing...');
-
+            
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
@@ -563,26 +608,26 @@
         async function handleLogin() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
-
+            
             if (!email || !password) {
                 showError('Please enter both email and password');
                 return;
             }
-
+            
             setLoading(true);
-
+            
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-
+                
                 if (error) throw error;
-
+                
                 console.log('Supabase login successful');
                 showUserInfo(data.user);
                 showDashboard(data.user);
-
+                
             } catch (error) {
                 console.error('Login failed:', error);
                 showError('Login failed: ' + error.message);
@@ -594,23 +639,23 @@
         async function logout() {
             try {
                 await supabase.auth.signOut();
-
+                
                 // Cleanup
                 if (socket) {
                     socket.disconnect();
                     socket = null;
                 }
                 stopAllIntervals();
-
+                
                 currentUser = null;
                 developerKey = null;
-
+                
                 // Clear form fields
                 document.getElementById('email').value = '';
                 document.getElementById('password').value = '';
-
+                
                 showLogin();
-
+                
             } catch (error) {
                 console.error('Logout failed:', error);
             }
@@ -623,21 +668,21 @@
 
         async function showDashboard(user) {
             currentUser = user;
-
+            
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('dashboardContainer').style.display = 'block';
-
+            
             // Get developer key for API access
             await getDeveloperKey();
-
+            
             // Connect WebSocket
             connectWebSocket();
-
+            
             // Start updates
             startTimeUpdates();
             fetchQueue();
             startAutoRefresh();
-
+            
             console.log('Dashboard initialized for:', user.email);
         }
 
@@ -645,7 +690,7 @@
         async function getDeveloperKey() {
             try {
                 console.log('Getting developer key...');
-
+                
                 const response = await fetch(`${API_BASE}/api/auth/developer/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -654,13 +699,13 @@
                         password: 'dev123'
                     })
                 });
-
+                
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-
+                
                 const data = await response.json();
-
+                
                 if (data.developer_key) {
                     developerKey = data.developer_key;
                     console.log('Developer key obtained');
@@ -669,7 +714,7 @@
                 }
             } catch (error) {
                 console.error('Developer key error:', error);
-
+                
                 // Fallback to hardcoded key
                 console.log('Using fallback developer key...');
                 developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
@@ -681,7 +726,7 @@
         function connectWebSocket() {
             try {
                 console.log('Connecting to WebSocket...');
-
+                
                 socket = io(API_BASE, {
                     transports: ['websocket', 'polling'],
                     timeout: 20000,
@@ -694,7 +739,7 @@
                 socket.on('connect', () => {
                     updateWebSocketStatus('connected');
                     console.log('WebSocket connected');
-
+                    
                     // Subscribe to barista events
                     socket.emit('subscribe_barista', { barista: currentUser.email });
                 });
@@ -724,7 +769,7 @@
                 socket.on('queue_update', (data) => {
                     console.log('Queue update received:', data);
                     if (data.queue) {
-                        updateOrdersDisplay(data.queue);
+                        updateQueueTable(data.queue);
                     }
                 });
 
@@ -762,10 +807,10 @@
 
         function handleOrderUpdate(data) {
             console.log('Handling order update:', data.action);
-
+            
             // Show notification
             showOrderNotification(`Order ${data.orderId}: ${data.action}`);
-
+            
             // Refresh queue after a short delay
             if (!isActionInProgress) {
                 setTimeout(fetchQueue, 1000);
@@ -838,7 +883,8 @@
 
                 if (data.status === "success") {
                     console.log(`Queue fetched: ${data.queue?.length || 0} items`);
-                    updateOrdersDisplay(data.queue || []);
+                    updateQueueTable(data.queue || []);
+                    updateQueueCounter(data.queue?.length || 0);
                 } else {
                     console.error("Queue fetch failed:", data.message);
                     showError("Failed to fetch queue data");
@@ -849,48 +895,28 @@
             }
         }
 
-        function updateOrdersDisplay(queue) {
+        function updateQueueTable(queue) {
             const tableBody = document.getElementById("queueBody");
             if (!tableBody) return;
 
-            // Filter orders: only show the NEXT order to work on (not finalized) AND finalized orders (ready for pickup)
-            const filteredOrders = queue.filter(item => !item.cancelled);
-
-            // Sort by timestamp to get the order they came in
-            filteredOrders.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-            // Get the next order to work on (first non-finalized order)
-            const nextOrder = filteredOrders.find(order => !order.finalized);
-
-            // Get all finalized orders (ready for pickup)
-            const readyOrders = filteredOrders.filter(order => order.finalized);
-
-            // Combine: next order + ready orders
-            const ordersToShow = [];
-            if (nextOrder) ordersToShow.push(nextOrder);
-            ordersToShow.push(...readyOrders);
-
-            updateQueueCounter(ordersToShow.length);
-
-            if (ordersToShow.length === 0) {
+            if (queue.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align:center; color: #666; font-style: italic;">
-                            No orders to work on
+                        <td colspan="4" style="text-align:center; color: #666; font-style: italic;">
+                            No orders in queue
                         </td>
                     </tr>
                 `;
                 return;
             }
 
-            const html = ordersToShow.map((item, index) => {
+            const html = queue.map(item => {
+                if (item.cancelled) return '';
+
                 const orderDisplay = (item.payload?.order) ? item.payload.order : item.id;
-                const customerName = extractCustomerName(item);
                 let processingTime = "0:00";
-                let pickupCode = "";
+                let pickupCode = "In Progress";
                 let actions = '';
-                let rowClass = '';
-                let statusBadge = '';
 
                 // Calculate processing time
                 if (item.timestamp) {
@@ -902,59 +928,45 @@
 
                 if (item.finalized) {
                     // Order is ready for pickup
-                    rowClass = 'ready-order';
-                    statusBadge = '<span class="status-badge status-ready">Ready</span>';
+                    processingTime = "Ready";
                     pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
                     actions = `
-                        <button class="btn-complete" onclick="completeOrder('${item.id}')">
+                        <button onclick="completeOrder('${item.id}')" style="background: #10b981; color: white;">
                             Complete
                         </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                        <button onclick="cancelOrder('${item.id}')" style="background: #ef4444; color: white;">
                             Cancel
                         </button>
                     `;
                 } else {
-                    // Order is next to work on
-                    statusBadge = '<span class="status-badge status-next">Next</span>';
-                    pickupCode = "In Progress";
+                    // Order is waiting
                     actions = `
-                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
+                        <button onclick="finalizeOrder('${item.id}')" style="background: #3b82f6; color: white;">
                             PiQUP Ready
                         </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                        <button onclick="cancelOrder('${item.id}')" style="background: #ef4444; color: white;">
                             Cancel
                         </button>
                     `;
                 }
 
+                const rowStyle = item.finalized ? 'background-color: rgba(209, 250, 229, 0.8);' : '';
+
                 return `
-                    <tr class="${rowClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
-                        <td><span class="customer-name">${sanitizeHTML(customerName)}</span></td>
+                    <tr style="${rowStyle}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
                         <td>${sanitizeHTML(orderDisplay)}</td>
                         <td><span class="live-timer">${processingTime}</span></td>
-                        <td>${statusBadge}</td>
                         <td>${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}</td>
                         <td style="text-align: center">${actions}</td>
                     </tr>
                 `;
-            }).join('');
+            }).filter(Boolean).join('');
 
-            tableBody.innerHTML = html;
-        }
-
-        function extractCustomerName(order) {
-            // Try to get customer name from email
-            if (order.payload?.customer_email) {
-                return order.payload.customer_email.split('@')[0];
-            }
-
-            // Try to get from user_id
-            if (order.user_id) {
-                return order.user_id.split('@')[0];
-            }
-
-            // Fallback to order ID
-            return order.id.split('_')[0] || 'Customer';
+            tableBody.innerHTML = html || `
+                <tr>
+                    <td colspan="4" style="text-align:center;">No active orders</td>
+                </tr>
+            `;
         }
 
         function updateQueueCounter(count) {
@@ -967,29 +979,29 @@
         // Order actions
         async function finalizeOrder(orderId) {
             if (isActionInProgress) return;
-
+            
             isActionInProgress = true;
             console.log(`Finalizing order: ${orderId}`);
 
             try {
                 const pickupCode = generatePickupCode();
-
+                
                 await apiCall("/api/v1/queue/finalize", {
                     method: "POST",
-                    body: JSON.stringify({
-                        id: orderId,
-                        pickup_code: pickupCode
+                    body: JSON.stringify({ 
+                        id: orderId, 
+                        pickup_code: pickupCode 
                     })
                 });
 
                 console.log(`Order ${orderId} finalized with code: ${pickupCode}`);
                 showOrderNotification(`Order finalized! Pickup code: ${pickupCode}`);
-
+                
                 // Notify customers via WebSocket
                 if (socket && socket.connected) {
-                    socket.emit('order_finalized', {
-                        orderId: orderId,
-                        pickupCode: pickupCode
+                    socket.emit('order_finalized', { 
+                        orderId: orderId, 
+                        pickupCode: pickupCode 
                     });
                 }
 
@@ -1006,7 +1018,7 @@
 
         async function completeOrder(orderId) {
             if (isActionInProgress) return;
-
+            
             isActionInProgress = true;
             console.log(`Completing order: ${orderId}`);
 
@@ -1033,7 +1045,7 @@
         async function cancelOrder(orderId) {
             if (isActionInProgress) return;
             if (!confirm(`Cancel order ${orderId}?`)) return;
-
+            
             isActionInProgress = true;
             console.log(`Cancelling order: ${orderId}`);
 
@@ -1054,6 +1066,141 @@
                 showError(`Failed to cancel order: ${error.message}`);
             } finally {
                 isActionInProgress = false;
+            }
+        }
+
+        // Mass actions
+        async function finalizeAllOrders() {
+            if (!confirm("Finalize ALL active orders?")) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Finalizing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+                const activeOrders = data.queue.filter(item => !item.finalized && !item.cancelled);
+                
+                let successCount = 0;
+                for (const order of activeOrders) {
+                    try {
+                        const pickupCode = generatePickupCode();
+                        await apiCall("/api/v1/queue/finalize", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id, pickup_code: pickupCode })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`Failed to finalize ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Finalized ${successCount}/${activeOrders.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Mass finalize failed:", error);
+                showError(`Mass finalize failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function completeAllOrders() {
+            if (!confirm("Complete ALL finalized orders?")) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Completing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+                const finalizedOrders = data.queue.filter(item => item.finalized && !item.cancelled);
+                
+                let successCount = 0;
+                for (const order of finalizedOrders) {
+                    try {
+                        await apiCall("/api/v1/queue/complete", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`Failed to complete ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Completed ${successCount}/${finalizedOrders.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Mass complete failed:", error);
+                showError(`Mass complete failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function clearAllOrders() {
+            if (!confirm('Clear all orders? This cannot be undone!')) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Clearing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+                
+                let successCount = 0;
+                for (const order of data.queue) {
+                    try {
+                        await apiCall("/api/v1/queue/cancel", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (error) {
+                        console.warn(`Failed to clear ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Cleared ${successCount}/${data.queue.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Clear all failed:", error);
+                showError(`Clear all failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        // Debug functions
+        async function debugSystem() {
+            console.log("DEBUGGING SYSTEM...");
+            
+            try {
+                const queueData = await apiCall("/api/v1/queue/list?admin=true");
+                console.log(`API Queue: ${queueData.queue?.length || 0} orders`);
+                console.log("Queue details:", queueData.queue);
+                
+                const wsStatus = socket?.connected ? 'Connected' : 'Disconnected';
+                console.log(`WebSocket: ${wsStatus}`);
+                
+                alert(`DEBUG RESULTS:\n\nAPI Queue: ${queueData.queue?.length || 0} orders\nWebSocket: ${wsStatus}\nAuth: ${developerKey ? 'OK' : 'MISSING'}\n\nCheck console for detailed logs.`);
+                
+            } catch (error) {
+                console.error("Debug failed:", error);
+                alert(`Debug failed: ${error.message}`);
             }
         }
 
@@ -1140,7 +1287,7 @@
             const text = document.getElementById('loginText');
             const spinner = document.getElementById('loginLoading');
             const button = text.parentElement;
-
+            
             if (loading) {
                 text.style.display = 'none';
                 spinner.style.display = 'inline-block';
@@ -1154,7 +1301,7 @@
 
         function showError(message) {
             console.error("Error:", message);
-
+            
             const errorDiv = document.getElementById("errorNotification");
             if (errorDiv) {
                 errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
@@ -1163,7 +1310,7 @@
                     errorDiv.style.display = "none";
                 }, 8000);
             }
-
+            
             // Also show in login screen if visible
             const loginError = document.getElementById("loginError");
             if (loginError && document.getElementById('loginContainer').style.display !== 'none') {

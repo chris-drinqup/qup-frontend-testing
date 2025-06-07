@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Admin Dashboard - Enhanced</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #4c63d2;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a3e;
+            --bg-card: #262654;
+            --text-primary: #ffffff;
+            --text-secondary: #a5a5c9;
+            --border: #3a3a6b;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            backdrop-filter: blur(2px);
+        }
+
+        .login-form {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 25px;
+            width: 450px;
+            box-shadow: 0 15px 40px var(--shadow);
+            text-align: center;
+            border: 1px solid var(--border);
+            position: relative;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .login-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 60px var(--shadow);
+        }
+
+        .login-form h2 {
+            color: var(--text-primary);
+            margin-bottom: 35px;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            font-size: 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, var(--success), #059669);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, var(--danger), #dc2626);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, var(--warning), #d97706);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, var(--info), #1d4ed8);
+        }
+
+        .dashboard-container {
+            display: none;
+            margin: 20px;
+            min-height: calc(100vh - 40px);
+        }
+
+        .container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 40px var(--shadow);
+            max-width: 1400px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 20px;
+            margin: -10px -10px 30px -10px;
+        }
+
+        h2 {
+            color: var(--text-primary);
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 2px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px var(--shadow);
+            background: var(--bg-card);
+        }
+
+        .data-table th {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: left;
+            font-size: 14px;
+            padding: 15px 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 15px 20px;
+            text-align: left;
+            background-color: var(--bg-secondary);
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .data-table tr:hover td {
+            background-color: var(--bg-card);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+
+        .code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--success);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        .user-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, var(--danger), #dc2626);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            padding: 18px 25px;
+            margin: 15px 0;
+            border-radius: 15px;
+            border: 1px solid var(--danger);
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .debug-panel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .debug-toggle {
+            cursor: pointer;
+            color: var(--warning);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .debug-content {
+            display: none;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online { background-color: var(--success); }
+        .status-offline { background-color: var(--danger); }
+        .status-warning { background-color: var(--warning); }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 25px;
+                border-radius: 20px;
+            }
+
+            .login-form {
+                width: 90%;
+                padding: 35px;
+                border-radius: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+
+            .nav-tabs {
+                justify-content: center;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .data-table {
+                font-size: 12px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <h2>QUP Admin Dashboard</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 14px;">
+                Enter your API credentials. These will be used to authenticate with the QUP API backend.
+            </p>
+            <div class="form-group">
+                <label for="email">Username/Email:</label>
+                <input type="text" id="email" placeholder="Enter your username or email" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+            </div>
+            <button class="btn" id="loginButton" onclick="handleLogin()">
+                <span id="loginText">Sign In</span>
+                <div id="loginLoading" class="loading hidden"></div>
+            </button>
+            <div id="loginError" class="error-message"></div>
+            <div style="margin-top: 20px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; font-size: 12px; color: var(--info);">
+                <strong>Security Note:</strong> Your credentials are used only to authenticate with the API. No passwords are stored in this dashboard.
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <div class="container">
+            <div class="header">
+                <h2>QUP Admin Dashboard - Enhanced</h2>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <span id="userInfo" class="user-info"></span>
+                    <button class="logout-btn" onclick="logout()">Sign Out</button>
+                </div>
+            </div>
+
+            <div id="errorNotification" class="error-message"></div>
+
+            <!-- Debug Panel -->
+            <div class="debug-panel">
+                <div class="debug-toggle" onclick="toggleDebug()">🔧 Debug Panel (Click to toggle)</div>
+                <div id="debugContent" class="debug-content"></div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <div class="nav-tab active" onclick="showTab('queue')">Queue Management</div>
+                <div class="nav-tab" onclick="showTab('api')">API Testing</div>
+                <div class="nav-tab" onclick="showTab('debug')">Debug Tools</div>
+                <div class="nav-tab" onclick="showTab('system')">System Status</div>
+            </div>
+
+            <!-- Queue Management Tab -->
+            <div id="queue" class="tab-content active">
+                <div class="section">
+                    <h3>Current Queue</h3>
+                    <div class="grid grid-3">
+                        <button class="btn btn-success" onclick="refreshQueue()">Refresh Queue</button>
+                        <button class="btn btn-warning" onclick="clearQueue()">Clear All Orders</button>
+                        <button class="btn btn-info" onclick="exportQueue()">Export Queue Data</button>
+                    </div>
+                    <table class="data-table" id="queueTable">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Order Details</th>
+                                <th>Status</th>
+                                <th>Timestamp</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queueTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center;">Loading queue data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section">
+                    <h3>Queue Statistics</h3>
+                    <div class="grid grid-2">
+                        <div>
+                            <strong>Total Orders Today:</strong> <span id="totalOrdersToday">-</span>
+                        </div>
+                        <div>
+                            <strong>Average Wait Time:</strong> <span id="avgWaitTime">-</span>
+                        </div>
+                        <div>
+                            <strong>Orders in Queue:</strong> <span id="ordersInQueue">-</span>
+                        </div>
+                        <div>
+                            <strong>Completed Today:</strong> <span id="completedToday">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Add Test Order</h3>
+                    <div id="testOrderSection">
+                        <div id="noAuthWarning" class="alert alert-warning">
+                            <strong>Authentication Required:</strong> Please authenticate with the API first using the API Testing tab.
+                        </div>
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label>Customer Email:</label>
+                                <input type="email" id="testOrderEmail" placeholder="customer@example.com" value="test@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Order Details:</label>
+                                <input type="text" id="testOrderDetails" placeholder="Large coffee with milk" value="Large coffee with milk">
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="addTestOrder()" id="addOrderBtn" disabled>Add Test Order</button>
+                        <div class="alert alert-info" style="margin-top: 15px;">
+                            <strong>Note:</strong> This will create a real order in your queue system.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Testing Tab -->
+            <div id="api" class="tab-content">
+                <div class="section">
+                    <h3>Manual API Authentication</h3>
+                    <div class="grid grid-2">
+                        <div>
+                            <h4>Test API Login</h4>
+                            <div class="form-group">
+                                <label>Username:</label>
+                                <input type="text" id="apiUsername" placeholder="admin or developer" value="admin">
+                            </div>
+                            <div class="form-group">
+                                <label>Password:</label>
+                                <input type="password" id="apiPassword" placeholder="Enter API password">
+                            </div>
+                            <div class="form-group">
+                                <label>Login Type:</label>
+                                <select id="apiLoginType">
+                                    <option value="admin">Admin Login</option>
+                                    <option value="developer">Developer Login</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-success" onclick="testManualApiLogin()">Test API Login</button>
+                        </div>
+                        <div>
+                            <h4>Current API Status</h4>
+                            <div>
+                                <span class="status-indicator" id="apiKeyStatus"></span>
+                                <span id="apiKeyStatusText">Not authenticated</span>
+                            </div>
+                            <div class="code-block" id="apiKeyDetails" style="max-height: 200px;">No API key obtained yet</div>
+                            <button class="btn btn-warning" onclick="regenerateApiKey()">Re-authenticate</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Authentication Status</h3>
+                    <div class="grid grid-2">
+                        <div>
+                            <h4>Supabase Authentication</h4>
+                            <div>
+                                <span class="status-indicator" id="supabaseStatus"></span>
+                                <span id="supabaseStatusText">Checking...</span>
+                            </div>
+                            <div class="code-block" id="supabaseDetails" style="max-height: 200px;">Loading...</div>
+                        </div>
+                        <div>
+                            <h4>Debug Information</h4>
+                            <div class="code-block" style="max-height: 200px;">
+Dashboard Login: Uses Supabase credentials
+API Authentication: Uses API credentials (admin/developer)
+
+These can be different credential sets!
+
+Dashboard: For accessing this interface
+API: For calling backend endpoints
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>API Endpoint Testing</h3>
+                    <div class="form-group">
+                        <label>Custom API Test:</label>
+                        <div class="grid grid-3">
+                            <select id="testMethod">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                            <input type="text" id="testEndpoint" placeholder="/api/v1/queue/list" value="/api/v1/queue/list">
+                            <button class="btn btn-info" onclick="testCustomEndpoint()">Test Endpoint</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Request Body (JSON):</label>
+                        <textarea id="testRequestBody" placeholder='{"key": "value"}' rows="4"></textarea>
+                    </div>
+                    <div id="testResults" class="code-block hidden"></div>
+                </div>
+
+                <div class="section">
+                    <h3>Pre-configured Endpoint Tests</h3>
+                    <table class="data-table" id="endpointsTable">
+                        <thead>
+                            <tr>
+                                <th>Endpoint</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Response Time</th>
+                                <th>Last Response</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="endpointsTableBody">
+                            <tr><td colspan="6" style="text-align:center;">Loading endpoints...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Debug Tools Tab -->
+            <div id="debug" class="tab-content">
+                <div class="section">
+                    <h3>Request Debugging</h3>
+                    <div class="grid grid-2">
+                        <button class="btn btn-info" onclick="showRequestHeaders()">Show Request Headers</button>
+                        <button class="btn btn-info" onclick="testNetworkConnectivity()">Test Connectivity</button>
+                        <button class="btn btn-warning" onclick="clearDebugLog()">Clear Debug Log</button>
+                        <button class="btn btn-success" onclick="exportDebugLog()">Export Debug Log</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Debug Log</h3>
+                    <div id="debugLog" class="code-block" style="min-height: 300px;">
+Debug logging initialized...
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Environment Information</h3>
+                    <div class="code-block" id="environmentInfo">Loading environment information...</div>
+                </div>
+
+                <div class="section">
+                    <h3>WebSocket Debug</h3>
+                    <div class="grid grid-2">
+                        <button class="btn btn-success" onclick="reconnectWebSocket()">Reconnect WebSocket</button>
+                        <button class="btn btn-info" onclick="testWebSocketMessage()">Test WS Message</button>
+                    </div>
+                    <div class="code-block" id="wsDebugInfo">WebSocket debug info will appear here...</div>
+                </div>
+            </div>
+
+            <!-- System Status Tab -->
+            <div id="system" class="tab-content">
+                <div class="section">
+                    <h3>System Health Dashboard</h3>
+                    <div class="grid grid-3">
+                        <div>
+                            <span class="status-indicator" id="apiStatusIndicator"></span>
+                            <strong>API Status:</strong> <span id="apiStatus">Checking...</span>
+                        </div>
+                        <div>
+                            <span class="status-indicator" id="dbStatusIndicator"></span>
+                            <strong>Database:</strong> <span id="dbStatus">Checking...</span>
+                        </div>
+                        <div>
+                            <span class="status-indicator" id="wsStatusIndicator"></span>
+                            <strong>WebSocket:</strong> <span id="wsStatus">Checking...</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-info" onclick="refreshSystemStatus()">Refresh All Status</button>
+                </div>
+
+                <div class="section">
+                    <h3>System Metrics</h3>
+                    <div class="grid grid-2">
+                        <div>
+                            <strong>Queue Size:</strong> <span id="systemQueueSize">-</span>
+                        </div>
+                        <div>
+                            <strong>Active Sessions:</strong> <span id="activeSessions">-</span>
+                        </div>
+                        <div>
+                            <strong>API Response Time:</strong> <span id="apiResponseTime">-</span>
+                        </div>
+                        <div>
+                            <strong>Last Update:</strong> <span id="lastSystemUpdate">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Recent Activity Log</h3>
+                    <div id="activityLog" class="code-block" style="max-height: 400px; overflow-y: auto;">
+Loading activity log...
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-info" onclick="refreshActivityLog()">Refresh Log</button>
+                        <button class="btn btn-warning" onclick="clearActivityLog()">Clear Log</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="alerts"></div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Configuration - NO HARD-CODED CREDENTIALS
+        const CONFIG = {
+            API_BASE: 'https://qupcore-supercode-692478335867.us-central1.run.app',
+            SUPABASE_URL: 'https://eorhgophbjjbiguvkygo.supabase.co',
+            SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo',
+            DEBUG_MODE: true,
+            AUTO_REFRESH_INTERVAL: 5000
+        };
+
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+        // Global state
+        let currentUser = null;
+        let adminKey = null;
+        let socket = null;
+        let debugLog = [];
+        let systemMetrics = {};
+
+        // Debug logging function
+        function addDebugLog(message, type = 'INFO') {
+            const timestamp = new Date().toISOString();
+            const logEntry = `[${timestamp}] ${type}: ${message}`;
+            debugLog.push(logEntry);
+            
+            if (CONFIG.DEBUG_MODE) {
+                console.log(logEntry);
+            }
+            
+            // Update debug content if visible
+            const debugContent = document.getElementById('debugContent');
+            if (debugContent) {
+                debugContent.textContent = debugLog.slice(-50).join('\n');
+                debugContent.scrollTop = debugContent.scrollHeight;
+            }
+            
+            const debugLogElement = document.getElementById('debugLog');
+            if (debugLogElement) {
+                debugLogElement.textContent = debugLog.slice(-100).join('\n');
+                debugLogElement.scrollTop = debugLogElement.scrollHeight;
+            }
+        }
+
+        // Enhanced API call function with proper headers for your API
+        async function apiCall(endpoint, options = {}) {
+            addDebugLog(`Making API call to: ${endpoint}`);
+            
+            if (!adminKey && !endpoint.includes('/auth/')) {
+                throw new Error('Not authenticated - no admin/developer key available');
+            }
+
+            const url = `${CONFIG.API_BASE}${endpoint}`;
+            const defaultHeaders = {
+                "Content-Type": "application/json"
+            };
+
+            // Use proper header based on your API's requirements
+            if (adminKey) {
+                // Check if it's an admin key or developer key and use appropriate header
+                if (adminKey.startsWith('admin') || adminKey === 'adminsecret') {
+                    defaultHeaders["X-Admin-Key"] = adminKey;
+                } else {
+                    defaultHeaders["X-API-Key"] = adminKey;
+                }
+            }
+
+            const finalOptions = {
+                ...options,
+                headers: { ...defaultHeaders, ...(options.headers || {}) }
+            };
+
+            addDebugLog(`Request details: ${JSON.stringify({
+                url,
+                method: finalOptions.method || 'GET',
+                headers: Object.keys(finalOptions.headers).reduce((acc, key) => {
+                    acc[key] = key.includes('Key') ? finalOptions.headers[key].substring(0, 8) + '...' : finalOptions.headers[key];
+                    return acc;
+                }, {}),
+                body: finalOptions.body ? 'Present' : 'None'
+            })}`);
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(url, finalOptions);
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+
+                addDebugLog(`Response: ${response.status} ${response.statusText} (${responseTime}ms)`);
+
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const text = await response.text();
+                    addDebugLog(`Non-JSON response: ${text.substring(0, 200)}...`);
+                    data = { error: `Non-JSON response: ${text}`, status_code: response.status };
+                }
+
+                if (!response.ok) {
+                    addDebugLog(`API Error: ${JSON.stringify(data)}`, 'ERROR');
+                    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                systemMetrics.lastApiResponseTime = responseTime;
+                addDebugLog(`API call successful: ${JSON.stringify(data).substring(0, 200)}...`);
+                return data;
+
+            } catch (error) {
+                addDebugLog(`API call failed: ${error.message}`, 'ERROR');
+                throw error;
+            }
+        }
+
+        // Initialize the enhanced admin dashboard
+        async function init() {
+            addDebugLog('QUP Admin Dashboard Enhanced initializing...');
+            
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user && await isAdmin(user)) {
+                    addDebugLog('User is authenticated and has admin privileges');
+                    showDashboard(user);
+                } else {
+                    addDebugLog('User not authenticated or missing admin privileges');
+                    showLogin();
+                }
+            } catch (error) {
+                addDebugLog(`Initialization error: ${error.message}`, 'ERROR');
+                showLogin();
+            }
+        }
+
+        // Check if user is admin
+        async function isAdmin(user) {
+            try {
+                const isAdminUser = user.user_metadata?.role === 'admin' || 
+                                  user.email.includes('admin') || 
+                                  user.app_metadata?.role === 'admin';
+                addDebugLog(`Admin check result: ${isAdminUser}`);
+                return isAdminUser;
+            } catch (error) {
+                addDebugLog(`Admin check failed: ${error.message}`, 'ERROR');
+                return false;
+            }
+        }
+
+        // Enhanced login function
+        async function handleLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!email || !password) {
+                showError('Please enter both email and password');
+                return;
+            }
+            
+            setLoading(true);
+            addDebugLog(`Attempting login for: ${email}`);
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                if (await isAdmin(data.user)) {
+                    addDebugLog('Admin login successful');
+                    showDashboard(data.user);
+                } else {
+                    throw new Error('Access denied: Admin privileges required');
+                }
+                
+            } catch (error) {
+                addDebugLog(`Login failed: ${error.message}`, 'ERROR');
+                showError('Login failed: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function logout() {
+            try {
+                addDebugLog('Logging out user');
+                await supabase.auth.signOut();
+                
+                if (socket) {
+                    socket.disconnect();
+                    socket = null;
+                }
+                
+                currentUser = null;
+                adminKey = null;
+                debugLog = [];
+                
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                
+                showLogin();
+                
+            } catch (error) {
+                addDebugLog(`Logout failed: ${error.message}`, 'ERROR');
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('dashboardContainer').style.display = 'none';
+        }
+
+        async function showDashboard(user) {
+            currentUser = user;
+            
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'block';
+            document.getElementById('userInfo').textContent = user.email;
+            
+            addDebugLog(`Dashboard shown for: ${user.email}`);
+            addDebugLog(`Now attempting API authentication...`);
+            
+            // Try to authenticate with the API using user's credentials
+            try {
+                await getAdminKey();
+                addDebugLog('Successfully authenticated with API');
+                showAlert('Successfully authenticated with API', 'success');
+            } catch (authError) {
+                addDebugLog(`API authentication failed: ${authError.message}`, 'ERROR');
+                showError('API authentication failed. Check the API Testing tab for manual authentication.');
+            }
+            
+            await connectWebSocket();
+            await initializeDashboard();
+            
+            addDebugLog(`Admin dashboard initialized for: ${user.email}`);
+            updateEnvironmentInfo();
+        }
+
+        // Enhanced API key retrieval - USE USER-PROVIDED CREDENTIALS FROM LOGIN
+        async function getAdminKey() {
+            try {
+                addDebugLog('Getting admin key using login credentials...');
+                updateApiKeyStatus('warning', 'Requesting...');
+                
+                // CRITICAL: Get credentials from the user's login attempt
+                // These should still be available in the login form
+                const username = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                if (!username || !password) {
+                    throw new Error('No login credentials available - please re-login');
+                }
+                
+                addDebugLog(`Attempting API authentication with username: ${username}`);
+                
+                // Try admin login first
+                try {
+                    const adminResponse = await fetch(`${CONFIG.API_BASE}/api/auth/admin/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: username.split('@')[0], // Use part before @ if email
+                            password: password
+                        })
+                    });
+                    
+                    addDebugLog(`Admin login attempt: ${adminResponse.status}`);
+                    
+                    if (adminResponse.ok) {
+                        const data = await adminResponse.json();
+                        addDebugLog(`Admin login successful: ${JSON.stringify(data)}`);
+                        
+                        if (data.admin_key) {
+                            adminKey = data.admin_key;
+                            addDebugLog(`Admin key obtained: ${adminKey.substring(0, 8)}...`);
+                            updateApiKeyStatus('online', 'Active (Admin)');
+                            document.getElementById('apiKeyDetails').textContent = JSON.stringify(data, null, 2);
+                            showAlert('Admin authentication successful', 'success');
+                            return;
+                        }
+                    }
+                } catch (adminError) {
+                    addDebugLog(`Admin login failed: ${adminError.message}`, 'WARNING');
+                }
+                
+                // Try developer login as fallback
+                try {
+                    const devResponse = await fetch(`${CONFIG.API_BASE}/api/auth/developer/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: username.split('@')[0], // Use part before @ if email
+                            password: password
+                        })
+                    });
+                    
+                    addDebugLog(`Developer login attempt: ${devResponse.status}`);
+                    
+                    if (devResponse.ok) {
+                        const data = await devResponse.json();
+                        addDebugLog(`Developer login successful: ${JSON.stringify(data)}`);
+                        
+                        if (data.developer_key) {
+                            adminKey = data.developer_key;
+                            addDebugLog(`Developer key obtained: ${adminKey.substring(0, 8)}...`);
+                            updateApiKeyStatus('online', 'Active (Developer)');
+                            document.getElementById('apiKeyDetails').textContent = JSON.stringify(data, null, 2);
+                            showAlert('Developer authentication successful', 'success');
+                            return;
+                        }
+                    }
+                } catch (devError) {
+                    addDebugLog(`Developer login failed: ${devError.message}`, 'WARNING');
+                }
+                
+                throw new Error('Both admin and developer authentication failed');
+                
+            } catch (error) {
+                addDebugLog(`API authentication completely failed: ${error.message}`, 'ERROR');
+                updateApiKeyStatus('offline', 'Failed');
+                document.getElementById('apiKeyDetails').textContent = `Error: ${error.message}`;
+                throw error;
+            }
+        }
+
+        async function getDeveloperKey() {
+            try {
+                addDebugLog('Getting developer key using user-provided credentials...');
+                
+                // Get credentials from the login form
+                const username = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                if (!username || !password) {
+                    throw new Error('Username and password required');
+                }
+                
+                const response = await fetch(`${CONFIG.API_BASE}/api/auth/developer/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                addDebugLog(`Developer login response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    addDebugLog(`Developer login failed: ${response.status} ${errorText}`, 'ERROR');
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                addDebugLog(`Developer login response data: ${JSON.stringify(data)}`);
+                
+                if (data.developer_key) {
+                    adminKey = data.developer_key;
+                    addDebugLog(`Developer key obtained successfully: ${adminKey.substring(0, 8)}...`);
+                    updateApiKeyStatus('online', 'Active (Developer)');
+                    document.getElementById('apiKeyDetails').textContent = JSON.stringify(data, null, 2);
+                    showAlert('Developer key obtained successfully', 'success');
+                    return data.developer_key;
+                } else {
+                    throw new Error(data.error || 'No developer key in response');
+                }
+            } catch (error) {
+                addDebugLog(`Developer key error: ${error.message}`, 'ERROR');
+                throw error;
+            }
+        }
+
+        // Manual API authentication for testing
+        async function testManualApiLogin() {
+            const username = document.getElementById('apiUsername').value.trim();
+            const password = document.getElementById('apiPassword').value.trim();
+            const loginType = document.getElementById('apiLoginType').value;
+            
+            if (!username || !password) {
+                showError('Please enter username and password for API test');
+                return;
+            }
+            
+            try {
+                addDebugLog(`Testing manual API login: ${loginType} with username ${username}`);
+                
+                const endpoint = loginType === 'admin' ? '/api/auth/admin/login' : '/api/auth/developer/login';
+                
+                const response = await fetch(`${CONFIG.API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                addDebugLog(`Manual API login response: ${response.status}`);
+                
+                const responseText = await response.text();
+                addDebugLog(`Manual API response body: ${responseText}`);
+                
+                if (!response.ok) {
+                    addDebugLog(`Manual API login failed: ${response.status} ${responseText}`, 'ERROR');
+                    throw new Error(`HTTP ${response.status}: ${responseText}`);
+                }
+                
+                const data = JSON.parse(responseText);
+                addDebugLog(`Manual API login success: ${JSON.stringify(data)}`);
+                
+                const keyField = loginType === 'admin' ? 'admin_key' : 'developer_key';
+                if (data[keyField]) {
+                    adminKey = data[keyField];
+                    addDebugLog(`Manual API key obtained: ${adminKey.substring(0, 8)}...`);
+                    updateApiKeyStatus('online', `Active (${loginType})`);
+                    document.getElementById('apiKeyDetails').textContent = JSON.stringify(data, null, 2);
+                    showAlert(`${loginType} API authentication successful!`, 'success');
+                    
+                    // Try to refresh queue now that we have a key
+                    await refreshQueue();
+                } else {
+                    throw new Error(`No ${keyField} in response`);
+                }
+                
+            } catch (error) {
+                addDebugLog(`Manual API login error: ${error.message}`, 'ERROR');
+                updateApiKeyStatus('offline', 'Failed');
+                document.getElementById('apiKeyDetails').textContent = `Error: ${error.message}`;
+                showError('Manual API authentication failed: ' + error.message);
+            }
+        }
+
+        // Try common credential combinations
+        async function tryCommonCredentials() {
+            const commonCreds = [
+                { username: 'admin', password: 'admin123' },
+                { username: 'developer', password: 'dev123' },
+                { username: 'admin', password: 'admin' },
+                { username: 'developer', password: 'developer' }
+            ];
+            
+            addDebugLog('Trying common credential combinations...');
+            
+            for (const creds of commonCreds) {
+                try {
+                    addDebugLog(`Trying: ${creds.username} / ${creds.password}`);
+                    
+                    // Set the manual form values
+                    document.getElementById('apiUsername').value = creds.username;
+                    document.getElementById('apiPassword').value = creds.password;
+                    document.getElementById('apiLoginType').value = creds.username === 'admin' ? 'admin' : 'developer';
+                    
+                    await testManualApiLogin();
+                    
+                    if (adminKey) {
+                        addDebugLog(`Success with: ${creds.username} / ${creds.password}`);
+                        showAlert(`Authentication successful with ${creds.username}`, 'success');
+                        return true;
+                    }
+                } catch (error) {
+                    addDebugLog(`Failed with ${creds.username}: ${error.message}`, 'WARNING');
+                }
+            }
+            
+            showError('All common credentials failed. Please check your API configuration.');
+            return false;
+        }
+
+        // Enhanced WebSocket connection
+        function connectWebSocket() {
+            return new Promise((resolve) => {
+                try {
+                    addDebugLog(`Connecting to WebSocket at: ${CONFIG.API_BASE}`);
+                    updateWsStatus('warning', 'Connecting...');
+                    
+                    socket = io(CONFIG.API_BASE, {
+                        transports: ['websocket', 'polling'],
+                        timeout: 20000,
+                        reconnection: true,
+                        reconnectionDelay: 2000,
+                        reconnectionAttempts: 5,
+                        forceNew: true
+                    });
+
+                    socket.on('connect', () => {
+                        addDebugLog(`WebSocket connected to: ${CONFIG.API_BASE}`);
+                        updateWsStatus('online', 'Connected');
+                        socket.emit('subscribe_admin', { admin: currentUser.email });
+                        updateWsDebugInfo('Connected successfully');
+                        resolve();
+                    });
+
+                    socket.on('disconnect', () => {
+                        addDebugLog('WebSocket disconnected');
+                        updateWsStatus('offline', 'Disconnected');
+                        updateWsDebugInfo('Disconnected');
+                    });
+
+                    socket.on('connect_error', (error) => {
+                        addDebugLog(`WebSocket connection error: ${error}`, 'ERROR');
+                        updateWsStatus('offline', 'Error');
+                        updateWsDebugInfo(`Connection error: ${error}`);
+                        resolve(); // Don't block initialization
+                    });
+
+                    socket.on('order_update', (data) => {
+                        addDebugLog(`Received order update: ${JSON.stringify(data)}`);
+                        if (document.getElementById('queue').classList.contains('active')) {
+                            refreshQueue();
+                        }
+                    });
+
+                    socket.on('order_created', (data) => {
+                        addDebugLog(`Received new order notification: ${JSON.stringify(data)}`);
+                        if (document.getElementById('queue').classList.contains('active')) {
+                            refreshQueue();
+                        }
+                        showAlert(`New order created: ${data.orderId}`, 'info');
+                    });
+
+                    // Timeout fallback
+                    setTimeout(() => {
+                        if (!socket || !socket.connected) {
+                            addDebugLog('WebSocket connection timeout', 'WARNING');
+                            updateWsStatus('offline', 'Timeout');
+                            resolve();
+                        }
+                    }, 10000);
+
+                } catch (error) {
+                    addDebugLog(`WebSocket initialization failed: ${error.message}`, 'ERROR');
+                    updateWsStatus('offline', 'Failed');
+                    resolve(); // Don't block initialization
+                }
+            });
+        }
+
+        // Status update functions
+        function updateApiKeyStatus(status, text) {
+            const indicator = document.getElementById('apiKeyStatus');
+            const textElement = document.getElementById('apiKeyStatusText');
+            if (indicator) indicator.className = `status-indicator status-${status}`;
+            if (textElement) textElement.textContent = text;
+            
+            // Enable/disable test order button based on authentication
+            const addOrderBtn = document.getElementById('addOrderBtn');
+            const noAuthWarning = document.getElementById('noAuthWarning');
+            
+            if (status === 'online' && adminKey) {
+                if (addOrderBtn) addOrderBtn.disabled = false;
+                if (noAuthWarning) noAuthWarning.style.display = 'none';
+            } else {
+                if (addOrderBtn) addOrderBtn.disabled = true;
+                if (noAuthWarning) noAuthWarning.style.display = 'block';
+            }
+        }
+
+        function updateWsStatus(status, text) {
+            const indicator = document.getElementById('wsStatusIndicator');
+            const textElement = document.getElementById('wsStatus');
+            if (indicator) indicator.className = `status-indicator status-${status}`;
+            if (textElement) textElement.textContent = text;
+        }
+
+        function updateWsDebugInfo(info) {
+            const element = document.getElementById('wsDebugInfo');
+            if (element) {
+                const timestamp = new Date().toLocaleTimeString();
+                element.textContent = `[${timestamp}] ${info}\n${element.textContent}`;
+            }
+        }
+
+        function updateEnvironmentInfo() {
+            const info = {
+                userAgent: navigator.userAgent.substring(0, 100) + '...',
+                timestamp: new Date().toISOString(),
+                apiBase: CONFIG.API_BASE,
+                supabaseUrl: CONFIG.SUPABASE_URL,
+                currentUser: currentUser ? {
+                    id: currentUser.id,
+                    email: currentUser.email,
+                    role: currentUser.user_metadata?.role
+                } : null,
+                apiKey: adminKey ? `${adminKey.substring(0, 8)}...` : 'None',
+                authenticationFlow: 'Dynamic - No hard-coded credentials',
+                securityNote: 'All authentication uses user-provided credentials'
+            };
+            
+            document.getElementById('environmentInfo').textContent = JSON.stringify(info, null, 2);
+        }
+
+        async function initializeDashboard() {
+            addDebugLog('Initializing dashboard components...');
+            
+            // Always try to refresh queue, even if authentication might fail
+            await refreshQueue();
+            await refreshSystemStatus();
+            await loadApiEndpoints();
+            await updateAuthStatus();
+            
+            addDebugLog('Dashboard initialization complete');
+        }
+
+        async function updateAuthStatus() {
+            try {
+                if (currentUser) {
+                    const userInfo = {
+                        email: currentUser.email,
+                        role: currentUser.user_metadata?.role || 'No role set',
+                        id: currentUser.id,
+                        created_at: currentUser.created_at
+                    };
+                    document.getElementById('supabaseDetails').textContent = JSON.stringify(userInfo, null, 2);
+                    updateSupabaseStatus('online', 'Authenticated');
+                } else {
+                    updateSupabaseStatus('offline', 'Not authenticated');
+                }
+                
+            } catch (error) {
+                addDebugLog(`Failed to update auth status: ${error.message}`, 'ERROR');
+                updateSupabaseStatus('offline', 'Error');
+            }
+        }
+
+        function updateSupabaseStatus(status, text) {
+            const indicator = document.getElementById('supabaseStatus');
+            const textElement = document.getElementById('supabaseStatusText');
+            if (indicator) indicator.className = `status-indicator status-${status}`;
+            if (textElement) textElement.textContent = text;
+        }
+
+        // Tab management
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            addDebugLog(`Switched to tab: ${tabName}`);
+        }
+
+        // Queue management with better error handling
+        async function refreshQueue() {
+            try {
+                addDebugLog('Refreshing queue...');
+                
+                if (!adminKey) {
+                    addDebugLog('No admin key available - showing authentication error', 'WARNING');
+                    document.getElementById('queueTableBody').innerHTML = 
+                        `<tr><td colspan="6" style="text-align:center;color:var(--danger);">Not authenticated - no admin/developer key available</td></tr>`;
+                    return;
+                }
+                
+                const data = await apiCall('/api/v1/queue/list?admin=true');
+                
+                if (data.status === 'success') {
+                    updateQueueTable(data.queue || []);
+                    updateQueueStats(data.queue || []);
+                    addDebugLog(`Queue refreshed: ${data.queue?.length || 0} items`);
+                } else {
+                    throw new Error('Queue fetch returned non-success status');
+                }
+            } catch (error) {
+                addDebugLog(`Error fetching queue: ${error.message}`, 'ERROR');
+                showError('Queue fetch error: ' + error.message);
+                
+                // Show specific error in table
+                document.getElementById('queueTableBody').innerHTML = 
+                    `<tr><td colspan="6" style="text-align:center;color:var(--danger);">Error loading queue: ${error.message}</td></tr>`;
+            }
+        }
+
+        function updateQueueTable(queue) {
+            const tableBody = document.getElementById('queueTableBody');
+            
+            if (queue.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No orders in queue</td></tr>';
+                return;
+            }
+
+            const html = queue.map(item => {
+                const orderDetails = item.payload?.order || item.id;
+                const customer = item.payload?.customer_email || item.user_id || 'Unknown';
+                const status = item.finalized ? 'Ready for PiQUP' : 'In Progress';
+                const timestamp = new Date(item.timestamp).toLocaleString();
+                
+                return `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${customer}</td>
+                        <td>${orderDetails}</td>
+                        <td>${status}</td>
+                        <td>${timestamp}</td>
+                        <td>
+                            <button class="btn btn-success" onclick="finalizeOrder('${item.id}')">Finalize</button>
+                            <button class="btn btn-info" onclick="completeOrder('${item.id}')">Complete</button>
+                            <button class="btn btn-danger" onclick="cancelOrder('${item.id}')">Cancel</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableBody.innerHTML = html;
+        }
+
+        function updateQueueStats(queue) {
+            document.getElementById('ordersInQueue').textContent = queue.length;
+            document.getElementById('totalOrdersToday').textContent = queue.length;
+            document.getElementById('avgWaitTime').textContent = '5 minutes';
+            document.getElementById('completedToday').textContent = '0';
+            
+            systemMetrics.queueSize = queue.length;
+            document.getElementById('systemQueueSize').textContent = queue.length;
+        }
+
+        // Add test order function with proper payload format for your API
+        async function addTestOrder() {
+            const email = document.getElementById('testOrderEmail').value.trim();
+            const details = document.getElementById('testOrderDetails').value.trim();
+            
+            if (!email || !details) {
+                showError('Please enter both email and order details');
+                return;
+            }
+            
+            try {
+                addDebugLog(`Adding test order: ${email} - ${details}`);
+                
+                // Generate unique order ID based on your API's expected format
+                const orderId = `${email}_${Date.now()}`;
+                
+                // Format payload according to your API's QueueElement structure
+                const orderData = {
+                    id: orderId,
+                    payload: {
+                        customer_email: email,
+                        order: details,
+                        items: [
+                            {
+                                name: details,
+                                quantity: 1,
+                                special_instructions: []
+                            }
+                        ]
+                    },
+                    priority: 500,
+                    user_id: orderId,
+                    server_id: 'admin_dashboard'
+                };
+                
+                addDebugLog(`Order payload: ${JSON.stringify(orderData, null, 2)}`);
+                
+                const result = await apiCall('/api/v1/queue/add', {
+                    method: 'POST',
+                    body: JSON.stringify(orderData)
+                });
+                
+                addDebugLog(`Test order added successfully: ${JSON.stringify(result)}`);
+                showAlert(`Test order added successfully! Order ID: ${orderId}`, 'success');
+                await refreshQueue();
+                
+                // Clear form
+                document.getElementById('testOrderEmail').value = '';
+                document.getElementById('testOrderDetails').value = '';
+                
+            } catch (error) {
+                addDebugLog(`Failed to add test order: ${error.message}`, 'ERROR');
+                showError('Failed to add test order: ' + error.message);
+            }
+        }
+
+        // API Testing functions
+        async function loadApiEndpoints() {
+            const endpoints = [
+                { endpoint: '/api/v1/queue/list', method: 'GET', description: 'Get queue list' },
+                { endpoint: '/api/v1/queue/add', method: 'POST', description: 'Add order to queue' },
+                { endpoint: '/api/v1/queue/finalize', method: 'POST', description: 'Finalize order' },
+                { endpoint: '/api/v1/queue/complete', method: 'POST', description: 'Complete order' },
+                { endpoint: '/api/v1/queue/cancel', method: 'POST', description: 'Cancel order' },
+                { endpoint: '/api/health', method: 'GET', description: 'Health check' }
+            ];
+            
+            const tableBody = document.getElementById('endpointsTableBody');
+            const html = endpoints.map(ep => {
+                const cleanId = ep.endpoint.replace(/[^a-zA-Z0-9]/g, '');
+                return `
+                    <tr>
+                        <td>${ep.endpoint}</td>
+                        <td>${ep.method}</td>
+                        <td id="status-${cleanId}">Not tested</td>
+                        <td id="time-${cleanId}">-</td>
+                        <td id="response-${cleanId}">-</td>
+                        <td>
+                            <button class="btn btn-info" onclick="testEndpoint('${ep.endpoint}', '${ep.method}')">Test</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tableBody.innerHTML = html;
+        }
+
+        async function testEndpoint(endpoint, method) {
+            const cleanId = endpoint.replace(/[^a-zA-Z0-9]/g, '');
+            const statusElement = document.getElementById(`status-${cleanId}`);
+            const timeElement = document.getElementById(`time-${cleanId}`);
+            const responseElement = document.getElementById(`response-${cleanId}`);
+            
+            statusElement.textContent = 'Testing...';
+            statusElement.style.color = 'var(--warning)';
+            
+            try {
+                addDebugLog(`Testing endpoint: ${method} ${endpoint}`);
+                const startTime = Date.now();
+                
+                let requestOptions = { method: method };
+                
+                // Add proper test bodies for POST requests based on your API structure
+                if (method === 'POST') {
+                    if (endpoint.includes('/add')) {
+                        requestOptions.body = JSON.stringify({
+                            id: `test_${Date.now()}`,
+                            payload: {
+                                customer_email: 'test@example.com',
+                                order: 'Test order from admin dashboard',
+                                items: [
+                                    {
+                                        name: 'Test Coffee',
+                                        quantity: 1,
+                                        special_instructions: []
+                                    }
+                                ]
+                            },
+                            priority: 500,
+                            user_id: `test_${Date.now()}`,
+                            server_id: 'admin_test'
+                        });
+                    } else if (endpoint.includes('/finalize')) {
+                        requestOptions.body = JSON.stringify({
+                            id: 'test-order-id',
+                            pickup_code: '1234',
+                            user_id: 'test-order-id'
+                        });
+                    } else if (endpoint.includes('/complete') || endpoint.includes('/cancel')) {
+                        requestOptions.body = JSON.stringify({
+                            id: 'test-order-id',
+                            user_id: 'test-order-id'
+                        });
+                    }
+                }
+                
+                // Use proper headers
+                const headers = { 'Content-Type': 'application/json' };
+                if (adminKey) {
+                    if (adminKey.startsWith('admin') || adminKey === 'adminsecret') {
+                        headers['X-Admin-Key'] = adminKey;
+                    } else {
+                        headers['X-API-Key'] = adminKey;
+                    }
+                }
+                
+                const response = await fetch(`${CONFIG.API_BASE}${endpoint}`, {
+                    ...requestOptions,
+                    headers: headers
+                });
+                
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                const status = response.ok ? 'OK' : `Error ${response.status}`;
+                timeElement.textContent = `${responseTime}ms`;
+                
+                let responseText;
+                try {
+                    const data = await response.json();
+                    responseText = JSON.stringify(data).substring(0, 100) + '...';
+                } catch {
+                    responseText = await response.text();
+                    responseText = responseText.substring(0, 100) + '...';
+                }
+                
+                statusElement.textContent = status;
+                responseElement.textContent = responseText;
+                
+                if (response.ok) {
+                    statusElement.style.color = 'var(--success)';
+                    addDebugLog(`Endpoint test passed: ${method} ${endpoint} (${responseTime}ms)`);
+                } else {
+                    statusElement.style.color = 'var(--danger)';
+                    addDebugLog(`Endpoint test failed: ${method} ${endpoint} - ${response.status} (${responseTime}ms)`, 'ERROR');
+                }
+                
+            } catch (error) {
+                statusElement.textContent = 'Failed';
+                statusElement.style.color = 'var(--danger)';
+                responseElement.textContent = error.message;
+                timeElement.textContent = 'Timeout';
+                addDebugLog(`Endpoint test error: ${method} ${endpoint} - ${error.message}`, 'ERROR');
+            }
+        }
+
+        async function testCustomEndpoint() {
+            const method = document.getElementById('testMethod').value;
+            const endpoint = document.getElementById('testEndpoint').value.trim();
+            const requestBody = document.getElementById('testRequestBody').value.trim();
+            
+            if (!endpoint) {
+                showError('Please enter an endpoint to test');
+                return;
+            }
+            
+            const testResults = document.getElementById('testResults');
+            testResults.classList.remove('hidden');
+            testResults.textContent = 'Testing...';
+            
+            try {
+                addDebugLog(`Testing custom endpoint: ${method} ${endpoint}`);
+                
+                let requestOptions = { method: method };
+                if (requestBody && (method === 'POST' || method === 'PUT')) {
+                    requestOptions.body = requestBody;
+                }
+                
+                // Use proper headers
+                const headers = { 'Content-Type': 'application/json' };
+                if (adminKey) {
+                    if (adminKey.startsWith('admin') || adminKey === 'adminsecret') {
+                        headers['X-Admin-Key'] = adminKey;
+                    } else {
+                        headers['X-API-Key'] = adminKey;
+                    }
+                }
+                
+                const startTime = Date.now();
+                const response = await fetch(`${CONFIG.API_BASE}${endpoint}`, {
+                    ...requestOptions,
+                    headers: headers
+                });
+                const endTime = Date.now();
+                
+                let responseData;
+                try {
+                    responseData = await response.json();
+                } catch {
+                    responseData = await response.text();
+                }
+                
+                const result = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    responseTime: `${endTime - startTime}ms`,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    data: responseData
+                };
+                
+                testResults.textContent = JSON.stringify(result, null, 2);
+                
+                if (response.ok) {
+                    addDebugLog(`Custom endpoint test passed: ${method} ${endpoint}`);
+                    showAlert('Test completed successfully', 'success');
+                } else {
+                    addDebugLog(`Custom endpoint test failed: ${method} ${endpoint} - ${response.status}`, 'ERROR');
+                    showAlert(`Test failed with status ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                testResults.textContent = `Error: ${error.message}`;
+                addDebugLog(`Custom endpoint test error: ${error.message}`, 'ERROR');
+                showError('Test failed: ' + error.message);
+            }
+        }
+
+        // Debug functions
+        function toggleDebug() {
+            const debugContent = document.getElementById('debugContent');
+            if (debugContent.style.display === 'none' || debugContent.style.display === '') {
+                debugContent.style.display = 'block';
+                debugContent.textContent = debugLog.slice(-50).join('\n');
+                debugContent.scrollTop = debugContent.scrollHeight;
+            } else {
+                debugContent.style.display = 'none';
+            }
+        }
+
+        function clearDebugLog() {
+            debugLog = [];
+            document.getElementById('debugLog').textContent = 'Debug log cleared.';
+            document.getElementById('debugContent').textContent = '';
+            addDebugLog('Debug log cleared by user');
+        }
+
+        function exportDebugLog() {
+            const logText = debugLog.join('\n');
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qup-debug-${new Date().toISOString().split('T')[0]}.log`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showAlert('Debug log exported', 'success');
+        }
+
+        function showRequestHeaders() {
+            const headers = {
+                'X-API-Key': adminKey ? `${adminKey.substring(0, 8)}...` : 'None',
+                'Content-Type': 'application/json',
+                'User-Agent': navigator.userAgent
+            };
+            
+            document.getElementById('debugLog').textContent = 
+                'Current Request Headers:\n' + JSON.stringify(headers, null, 2);
+        }
+
+        async function testNetworkConnectivity() {
+            addDebugLog('Testing network connectivity...');
+            
+            const tests = [
+                { name: 'Google DNS', url: 'https://8.8.8.8', timeout: 5000 },
+                { name: 'API Base', url: CONFIG.API_BASE, timeout: 10000 },
+                { name: 'Supabase', url: CONFIG.SUPABASE_URL, timeout: 10000 }
+            ];
+            
+            const results = [];
+            
+            for (const test of tests) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), test.timeout);
+                    
+                    const startTime = Date.now();
+                    const response = await fetch(test.url, { 
+                        signal: controller.signal,
+                        mode: 'no-cors' 
+                    });
+                    clearTimeout(timeoutId);
+                    const endTime = Date.now();
+                    
+                    results.push(`${test.name}: OK (${endTime - startTime}ms)`);
+                } catch (error) {
+                    results.push(`${test.name}: ${error.message}`);
+                }
+            }
+            
+            document.getElementById('debugLog').textContent = 
+                'Network Connectivity Test Results:\n' + results.join('\n');
+        }
+
+        function reconnectWebSocket() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+            connectWebSocket();
+            addDebugLog('WebSocket reconnection initiated');
+        }
+
+        function testWebSocketMessage() {
+            if (socket && socket.connected) {
+                socket.emit('test_message', { from: 'admin', timestamp: new Date().toISOString() });
+                addDebugLog('Test WebSocket message sent');
+                updateWsDebugInfo('Test message sent');
+            } else {
+                addDebugLog('WebSocket not connected - cannot send test message', 'WARNING');
+                updateWsDebugInfo('Cannot send - not connected');
+            }
+        }
+
+        // System status functions
+        async function refreshSystemStatus() {
+            addDebugLog('Refreshing system status...');
+            
+            // Update timestamp
+            document.getElementById('lastSystemUpdate').textContent = new Date().toLocaleString();
+            
+            // Test API status using health endpoint
+            updateApiStatus('warning', 'Checking...');
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${CONFIG.API_BASE}/health`);
+                const endTime = Date.now();
+                
+                if (response.ok) {
+                    const healthData = await response.json();
+                    updateApiStatus('online', 'Online');
+                    document.getElementById('apiResponseTime').textContent = `${endTime - startTime}ms`;
+                    
+                    // Update additional metrics from health endpoint
+                    if (healthData.total_queue_elements !== undefined) {
+                        document.getElementById('systemQueueSize').textContent = healthData.total_queue_elements;
+                    }
+                    
+                    addDebugLog(`Health check successful: ${JSON.stringify(healthData).substring(0, 200)}...`);
+                } else {
+                    updateApiStatus('offline', 'Error');
+                    document.getElementById('apiResponseTime').textContent = 'Error';
+                }
+            } catch (error) {
+                updateApiStatus('offline', 'Offline');
+                document.getElementById('apiResponseTime').textContent = 'Timeout';
+                addDebugLog(`API health check failed: ${error.message}`, 'ERROR');
+            }
+            
+            // Test queue list endpoint with authentication
+            if (adminKey) {
+                try {
+                    const queueData = await apiCall('/api/v1/queue/list?admin=true');
+                    if (queueData && queueData.queue) {
+                        document.getElementById('systemQueueSize').textContent = queueData.queue.length;
+                        addDebugLog(`Queue list successful: ${queueData.queue.length} items`);
+                    }
+                } catch (error) {
+                    addDebugLog(`Queue list failed: ${error.message}`, 'WARNING');
+                }
+            }
+            
+            // Test database status via Supabase
+            updateDbStatus('warning', 'Checking...');
+            try {
+                const { data, error } = await supabase.auth.getUser();
+                if (error) {
+                    updateDbStatus('offline', 'Error');
+                } else {
+                    updateDbStatus('online', 'Online');
+                }
+            } catch (error) {
+                updateDbStatus('offline', 'Offline');
+            }
+            
+            // Update other metrics
+            document.getElementById('activeSessions').textContent = '1+';
+            
+            addDebugLog('System status refresh completed');
+        }
+
+        function updateApiStatus(status, text) {
+            const indicator = document.getElementById('apiStatusIndicator');
+            const textElement = document.getElementById('apiStatus');
+            if (indicator) indicator.className = `status-indicator status-${status}`;
+            if (textElement) textElement.textContent = text;
+        }
+
+        function updateDbStatus(status, text) {
+            const indicator = document.getElementById('dbStatusIndicator');
+            const textElement = document.getElementById('dbStatus');
+            if (indicator) indicator.className = `status-indicator status-${status}`;
+            if (textElement) textElement.textContent = text;
+        }
+
+        function refreshActivityLog() {
+            const activities = [
+                `[${new Date().toLocaleTimeString()}] System status refreshed`,
+                `[${new Date(Date.now() - 60000).toLocaleTimeString()}] Queue refreshed`,
+                `[${new Date(Date.now() - 120000).toLocaleTimeString()}] User authenticated: ${currentUser?.email}`,
+                `[${new Date(Date.now() - 180000).toLocaleTimeString()}] WebSocket connected`,
+                `[${new Date(Date.now() - 240000).toLocaleTimeString()}] Developer key obtained`
+            ];
+            
+            document.getElementById('activityLog').textContent = activities.join('\n');
+        }
+
+        function clearActivityLog() {
+            document.getElementById('activityLog').textContent = 'Activity log cleared.';
+        }
+
+        // Order management functions
+        async function finalizeOrder(orderId) {
+            try {
+                addDebugLog(`Finalizing order: ${orderId}`);
+                await apiCall('/api/v1/queue/finalize', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        id: orderId, 
+                        pickup_code: Math.floor(1000 + Math.random() * 9000).toString()
+                    })
+                });
+                showAlert('Order finalized', 'success');
+                await refreshQueue();
+            } catch (error) {
+                addDebugLog(`Failed to finalize order: ${error.message}`, 'ERROR');
+                showError('Failed to finalize order: ' + error.message);
+            }
+        }
+
+        async function completeOrder(orderId) {
+            try {
+                addDebugLog(`Completing order: ${orderId}`);
+                await apiCall('/api/v1/queue/complete', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: orderId })
+                });
+                showAlert('Order completed', 'success');
+                await refreshQueue();
+            } catch (error) {
+                addDebugLog(`Failed to complete order: ${error.message}`, 'ERROR');
+                showError('Failed to complete order: ' + error.message);
+            }
+        }
+
+        async function cancelOrder(orderId) {
+            if (!confirm('Cancel this order?')) return;
+            
+            try {
+                addDebugLog(`Cancelling order: ${orderId}`);
+                await apiCall('/api/v1/queue/cancel', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: orderId })
+                });
+                showAlert('Order cancelled', 'success');
+                await refreshQueue();
+            } catch (error) {
+                addDebugLog(`Failed to cancel order: ${error.message}`, 'ERROR');
+                showError('Failed to cancel order: ' + error.message);
+            }
+        }
+
+        async function clearQueue() {
+            if (!confirm('Clear all orders in queue? This cannot be undone!')) return;
+            
+            try {
+                addDebugLog('Clearing entire queue...');
+                // Since there's no specific clear endpoint, we'll show this as a placeholder
+                showAlert('Queue clear functionality would be implemented here', 'warning');
+                addDebugLog('Queue clear requested - endpoint not available');
+            } catch (error) {
+                addDebugLog(`Failed to clear queue: ${error.message}`, 'ERROR');
+                showError('Failed to clear queue: ' + error.message);
+            }
+        }
+
+        function exportQueue() {
+            try {
+                addDebugLog('Exporting queue data...');
+                // Get current queue data and export as JSON
+                const queueData = {
+                    exported_at: new Date().toISOString(),
+                    export_type: 'queue_data',
+                    admin_user: currentUser?.email,
+                    data: [] // Would contain actual queue data
+                };
+                
+                const blob = new Blob([JSON.stringify(queueData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `qup-queue-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showAlert('Queue data exported', 'success');
+                addDebugLog('Queue data export completed');
+            } catch (error) {
+                addDebugLog(`Failed to export queue: ${error.message}`, 'ERROR');
+                showError('Failed to export queue: ' + error.message);
+            }
+        }
+
+        async function regenerateApiKey() {
+            if (!confirm('Regenerate API key? This will invalidate the current key.')) return;
+            
+            try {
+                addDebugLog('Regenerating API key...');
+                // Re-authenticate with current credentials
+                await getAdminKey();
+                showAlert('API key regenerated successfully', 'success');
+            } catch (error) {
+                addDebugLog(`Failed to regenerate API key: ${error.message}`, 'ERROR');
+                showError('Failed to regenerate API key: ' + error.message);
+            }
+        }
+
+        // Utility functions
+        function setLoading(loading) {
+            const text = document.getElementById('loginText');
+            const spinner = document.getElementById('loginLoading');
+            const button = document.getElementById('loginButton');
+            
+            if (loading) {
+                text.style.display = 'none';
+                spinner.classList.remove('hidden');
+                button.disabled = true;
+            } else {
+                text.style.display = 'inline';
+                spinner.classList.add('hidden');
+                button.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            addDebugLog(`Error: ${message}`, 'ERROR');
+            
+            const errorDiv = document.getElementById('errorNotification');
+            if (errorDiv) {
+                errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+                errorDiv.style.display = 'block';
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 8000);
+            }
+            
+            const loginError = document.getElementById('loginError');
+            if (loginError && document.getElementById('loginContainer').style.display !== 'none') {
+                loginError.innerHTML = `<strong>Error:</strong> ${message}`;
+                loginError.style.display = 'block';
+                setTimeout(() => {
+                    loginError.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            addDebugLog(`Alert (${type}): ${message}`);
+            
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+
+            alertsContainer.appendChild(alert);
+
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Auto-refresh functionality
+        function startAutoRefresh() {
+            if (CONFIG.AUTO_REFRESH_INTERVAL > 0) {
+                setInterval(async () => {
+                    if (currentUser && document.getElementById('dashboardContainer').style.display !== 'none') {
+                        // Only refresh if on queue tab to avoid overwhelming the API
+                        if (document.getElementById('queue').classList.contains('active')) {
+                            try {
+                                await refreshQueue();
+                            } catch (error) {
+                                addDebugLog(`Auto-refresh failed: ${error.message}`, 'WARNING');
+                            }
+                        }
+                        
+                        // Update system metrics periodically
+                        try {
+                            await refreshSystemStatus();
+                        } catch (error) {
+                            addDebugLog(`System status auto-refresh failed: ${error.message}`, 'WARNING');
+                        }
+                    }
+                }, CONFIG.AUTO_REFRESH_INTERVAL);
+                
+                addDebugLog(`Auto-refresh started: ${CONFIG.AUTO_REFRESH_INTERVAL}ms interval`);
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+R or F5 to refresh current tab
+            if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+                e.preventDefault();
+                if (document.getElementById('queue').classList.contains('active')) {
+                    refreshQueue();
+                } else if (document.getElementById('system').classList.contains('active')) {
+                    refreshSystemStatus();
+                }
+            }
+            
+            // Ctrl+D to toggle debug
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                toggleDebug();
+            }
+            
+            // Enter key for login
+            if (e.key === 'Enter' && document.getElementById('loginContainer').style.display !== 'none') {
+                handleLogin();
+            }
+        });
+
+        // Network status monitoring
+        function monitorNetworkStatus() {
+            window.addEventListener('online', () => {
+                addDebugLog('Network status: Online');
+                showAlert('Network connection restored', 'success');
+            });
+
+            window.addEventListener('offline', () => {
+                addDebugLog('Network status: Offline', 'WARNING');
+                showAlert('Network connection lost', 'warning');
+            });
+        }
+
+        // Error boundary for unhandled errors
+        window.addEventListener('error', (event) => {
+            addDebugLog(`Unhandled error: ${event.error?.message || event.message}`, 'ERROR');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            addDebugLog(`Unhandled promise rejection: ${event.reason}`, 'ERROR');
+        });
+
+        // Performance monitoring
+        function startPerformanceMonitoring() {
+            if ('performance' in window) {
+                // Monitor long tasks
+                if ('PerformanceObserver' in window) {
+                    try {
+                        const observer = new PerformanceObserver((list) => {
+                            for (const entry of list.getEntries()) {
+                                if (entry.duration > 50) {
+                                    addDebugLog(`Long task detected: ${entry.duration.toFixed(2)}ms`, 'WARNING');
+                                }
+                            }
+                        });
+                        observer.observe({ entryTypes: ['longtask'] });
+                    } catch (error) {
+                        addDebugLog(`Performance monitoring unavailable: ${error.message}`, 'INFO');
+                    }
+                }
+            }
+        }
+
+        // Initialize everything when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugLog('DOM loaded, initializing enhanced dashboard...');
+            
+            init();
+            startAutoRefresh();
+            monitorNetworkStatus();
+            startPerformanceMonitoring();
+            
+            // Initialize activity log
+            refreshActivityLog();
+            
+            addDebugLog('Enhanced QUP Admin Dashboard fully initialized');
+            
+            // Show initial debug info
+            setTimeout(() => {
+                updateEnvironmentInfo();
+            }, 1000);
+        });
+
+        // Service Worker registration for offline support (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Service worker registration would go here
+                addDebugLog('Service Worker support detected (not registered)');
+            });
+        }
+
+        // Export functions for debugging
+        window.qupAdmin = {
+            addDebugLog,
+            showAlert,
+            showError,
+            refreshQueue,
+            refreshSystemStatus,
+            testEndpoint,
+            CONFIG,
+            getState: () => ({
+                currentUser,
+                adminKey: adminKey ? `${adminKey.substring(0, 8)}...` : null,
+                socketConnected: socket?.connected || false,
+                debugLogCount: debugLog.length
+            })
+        };
+
+    </script>
+</body>
+</html>

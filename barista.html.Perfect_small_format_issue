@@ -205,6 +205,48 @@
             backdrop-filter: blur(10px);
         }
 
+        .status-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .refresh-btn, .debug-btn, .mass-action-btn, .danger-btn {
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 50%, #2e7d32 100%);
+        }
+
+        .debug-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 50%, #6a1b9a 100%);
+        }
+
+        .mass-action-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 50%, #ef6c00 100%);
+        }
+
+        .danger-btn {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 50%, #b71c1c 100%);
+        }
+
+        .refresh-btn:hover, .debug-btn:hover, .mass-action-btn:hover, .danger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+        }
+
         .websocket-status {
             display: inline-block;
             padding: 8px 16px;
@@ -232,72 +274,101 @@
             border: 1px solid var(--warning);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 15px 40px var(--shadow);
-            background: var(--bg-card);
-            backdrop-filter: blur(10px);
+        .current-order-section {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid var(--primary);
         }
 
-        .order-table th {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-            text-align: left;
-            font-size: 16px;
-            padding: 20px 25px;
+        .current-order-title {
+            font-size: 24px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        .order-table td {
-            padding: 20px 25px;
-            text-align: left;
-            background-color: var(--bg-secondary);
-            font-size: 15px;
-            border-bottom: 1px solid var(--border);
-            font-weight: 500;
-            transition: all 0.3s ease;
+        .order-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 20px var(--shadow);
         }
 
-        .order-table tr:hover td {
-            background-color: var(--bg-card);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        .order-card.ready {
+            border-color: var(--success);
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.1) 100%);
         }
 
-        .order-table tr.ready-order td {
-            background-color: rgba(16, 185, 129, 0.1);
-            border-left: 4px solid var(--success);
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
-        .order-table tr.ready-order:hover td {
-            background-color: rgba(16, 185, 129, 0.2);
+        .customer-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
-        .order-table button {
-            padding: 10px 18px;
-            margin: 3px;
-            cursor: pointer;
+        .order-time {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #1976d2;
+            animation: pulse 2s infinite;
+        }
+
+        .order-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .pickup-code-display {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #059669;
+            background: rgba(209, 250, 229, 0.8);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            display: inline-block;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
             border: none;
             border-radius: 10px;
+            cursor: pointer;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 14px;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .order-table button:hover {
+        .action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
         }
 
-        .order-table button:disabled {
+        .action-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
@@ -318,46 +389,12 @@
             color: white;
         }
 
-        .customer-name {
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .pickup-code {
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            color: #059669;
-            background: rgba(209, 250, 229, 0.8);
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(5, 150, 105, 0.2);
-        }
-
-        .live-timer {
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            color: #1976d2;
-            animation: pulse 2s infinite;
-        }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-next {
-            background: rgba(251, 191, 36, 0.2);
-            color: var(--warning);
-            border: 1px solid var(--warning);
-        }
-
-        .status-ready {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-            border: 1px solid var(--success);
+        .no-orders {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 40px;
+            font-size: 18px;
         }
 
         .order-notification {
@@ -440,6 +477,10 @@
                 font-size: 28px;
             }
 
+            .status-buttons {
+                justify-content: center;
+            }
+
             .order-header {
                 flex-direction: column;
                 gap: 10px;
@@ -490,25 +531,22 @@
             <div class="datetime-container">
                 <span id="localDateTime"></span> • <span id="queueCounter">0 orders</span> active
                 <span id="websocketStatus2" class="websocket-status disconnected">WebSocket: Disconnected</span>
+
+                <div class="status-buttons">
+                    <button class="refresh-btn" onclick="fetchQueue()">Manual Refresh</button>
+                    <button class="debug-btn" onclick="debugSystem()">Debug System</button>
+                    <button class="mass-action-btn" onclick="finalizeAllOrders()">Finalize All</button>
+                    <button class="mass-action-btn" onclick="completeAllOrders()">Complete All</button>
+                    <button class="danger-btn" onclick="clearAllOrders()">Clear All</button>
+                </div>
             </div>
 
-            <table class="order-table">
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Order</th>
-                        <th>Time</th>
-                        <th>Status</th>
-                        <th>PiQUP Code</th>
-                        <th style="text-align: center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="queueBody">
-                    <tr>
-                        <td colspan="6" style="text-align:center;">Connecting to real-time updates...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="current-order-section">
+                <div class="current-order-title">Current Orders</div>
+                <div id="ordersContainer">
+                    <div class="no-orders">Connecting to real-time updates...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -850,21 +888,21 @@
         }
 
         function updateOrdersDisplay(queue) {
-            const tableBody = document.getElementById("queueBody");
-            if (!tableBody) return;
+            const container = document.getElementById("ordersContainer");
+            if (!container) return;
 
             // Filter orders: only show the NEXT order to work on (not finalized) AND finalized orders (ready for pickup)
             const filteredOrders = queue.filter(item => !item.cancelled);
-
+            
             // Sort by timestamp to get the order they came in
             filteredOrders.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
+            
             // Get the next order to work on (first non-finalized order)
             const nextOrder = filteredOrders.find(order => !order.finalized);
-
+            
             // Get all finalized orders (ready for pickup)
             const readyOrders = filteredOrders.filter(order => order.finalized);
-
+            
             // Combine: next order + ready orders
             const ordersToShow = [];
             if (nextOrder) ordersToShow.push(nextOrder);
@@ -873,13 +911,7 @@
             updateQueueCounter(ordersToShow.length);
 
             if (ordersToShow.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align:center; color: #666; font-style: italic;">
-                            No orders to work on
-                        </td>
-                    </tr>
-                `;
+                container.innerHTML = '<div class="no-orders">No orders to work on</div>';
                 return;
             }
 
@@ -889,8 +921,8 @@
                 let processingTime = "0:00";
                 let pickupCode = "";
                 let actions = '';
-                let rowClass = '';
-                let statusBadge = '';
+                let cardClass = 'order-card';
+                let statusText = '';
 
                 // Calculate processing time
                 if (item.timestamp) {
@@ -902,44 +934,49 @@
 
                 if (item.finalized) {
                     // Order is ready for pickup
-                    rowClass = 'ready-order';
-                    statusBadge = '<span class="status-badge status-ready">Ready</span>';
+                    cardClass += ' ready';
+                    statusText = 'Ready for PiQUP';
                     pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
                     actions = `
-                        <button class="btn-complete" onclick="completeOrder('${item.id}')">
-                            Complete
+                        <button class="action-btn btn-complete" onclick="completeOrder('${item.id}')">
+                            Complete Pickup
                         </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                        <button class="action-btn btn-cancel" onclick="cancelOrder('${item.id}')">
                             Cancel
                         </button>
                     `;
                 } else {
                     // Order is next to work on
-                    statusBadge = '<span class="status-badge status-next">Next</span>';
-                    pickupCode = "In Progress";
+                    statusText = index === 0 ? 'Next to Prepare' : 'In Queue';
                     actions = `
-                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
+                        <button class="action-btn btn-finalize" onclick="finalizeOrder('${item.id}')">
                             PiQUP Ready
                         </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                        <button class="action-btn btn-cancel" onclick="cancelOrder('${item.id}')">
                             Cancel
                         </button>
                     `;
                 }
 
                 return `
-                    <tr class="${rowClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
-                        <td><span class="customer-name">${sanitizeHTML(customerName)}</span></td>
-                        <td>${sanitizeHTML(orderDisplay)}</td>
-                        <td><span class="live-timer">${processingTime}</span></td>
-                        <td>${statusBadge}</td>
-                        <td>${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}</td>
-                        <td style="text-align: center">${actions}</td>
-                    </tr>
+                    <div class="${cardClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
+                        <div class="order-header">
+                            <div class="customer-name">${sanitizeHTML(customerName)}</div>
+                            <div class="order-time live-timer">${processingTime}</div>
+                        </div>
+                        <div class="order-description">${sanitizeHTML(orderDisplay)}</div>
+                        ${item.finalized ? `<div class="pickup-code-display">Code: ${pickupCode}</div>` : ''}
+                        <div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: ${item.finalized ? 'var(--success)' : 'var(--warning)'};">
+                            ${statusText}
+                        </div>
+                        <div class="order-actions">
+                            ${actions}
+                        </div>
+                    </div>
                 `;
             }).join('');
 
-            tableBody.innerHTML = html;
+            container.innerHTML = html;
         }
 
         function extractCustomerName(order) {
@@ -947,12 +984,12 @@
             if (order.payload?.customer_email) {
                 return order.payload.customer_email.split('@')[0];
             }
-
+            
             // Try to get from user_id
             if (order.user_id) {
                 return order.user_id.split('@')[0];
             }
-
+            
             // Fallback to order ID
             return order.id.split('_')[0] || 'Customer';
         }
@@ -1057,6 +1094,141 @@
             }
         }
 
+        // Mass actions
+        async function finalizeAllOrders() {
+            if (!confirm("Finalize ALL active orders?")) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Finalizing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+                const activeOrders = data.queue.filter(item => !item.finalized && !item.cancelled);
+
+                let successCount = 0;
+                for (const order of activeOrders) {
+                    try {
+                        const pickupCode = generatePickupCode();
+                        await apiCall("/api/v1/queue/finalize", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id, pickup_code: pickupCode })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`Failed to finalize ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Finalized ${successCount}/${activeOrders.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Mass finalize failed:", error);
+                showError(`Mass finalize failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function completeAllOrders() {
+            if (!confirm("Complete ALL finalized orders?")) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Completing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+                const finalizedOrders = data.queue.filter(item => item.finalized && !item.cancelled);
+
+                let successCount = 0;
+                for (const order of finalizedOrders) {
+                    try {
+                        await apiCall("/api/v1/queue/complete", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`Failed to complete ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Completed ${successCount}/${finalizedOrders.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Mass complete failed:", error);
+                showError(`Mass complete failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function clearAllOrders() {
+            if (!confirm('Clear all orders? This cannot be undone!')) return;
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log("Clearing all orders...");
+
+            try {
+                const data = await apiCall("/api/v1/queue/list?admin=true");
+
+                let successCount = 0;
+                for (const order of data.queue) {
+                    try {
+                        await apiCall("/api/v1/queue/cancel", {
+                            method: "POST",
+                            body: JSON.stringify({ id: order.id })
+                        });
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (error) {
+                        console.warn(`Failed to clear ${order.id}:`, error);
+                    }
+                }
+
+                showOrderNotification(`Cleared ${successCount}/${data.queue.length} orders`);
+
+                // Refresh the queue display
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Clear all failed:", error);
+                showError(`Clear all failed: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        // Debug functions
+        async function debugSystem() {
+            console.log("DEBUGGING SYSTEM...");
+
+            try {
+                const queueData = await apiCall("/api/v1/queue/list?admin=true");
+                console.log(`API Queue: ${queueData.queue?.length || 0} orders`);
+                console.log("Queue details:", queueData.queue);
+
+                const wsStatus = socket?.connected ? 'Connected' : 'Disconnected';
+                console.log(`WebSocket: ${wsStatus}`);
+
+                alert(`DEBUG RESULTS:\n\nAPI Queue: ${queueData.queue?.length || 0} orders\nWebSocket: ${wsStatus}\nAuth: ${developerKey ? 'OK' : 'MISSING'}\n\nCheck console for detailed logs.`);
+
+            } catch (error) {
+                console.error("Debug failed:", error);
+                alert(`Debug failed: ${error.message}`);
+            }
+        }
+
         // Utility functions
         function generatePickupCode(timestamp) {
             const now = timestamp ? new Date(timestamp).getTime() : Date.now();
@@ -1091,8 +1263,8 @@
         function updateLiveTimers() {
             const timerElements = document.querySelectorAll('.live-timer');
             timerElements.forEach(timer => {
-                const row = timer.closest('tr');
-                const startTime = row?.getAttribute('data-start-time');
+                const card = timer.closest('.order-card');
+                const startTime = card?.getAttribute('data-start-time');
                 if (startTime) {
                     const start = new Date(startTime);
                     const now = new Date();
