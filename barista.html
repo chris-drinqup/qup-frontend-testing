@@ -412,6 +412,7 @@
             50% { opacity: 0.7; }
         }
 
+        /* Mobile responsive design for portrait phones */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -440,15 +441,110 @@
                 font-size: 28px;
             }
 
-            .order-header {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
+            /* Hide the traditional table on mobile and show card layout */
+            .order-table {
+                display: none;
             }
 
-            .order-actions {
-                flex-direction: column;
+            .mobile-orders {
+                display: block;
             }
+        }
+
+        /* Desktop table - hide mobile cards */
+        .mobile-orders {
+            display: none;
+        }
+
+        /* Mobile card design */
+        .order-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 25px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px var(--shadow);
+        }
+
+        .order-card.ready-order {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .order-card-title {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+
+        .order-card-time {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #1976d2;
+            animation: pulse 2s infinite;
+        }
+
+        .order-card-details {
+            margin-bottom: 15px;
+        }
+
+        .order-card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .order-card-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .order-card-value {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .order-card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .order-card-actions button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 16px;
+            margin: 0;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-card-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
         }
     </style>
 </head>
@@ -509,6 +605,13 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Mobile card layout -->
+            <div class="mobile-orders" id="mobileOrders">
+                <div style="text-align:center; color: #666; font-style: italic; padding: 20px;">
+                    Connecting to real-time updates...
+                </div>
+            </div>
         </div>
     </div>
 
@@ -851,7 +954,8 @@
 
         function updateOrdersDisplay(queue) {
             const tableBody = document.getElementById("queueBody");
-            if (!tableBody) return;
+            const mobileOrders = document.getElementById("mobileOrders");
+            if (!tableBody || !mobileOrders) return;
 
             // Filter orders: only show the NEXT order to work on (not finalized) AND finalized orders (ready for pickup)
             const filteredOrders = queue.filter(item => !item.cancelled);
@@ -873,6 +977,7 @@
             updateQueueCounter(ordersToShow.length);
 
             if (ordersToShow.length === 0) {
+                // Desktop table
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align:center; color: #666; font-style: italic;">
@@ -880,10 +985,18 @@
                         </td>
                     </tr>
                 `;
+                
+                // Mobile cards
+                mobileOrders.innerHTML = `
+                    <div style="text-align:center; color: #666; font-style: italic; padding: 20px;">
+                        No orders to work on
+                    </div>
+                `;
                 return;
             }
 
-            const html = ordersToShow.map((item, index) => {
+            // Generate desktop table HTML
+            const tableHtml = ordersToShow.map((item, index) => {
                 const orderDisplay = (item.payload?.order) ? item.payload.order : item.id;
                 const customerName = extractCustomerName(item);
                 let processingTime = "0:00";
@@ -939,7 +1052,85 @@
                 `;
             }).join('');
 
-            tableBody.innerHTML = html;
+            // Generate mobile cards HTML
+            const mobileHtml = ordersToShow.map((item, index) => {
+                const orderDisplay = (item.payload?.order) ? item.payload.order : item.id;
+                const customerName = extractCustomerName(item);
+                let processingTime = "0:00";
+                let pickupCode = "";
+                let actions = '';
+                let cardClass = '';
+                let statusBadge = '';
+
+                // Calculate processing time
+                if (item.timestamp) {
+                    const startTime = new Date(item.timestamp);
+                    const now = new Date();
+                    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                    processingTime = formatDuration(elapsedSeconds);
+                }
+
+                if (item.finalized) {
+                    // Order is ready for pickup
+                    cardClass = 'ready-order';
+                    statusBadge = '<span class="status-badge status-ready">Ready for Pickup</span>';
+                    pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
+                    actions = `
+                        <button class="btn-complete" onclick="completeOrder('${item.id}')">
+                            Complete
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                } else {
+                    // Order is next to work on
+                    statusBadge = '<span class="status-badge status-next">Next to Prepare</span>';
+                    pickupCode = "In Progress";
+                    actions = `
+                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
+                            PiQUP Ready
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                }
+
+                return `
+                    <div class="order-card ${cardClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
+                        <div class="order-card-header">
+                            <div class="order-card-title">${sanitizeHTML(customerName)}</div>
+                            <div class="order-card-time live-timer">${processingTime}</div>
+                        </div>
+                        
+                        <div class="order-card-details">
+                            <div class="order-card-row">
+                                <span class="order-card-label">Order:</span>
+                                <span class="order-card-value">${sanitizeHTML(orderDisplay)}</span>
+                            </div>
+                            <div class="order-card-row">
+                                <span class="order-card-label">Status:</span>
+                                <span class="order-card-value">${statusBadge}</span>
+                            </div>
+                            <div class="order-card-row">
+                                <span class="order-card-label">PiQUP Code:</span>
+                                <span class="order-card-value">
+                                    ${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-card-actions">
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Update both displays
+            tableBody.innerHTML = tableHtml;
+            mobileOrders.innerHTML = mobileHtml;
         }
 
         function extractCustomerName(order) {
