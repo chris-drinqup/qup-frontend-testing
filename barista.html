@@ -412,46 +412,7 @@
             50% { opacity: 0.7; }
         }
 
-        /* Mobile responsive design for portrait phones */
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                padding: 25px;
-                border-radius: 20px;
-            }
-
-            .login-form {
-                width: 90%;
-                padding: 35px;
-                border-radius: 20px;
-            }
-
-            .datetime-container {
-                font-size: 16px;
-                padding: 20px;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            h2 {
-                font-size: 28px;
-            }
-
-            /* Hide the traditional table on mobile and show card layout */
-            .order-table {
-                display: none;
-            }
-
-            .mobile-orders {
-                display: block;
-            }
-        }
-
-        /* Desktop table - hide mobile cards */
+        /* Desktop - show table, hide mobile cards */
         .mobile-orders {
             display: none;
         }
@@ -546,6 +507,68 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
         }
+
+        /* Mobile responsive design for portrait phones */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+                border-radius: 20px;
+            }
+
+            .login-form {
+                width: 90%;
+                padding: 35px;
+                border-radius: 20px;
+            }
+
+            .datetime-container {
+                font-size: 14px;
+                padding: 15px 20px;
+                text-align: center;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            /* Key fix: Hide table and show mobile cards on small screens */
+            .order-table {
+                display: none !important;
+            }
+
+            .mobile-orders {
+                display: block !important;
+            }
+
+            /* Make websocket status smaller on mobile */
+            .websocket-status {
+                font-size: 12px;
+                padding: 6px 12px;
+                margin-left: 8px;
+            }
+
+            /* Stack websocket status below time on very small screens */
+            @media (max-width: 480px) {
+                .datetime-container {
+                    font-size: 12px;
+                    line-height: 1.4;
+                }
+                
+                .websocket-status {
+                    display: block;
+                    margin: 8px auto 0;
+                    width: fit-content;
+                }
+            }
+        }
     </style>
 </head>
 <body>
@@ -585,7 +608,7 @@
 
             <div class="datetime-container">
                 <span id="localDateTime"></span> • <span id="queueCounter">0 orders</span> active
-                <span id="websocketStatus2" class="websocket-status disconnected">WebSocket: Disconnected</span>
+                <span id="websocketStatus2" class="websocket-status disconnected">Real-time: OFF</span>
             </div>
 
             <table class="order-table">
@@ -985,10 +1008,10 @@
                         </td>
                     </tr>
                 `;
-                
+
                 // Mobile cards
                 mobileOrders.innerHTML = `
-                    <div style="text-align:center; color: #666; font-style: italic; padding: 20px;">
+                    <div style="text-align:center; color: var(--text-secondary); font-style: italic; padding: 20px;">
                         No orders to work on
                     </div>
                 `;
@@ -1103,7 +1126,7 @@
                             <div class="order-card-title">${sanitizeHTML(customerName)}</div>
                             <div class="order-card-time live-timer">${processingTime}</div>
                         </div>
-                        
+
                         <div class="order-card-details">
                             <div class="order-card-row">
                                 <span class="order-card-label">Order:</span>
@@ -1120,7 +1143,7 @@
                                 </span>
                             </div>
                         </div>
-                        
+
                         <div class="order-card-actions">
                             ${actions}
                         </div>
@@ -1131,6 +1154,9 @@
             // Update both displays
             tableBody.innerHTML = tableHtml;
             mobileOrders.innerHTML = mobileHtml;
+
+            // Update live timers for mobile cards too
+            updateLiveTimers();
         }
 
         function extractCustomerName(order) {
@@ -1280,10 +1306,11 @@
         }
 
         function updateLiveTimers() {
+            // Update timers in both table and mobile cards
             const timerElements = document.querySelectorAll('.live-timer');
             timerElements.forEach(timer => {
-                const row = timer.closest('tr');
-                const startTime = row?.getAttribute('data-start-time');
+                const container = timer.closest('tr') || timer.closest('.order-card');
+                const startTime = container?.getAttribute('data-start-time');
                 if (startTime) {
                     const start = new Date(startTime);
                     const now = new Date();
