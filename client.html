@@ -692,13 +692,7 @@
                 }
             } catch (error) {
                 console.error('Developer key error:', error);
-
-                // Fallback: try to use the hardcoded developer key from your system
-                console.log('Trying fallback developer key...');
-                developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
-                console.log('Using fallback developer key');
-
-                showAlert('Using fallback API access - some features may be limited', 'info');
+                showAlert('Failed to get API access. Please contact administrator.', 'error');
             }
         }
 
@@ -1058,7 +1052,6 @@
             }
 
             console.log('PiQUP code received:', code);
-            showAlert(`Your order is ready! PiQUP code: ${code}`, 'success');
         }
 
         function showOrderComplete() {
