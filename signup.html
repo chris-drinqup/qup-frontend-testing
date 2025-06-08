@@ -415,6 +415,21 @@
             animation: float 12s infinite linear;
         }
 
+        .rate-limit-info {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .retry-countdown {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
         @keyframes float {
             0% { transform: translateY(100vh) rotate(0deg); }
             100% { transform: translateY(-10px) rotate(360deg); }
@@ -612,7 +627,7 @@
                 <div class="demo-info">
                     <h4>🚀 Access Your QUP Applications</h4>
                     <p>Use the same credentials you just created to log into both applications:</p>
-                    
+
                     <div style="margin: 20px 0;">
                         <a href="https://chris-drinqup.github.io/qup-frontend-testing/client.html" class="link-btn" target="_blank">
                             🛒 QUP Customer App
@@ -653,6 +668,42 @@
 
         // Global state
         let currentUserData = null;
+        let retryTimeout = null;
+        let isRateLimited = false;
+
+        // Check for email confirmation on page load
+        window.addEventListener('DOMContentLoaded', async function() {
+            // Check URL for confirmation tokens
+            const urlParams = new URLSearchParams(window.location.search);
+            const accessToken = urlParams.get('access_token');
+            const refreshToken = urlParams.get('refresh_token');
+            
+            if (accessToken && refreshToken) {
+                // User just confirmed their email, show success screen
+                showScreen('successScreen');
+                createConfetti();
+                
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+
+            // Check if user is already logged in
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user && user.email_confirmed_at) {
+                    // User is logged in and email is confirmed, show success screen
+                    showScreen('successScreen');
+                    createConfetti();
+                    return;
+                }
+            } catch (error) {
+                console.log('No existing session');
+            }
+
+            // Default: show signup screen
+            showScreen('signupScreen');
+        });
 
         function showResult(elementId, content, type = 'info') {
             const element = document.getElementById(elementId);
@@ -689,8 +740,40 @@
             }
         }
 
+        function handleRateLimit() {
+            isRateLimited = true;
+            const waitTime = 60; // Wait 60 seconds
+            let countdown = waitTime;
+
+            showResult('signupResult',
+                `⏳ <strong>Rate Limited</strong><br>
+                 Too many signup attempts. Please wait <span class="retry-countdown">${countdown}</span> seconds before trying again.<br>
+                 <small>This helps prevent spam and keeps our service secure.</small>`,
+                'warning'
+            );
+
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                const countdownElement = document.querySelector('.retry-countdown');
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+                }
+
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    isRateLimited = false;
+                    showResult('signupResult', '', 'info');
+                }
+            }, 1000);
+        }
+
         async function createBetaUser() {
-            const firstName = document.getElementById('firstName').value.trim();
+            if (isRateLimited) {
+                showResult('signupResult', '⏳ Please wait before trying again.', 'warning');
+                return;
+            }
+
+          const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const company = document.getElementById('company').value.trim();
@@ -710,7 +793,7 @@
             }
 
             if (password.length < 6) {
-                showResult('signupResult', '⚠️ Password must be at least 6 characters long', 'error');
+                sho'signupResult', '⚠️ Password must be at least 6 characters long', 'error');
                 return;
             }
 
@@ -725,7 +808,7 @@
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
-                    options: {
+                  s: {
                         data: {
                             first_name: firstName,
                             last_name: lastName,
@@ -739,6 +822,11 @@
                 });
 
                 if (error) {
+                    // Handle rate limiting specifically
+                    if (error.message.includes('429') || error.message.includes('Too Many Requests') || error.message.includes('rate limit')) {
+                        handleRateLimit();
+                        return;
+                    }
                     throw new Error(error.message);
                 }
 
@@ -756,7 +844,7 @@
                 document.getElementById('loginEmail').value = email;
                 document.getElementById('loginPassword').value = password;
 
-                // Show login screen
+            // Show login screen after a short delay
                 setTimeout(() => {
                     showScreen('loginScreen');
                     document.getElementById('loginEmail').focus();
@@ -764,14 +852,17 @@
 
             } catch (error) {
                 let errorMessage = 'Account creation failed. Please try again.';
-                
+
                 if (error.message.includes('already registered')) {
                     errorMessage = '⚠️ This email is already registered. Try signing in instead.';
-                } else if (error.message.includes('invalid email')) {
+            } else if (error.message.includes('invalid email')) {
                     errorMessage = '⚠️ Please enter a valid email address.';
                 } else if (error.message.includes('weak password')) {
                     errorMessage = '⚠️ Password is too weak. Please choose a stronger password.';
-                } else if (error.message) {
+                } else if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+                    handleRateLimit();
+                    return;
+                } else r.message) {
                     errorMessage = `⚠️ ${error.message}`;
                 }
 
@@ -786,7 +877,7 @@
             const password = document.getElementById('loginPassword').value;
 
             if (!email || !password) {
-                showResult('loginResult', '⚠️ Please enter both email and password', 'error');
+                showResuloginResult', '⚠️ Please enter both email and password', 'error');
                 return;
             }
 
@@ -801,7 +892,7 @@
                 if (error) {
                     if (error.message.includes('Email not confirmed')) {
                         showResult('loginResult',
-                            `📧 <strong>Email Not Confirmed</strong><br>
+                        `📧 <strong>Email Not Confirmed</strong><br>
                              Please check your email and click the confirmation link first.<br>
                              <small>Check your spam folder if you don't see it.</small>`,
                             'error'
@@ -809,7 +900,7 @@
                     } else {
                         showResult('loginResult',
                             `❌ <strong>Login Failed:</strong> ${error.message}<br>
-                             <small>Make sure you've confirmed your email first.</small>`,
+                             <small>Make sure ve confirmed your email first.</small>`,
                             'error'
                         );
                     }
@@ -823,8 +914,8 @@
                     'success'
                 );
 
-                // Show success screen
-                setTimeout(() => {
+                // Show success screen after a short delay
+            setTimeout(() => {
                     showScreen('successScreen');
                     createConfetti();
                 }, 1500);
@@ -842,7 +933,7 @@
 
         function startOver() {
             // Clear forms
-           ocument.getElementById('firstName').value = '';
+          document.getElementById('firstName').value = '';
             document.getElementById('lastName').value = '';
             document.getElementById('signupEmail').value = '';
             document.getElementById('company').value = '';
@@ -852,6 +943,12 @@
             document.getElementById('loginResult').innerHTML = '';
 
             currentUserData = null;
+            isRateLimited = false;
+            if (retryTimeout) {
+                clearTimeout(retryTimeout);
+                retryTimeout = null;
+            }
+
             showScreen('signupScreen');
             document.getElementById('firstName').focus();
         }
@@ -936,8 +1033,12 @@
             // Create floating elements
             createFloatingElements();
 
-            // Auto-focus first input
-            document.getElementById('firstName').focus();
+            // Auto-focus first input only if we're showing signup screen
+            setTimeout(() => {
+                if (!document.getElementById('signupScreen').classList.contains('hidden')) {
+                    document.getElementById('firstName').focus();
+                }
+            }, 100);
         });
 
         // Add confetti animation styles
