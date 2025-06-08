@@ -793,7 +793,7 @@
 
                 const { data, error } = await supabase.auth.signUp(signupData);
 
-                 if (error) {
+                if (error) {
                     if (error.message.includes('429') || error.message.includes('Too Many Requests') || error.message.includes('rate limit')) {
                         handleRateLimit();
                         return;
@@ -806,17 +806,17 @@
                 showResult('signupResult',
                     '🎉 <strong>Account Created Successfully!</strong><br>' +
                     '📧 Check your email (' + email + ') for a confirmation link.<br>' +
-                '⏳ You must confirm your email before proceeding to step 2.',
+                    '⏳ You must confirm your email before proceeding to step 2.',
                     'success'
                 );
 
                 setTimeout(function() {
                     const loginEmailField = document.getElementById('loginEmail');
-                    const loginPasswordField = document.getElementById('loginPassword');
+                    const loginPasswordField = documtElementById('loginPassword');
                     
                     if (loginEmailField) loginEmailField.value = email;
                     if (loginPasswordField) loginPasswordField.value = password;
-                  
+                    
                     showScreen('loginScreen');
                     if (loginEmailField) loginEmailField.focus();
                 }, 2500);
@@ -850,7 +850,7 @@
 
             if (!email || !password) {
                 showResult('loginResult', '⚠️ Please enter both email and password', 'error');
-            return;
+                return;
             }
 
             setLoading('login', true);
@@ -862,18 +862,18 @@
                 });
 
                 if (error) {
-                    if (error.message.includes('Email not confirmed')) {
+                if (error.message.includes('Email not confirmed')) {
                         showResult('loginResult',
                             '📧 <strong>Email Not Confirmed</strong><br>' +
-                            'Please check your email and click the confirmation link first.<br>' +
+                          'Please check your email and click the confirmation link first.<br>' +
                             '<small>Check your spam folder if you don\'t see it.</small>',
                             'error'
                         );
                     } else {
                         showResult('loginResult',
-                            '❌ <strong>Login Failed:</strong> ' + error.message + '<br>' +
+                          '❌ <strong>Login Failed:</strong> ' + error.message + '<br>' +
                             '<small>Make sure you\'ve confirmed your email first.</small>',
-                            'error'
+                          'error'
                         );
                     }
                     return;
@@ -882,7 +882,7 @@
                 showResult('loginResult',
                     '✅ <strong>Account Verified Successfully!</strong><br>' +
                     '🎉 Welcome to QUP Beta Testing!',
-                    'success'
+                    's'
                 );
 
                 setTimeout(function() {
@@ -898,24 +898,24 @@
         }
 
         async function resendConfirmation() {
-            const email = prompt('Enter your email address to resend confirmation:');
+            const email = prompt('Enter your email address to rese confirmation:');
             if (!email) return;
 
             try {
                 const { error } = await supabase.auth.resend({
                     type: 'signup',
                     email: email,
-                  options: {
+                    options: {
                         emailRedirectTo: 'https://chris-drinqup.github.io/qup-frontend-testing/signup.html'
                     }
                 });
 
                 if (error) {
-                    showResult('signupResult', '❌ Failed to resend email: ' + error.message, 'error');
+                    showResult('signupResult', '❌ Failed to resend email: ' + error.message, 'err');
                 } else {
                     showResult('signupResult', 
                         '📧 <strong>Confirmation Email Sent!</strong><br>' +
-                        'Check your email (' + em+ ') for a new confirmation link.',
+                        'Check your email (' + email + ') for a new confirmation link.',
                         'success'
                     );
                 }
@@ -925,13 +925,13 @@
         }
 
         function goBackToSignup() {
-            showScreen('signupScreen');
+            showSn('signupScreen');
         }
 
         function startOver() {
             document.getElementById('firstName').value = '';
             document.getElementById('lastName').value = '';
-            document.gelementById('signupEmail').value = '';
+            document.getElementById('signupEmail').value = '';
             document.getElementById('company').value = '';
             document.getElementById('signupPassword').value = '';
             document.getElementById('confirmPassword').value = '';
@@ -1015,19 +1015,18 @@
                     showResult('signupResult',
                         '⏰ <strong>Email Link Expired</strong><br>' +
                         'Your confirmation link has expired. Please create a new account or try signing in if you already confirmed your email.<br>' +
-                        '<button onclick="resendConfirmation()" class="btn btn-secondary" style="margin-top: 10px; width: auto; padding: 8px 16px; font-size: 0.9rem;">📧 Resend Confirmation Email</button><br>' +
+                      '<button onclick="resendConfirmation()" class="btn btn-secondary" style="margin-top: 10px; width: auto; padding: 8px 16px; font-size: 0.9rem;">📧 Resend Confirmation Email</button><br>' +
                         '<small>Email links expire after a certain time for security.</small>',
                         'warning'
                     );
                 } else {
                     showResult('signupResult',
-                        '❌ <strong>Email Confirmation Failed</strong><br>' +
-                        'There was an issue with your email confirmation link. Please try creating a new account.',
+                        '❌ <strong>Email Confirmation Failed</strong><br>' +                     'There was an issue with your email confirmation link. Please try creating a new account.',
                         'error'
                     );
                 }
                 
-              // Clean up the URL
+                // Clean up the URL
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return;
             }
