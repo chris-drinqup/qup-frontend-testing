@@ -773,7 +773,7 @@
                 return;
             }
 
-          const firstName = document.getElementById('firstName').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const company = document.getElementById('company').value.trim();
@@ -793,7 +793,7 @@
             }
 
             if (password.length < 6) {
-                sho'signupResult', '⚠️ Password must be at least 6 characters long', 'error');
+                showResult('signupResult', '⚠️ Password must be at least 6 characters long', 'error');
                 return;
             }
 
@@ -805,14 +805,14 @@
             setLoading('signup', true);
 
             try {
-                const { data, error } = await supabase.auth.signUp({
+                const { data, errwait supabase.auth.signUp({
                     email: email,
                     password: password,
-                  s: {
+                    options: {
                         data: {
                             first_name: firstName,
                             last_name: lastName,
-                            full_name: `${firstName} ${lastName}`,
+                            full_name: firstName + ' ' + lastName,
                             company: company || null,
                             beta_tester: true,
                             signup_source: 'qup_beta_signup',
@@ -834,17 +834,17 @@
                 currentUserData = { email, password, firstName, lastName };
 
                 showResult('signupResult',
-                    `🎉 <strong>Account Created Successfully!</strong><br>
-                     📧 Check your email (${email}) for a confirmation link.<br>
-                     ⏳ You must confirm your email before proceeding to step 2.`,
+                    '🎉 <strong>Account Created Successfully!</strong><br>' +
+                    '📧 Check your email (' + email + ') for a confirmation link.<br>' +
+                    '⏳ You must confirm your email before proceeding to step 2.',
                     'success'
                 );
 
                 // Pre-fill login form
-                document.getElementById('loginEmail').value = email;
+          document.getElementById('loginEmail').value = email;
                 document.getElementById('loginPassword').value = password;
 
-            // Show login screen after a short delay
+                // Show login screen after a short delay
                 setTimeout(() => {
                     showScreen('loginScreen');
                     document.getElementById('loginEmail').focus();
@@ -855,15 +855,15 @@
 
                 if (error.message.includes('already registered')) {
                     errorMessage = '⚠️ This email is already registered. Try signing in instead.';
-            } else if (error.message.includes('invalid email')) {
+                } else if (error.message.includes('invalid email')) {
                     errorMessage = '⚠️ Please enter a valid email address.';
                 } else if (error.message.includes('weak password')) {
                     errorMessage = '⚠️ Password is too weak. Please choose a stronger password.';
-                } else if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+                } else if (error.message.includes('429')ssage.includes('Too Many Requests')) {
                     handleRateLimit();
                     return;
-                } else r.message) {
-                    errorMessage = `⚠️ ${error.message}`;
+                } else if (error.message) {
+                    errorMessage = '⚠️ ' + error.message;
                 }
 
                 showResult('signupResult', errorMessage, 'error');
@@ -874,10 +874,10 @@
 
         async function testLogin() {
             const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
+        const password = document.getElementById('loginPassword').value;
 
             if (!email || !password) {
-                showResuloginResult', '⚠️ Please enter both email and password', 'error');
+                showResult('loginResult', '⚠️ Please enter both email and password', 'error');
                 return;
             }
 
@@ -890,50 +890,50 @@
                 });
 
                 if (error) {
-                    if (error.message.includes('Email not confirmed')) {
-                        showResult('loginResult',
-                        `📧 <strong>Email Not Confirmed</strong><br>
-                             Please check your email and click the confirmation link first.<br>
-                             <small>Check your spam folder if you don't see it.</small>`,
-                            'error'
-                        );
-                    } else {
-                        showResult('loginResult',
-                            `❌ <strong>Login Failed:</strong> ${error.message}<br>
-                             <small>Make sure ve confirmed your email first.</small>`,
-                            'error'
-                        );
-                    }
+                if (error.message.includes('Email not confirmed')) {
+                    showResult('loginResult',
+                        '📧 <strong>Email Not Confirmed</strong><br>' +
+                        'Please check your email and click the confirmation link first.<br>' +
+                        '<small>Check your spam folder if you don\'t see it.</small>',
+                        'error'
+                    );
+                } else {
+                    showResult('loginResult',
+                      '❌ <strong>Login Failed:</strong> ' + error.message + '<br>' +
+                        '<small>Make sure you\'ve confirmed your email first.</small>',
+                        'error'
+                    );
+                }
                     return;
                 }
 
                 // Success! Show welcome screen
                 showResult('loginResult',
-                    `✅ <strong>Account Verified Successfully!</strong><br>
-                     🎉 Welcome to QUP Beta Testing!`,
-                    'success'
+                    '✅ <strong>Account Verified Successfully!</strong><br>' +
+                    '🎉 Welcome to QUP Beta Testing!',
+               'success'
                 );
 
                 // Show success screen after a short delay
-            setTimeout(() => {
+                setTimeout(() => {
                     showScreen('successScreen');
                     createConfetti();
                 }, 1500);
 
             } catch (error) {
-                showResult('loginResult', `❌ <strong>Error:</strong> ${error.message}`, 'error');
+                showResult('loginResult', '❌ <strong>Error:</strong> ' + error.message, 'error');
             } finally {
                 setLoading('login', false);
             }
         }
 
         function goBackToSignup() {
-            showScreen('signupScreen');
+          showScreen('signupScreen');
         }
 
         function startOver() {
             // Clear forms
-          document.getElementById('firstName').value = '';
+            document.getElementById('firstName').value = '';
             document.getElementById('lastName').value = '';
             document.getElementById('signupEmail').value = '';
             document.getElementById('company').value = '';
