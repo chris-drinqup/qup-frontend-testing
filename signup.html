@@ -454,6 +454,13 @@
             animation: fadeIn 0.6s ease-out;
         }
 
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
         @media (max-width: 768px) {
             .hero-card {
                 padding: 30px 25px;
@@ -671,52 +678,15 @@
         let retryTimeout = null;
         let isRateLimited = false;
 
-        // Check for email confirmation on page load
-        window.addEventListener('DOMContentLoaded', async function() {
-            // Check URL for confirmation tokens
-            const urlParams = new URLSearchParams(window.location.search);
-            const accessToken = urlParams.get('access_token');
-            const refreshToken = urlParams.get('refresh_token');
-            
-            if (accessToken && refreshToken) {
-                // User just confirmed their email, show success screen
-                showScreen('successScreen');
-                createConfetti();
-                
-                // Clean up URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-                return;
-            }
-
-            // Check if user is already logged in
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user && user.email_confirmed_at) {
-                    // User is logged in and email is confirmed, show success screen
-                    showScreen('successScreen');
-                    createConfetti();
-                    return;
-                }
-            } catch (error) {
-                console.log('No existing session');
-            }
-
-            // Default: show signup screen
-            showScreen('signupScreen');
-        });
-
-        function showResult(elementId, content, type = 'info') {
+        function showResult(elementId, content, type) {
             const element = document.getElementById(elementId);
-            element.innerHTML = `<div class="alert alert-${type}">${content}</div>`;
+            element.innerHTML = '<div class="alert alert-' + type + '">' + content + '</div>';
         }
 
         function showScreen(screenId) {
-            // Hide all screens
             document.getElementById('signupScreen').classList.add('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('successScreen').classList.add('hidden');
-
-            // Show target screen
             document.getElementById(screenId).classList.remove('hidden');
         }
 
@@ -742,17 +712,17 @@
 
         function handleRateLimit() {
             isRateLimited = true;
-            const waitTime = 60; // Wait 60 seconds
+            const waitTime = 60;
             let countdown = waitTime;
 
             showResult('signupResult',
-                `⏳ <strong>Rate Limited</strong><br>
-                 Too many signup attempts. Please wait <span class="retry-countdown">${countdown}</span> seconds before trying again.<br>
-                 <small>This helps prevent spam and keeps our service secure.</small>`,
+                '⏳ <strong>Rate Limited</strong><br>' +
+                'Too many signup attempts. Please wait <span class="retry-countdown">' + countdown + '</span> seconds before trying again.<br>' +
+                '<small>This helps prevent spam and keeps our service secure.</small>',
                 'warning'
             );
 
-            const countdownInterval = setInterval(() => {
+            const countdownInterval = setInterval(function() {
                 countdown--;
                 const countdownElement = document.querySelector('.retry-countdown');
                 if (countdownElement) {
@@ -780,7 +750,6 @@
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            // Validation
             if (!firstName || !lastName || !email || !password || !confirmPassword) {
                 showResult('signupResult', '⚠️ Please fill in all required fields', 'error');
                 return;
@@ -805,7 +774,7 @@
             setLoading('signup', true);
 
             try {
-                const { data, errwait supabase.auth.signUp({
+                const signupData = {
                     email: email,
                     password: password,
                     options: {
@@ -819,10 +788,11 @@
                             user_type: 'beta_user'
                         }
                     }
-                });
+                };
+
+                const { data, error } = await supabase.auth.signUp(signupData);
 
                 if (error) {
-                    // Handle rate limiting specifically
                     if (error.message.includes('429') || error.message.includes('Too Many Requests') || error.message.includes('rate limit')) {
                         handleRateLimit();
                         return;
@@ -830,8 +800,7 @@
                     throw new Error(error.message);
                 }
 
-                // Store user data for next step
-                currentUserData = { email, password, firstName, lastName };
+                currentUserData = { email: email, password: password, firstName: firstName, lastName: lastName };
 
                 showResult('signupResult',
                     '🎉 <strong>Account Created Successfully!</strong><br>' +
@@ -840,31 +809,30 @@
                     'success'
                 );
 
-                // Pre-fill login form
-          document.getElementById('loginEmail').value = email;
+                document.getElementById('loginEmail').value = email;
                 document.getElementById('loginPassword').value = password;
 
-                // Show login screen after a short delay
-                setTimeout(() => {
+           etTimeout(function() {
                     showScreen('loginScreen');
                     document.getElementById('loginEmail').focus();
                 }, 2500);
 
             } catch (error) {
-                let errorMessage = 'Account creation failed. Please try again.';
+    		let errorMessage = 'Account creation failed. Please try again.';
 
-                if (error.message.includes('already registered')) {
-                    errorMessage = '⚠️ This email is already registered. Try signing in instead.';
-                } else if (error.message.includes('invalid email')) {
-                    errorMessage = '⚠️ Please enter a valid email address.';
-                } else if (error.message.includes('weak password')) {
-                    errorMessage = '⚠️ Password is too weak. Please choose a stronger password.';
-                } else if (error.message.includes('429')ssage.includes('Too Many Requests')) {
-                    handleRateLimit();
-                    return;
-                } else if (error.message) {
-                    errorMessage = '⚠️ ' + error.message;
-                }
+    		if (error.message.includes('already registered')) {
+                    errorMessage = 'This email is already registered. Try signing in instead.';
+    		} else if (error.message.includes('invalid email')) {
+                    errorMessage = 'Please enter a valid email address.';
+    		} else if (error.message.includes('weak password')) {
+        	    errorMessage = 'Password is too weak. Please choose a stronger password.';
+    		} else if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+       	            handleRateLimit();
+        	    return;
+    		} else if (error.message) {
+        	    errorMessage = error.message;
+   		}
+
 
                 showResult('signupResult', errorMessage, 'error');
             } finally {
@@ -874,10 +842,10 @@
 
         async function testLogin() {
             const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
+            const password = document.getElementById('loginPassword').value;
 
             if (!email || !password) {
-                showResult('loginResult', '⚠️ Please enter both email and password', 'error');
+                showResult('loginResult', '⚠️ Please enter both email and password', 'r');
                 return;
             }
 
@@ -890,37 +858,35 @@
                 });
 
                 if (error) {
-                if (error.message.includes('Email not confirmed')) {
-                    showResult('loginResult',
-                        '📧 <strong>Email Not Confirmed</strong><br>' +
-                        'Please check your email and click the confirmation link first.<br>' +
-                        '<small>Check your spam folder if you don\'t see it.</small>',
-                        'error'
-                    );
-                } else {
-                    showResult('loginResult',
-                      '❌ <strong>Login Failed:</strong> ' + error.message + '<br>' +
-                        '<small>Make sure you\'ve confirmed your email first.</small>',
-                        'error'
-                    );
-                }
+                    if (error.message.includes('Email not confirmed')) {
+                        showResult('loginResult',
+                            '📧 <strong>Email Not Confirmed</strong><br>' +
+                          'Please check your email and click the confirmation link first.<br>' +
+                            '<small>Check your spam folder if you don\'t see it.</small>',
+                            'error'
+                        );
+                    } else {
+                        showResult('loginResult',
+                            '❌ <strong>Login Failed:</strong> ' + error.message + '<br>' +
+                            '<small>Make sure you\'ve confirmed your email first.</small>',
+                          'error'
+                        );
+                    }
                     return;
                 }
 
-                // Success! Show welcome screen
                 showResult('loginResult',
                     '✅ <strong>Account Verified Successfully!</strong><br>' +
                     '🎉 Welcome to QUP Beta Testing!',
-               'success'
+                    'success'
                 );
 
-                // Show success screen after a short delay
-                setTimeout(() => {
+                setTimeout(function() {
                     showScreen('successScreen');
                     createConfetti();
                 }, 1500);
 
-            } catch (error) {
+        } catch (error) {
                 showResult('loginResult', '❌ <strong>Error:</strong> ' + error.message, 'error');
             } finally {
                 setLoading('login', false);
@@ -928,14 +894,13 @@
         }
 
         function goBackToSignup() {
-          showScreen('signupScreen');
+            showScreen('signupScreen');
         }
 
         function startOver() {
-            // Clear forms
             document.getElementById('firstName').value = '';
             document.getElementById('lastName').value = '';
-            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupEmail').valu= '';
             document.getElementById('company').value = '';
             document.getElementById('signupPassword').value = '';
             document.getElementById('confirmPassword').value = '';
@@ -991,11 +956,11 @@
                 confetti.style.borderRadius = '50%';
                 confetti.style.pointerEvents = 'none';
                 confetti.style.zIndex = '10000';
-                confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
+                confetti.style.animation = 'confetti-fall ' + (Math.random() * 3 + 2) + 's linear forwards';
 
                 container.appendChild(confetti);
 
-                setTimeout(() => {
+                setTimeout(function() {
                     if (confetti.parentNode) {
                         confetti.remove();
                     }
@@ -1003,7 +968,33 @@
             }
         }
 
-        // Handle Enter key presses
+        // Check for email confirmation on page load
+        window.addEventListener('DOMContentLoaded', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const accessToken = urlParams.get('access_token');
+            const refreshToken = urlParams.get('refresh_token');
+            
+            if (accessToken && refreshToken) {
+                showScreen('successScreen');
+                createConfetti();
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user && user.email_confirmed_at) {
+                    showScreen('successScreen');
+                    createConfetti();
+                    return;
+                }
+            } catch (error) {
+                console.log('No existing session');
+            }
+
+            showScreen('signupScreen');
+        });
+
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 if (!document.getElementById('signupScreen').classList.contains('hidden')) {
@@ -1014,7 +1005,6 @@
             }
         });
 
-        // Real-time password validation
         document.addEventListener('DOMContentLoaded', function() {
             const confirmPasswordField = document.getElementById('confirmPassword');
             const passwordField = document.getElementById('signupPassword');
@@ -1030,28 +1020,14 @@
                 }
             });
 
-            // Create floating elements
             createFloatingElements();
 
-            // Auto-focus first input only if we're showing signup screen
-            setTimeout(() => {
+            setTimeout(function() {
                 if (!document.getElementById('signupScreen').classList.contains('hidden')) {
                     document.getElementById('firstName').focus();
                 }
             }, 100);
         });
-
-        // Add confetti animation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes confetti-fall {
-                to {
-                    transform: translateY(100vh) rotate(720deg);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
