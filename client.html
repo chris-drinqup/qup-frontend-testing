@@ -271,7 +271,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            z-index: 20;
+            z-index: 15;
         }
 
         .pickup-code:hover {
@@ -380,13 +380,14 @@
             position: absolute;
             width: 30px;
             height: 30px;
-            opacity: 0.3;
+            opacity: 0.6;
             animation: rainFall linear infinite;
             pointer-events: none;
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             transform: rotate(15deg);
+            z-index: 25;
         }
 
         @keyframes rainFall {
@@ -419,7 +420,7 @@
             animation-duration: 5s;
         }
 
-        /* Anti-screenshot measures */
+        /* Anti-screenshot measures - Updated to use logo images */
         .pickup-section-protected {
             position: relative;
         }
@@ -431,11 +432,70 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(255,255,255,0.1) 31%, rgba(255,255,255,0.1) 32%, transparent 33%);
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2" fill="white" opacity="0.1"/></svg>') repeat;
             background-size: 20px 20px;
             animation: backgroundShimmer 2s linear infinite;
             pointer-events: none;
             z-index: 1;
+            display: none; /* Hide default pattern - we'll use logo overlay instead */
+        }
+
+        /* New logo overlay system for anti-screenshot */
+        .logo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        .overlay-logo {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            opacity: 1; /* Full opacity - no transparency */
+            animation: overlayFloat linear infinite;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            filter: brightness(0.1) contrast(2) saturate(0); /* Very dark, high contrast, grayscale */
+        }
+
+        @keyframes overlayFloat {
+            0% {
+                transform: translateX(-20px) translateY(-20px) rotate(0deg) scale(1);
+            }
+            25% {
+                transform: translateX(20px) translateY(-10px) rotate(90deg) scale(1.1);
+            }
+            50% {
+                transform: translateX(10px) translateY(20px) rotate(180deg) scale(0.9);
+            }
+            75% {
+                transform: translateX(-10px) translateY(10px) rotate(270deg) scale(1.05);
+            }
+            100% {
+                transform: translateX(-20px) translateY(-20px) rotate(360deg) scale(1);
+            }
+        }
+
+        .overlay-logo:nth-child(2n) {
+            animation-duration: 3s;
+            animation-direction: reverse;
+        }
+
+        .overlay-logo:nth-child(3n) {
+            animation-duration: 4s;
+            animation-delay: -1s;
+        }
+
+        .overlay-logo:nth-child(4n) {
+            animation-duration: 5s;
+            animation-delay: -2s;
         }
 
         @keyframes backgroundShimmer {
@@ -579,12 +639,15 @@
                 </div>
             </div>
 
-            <!-- Pickup Code Display with Protection -->
+            <!-- Pickup Code Display with Logo Protection -->
             <div id="pickupSection" class="pickup-section-protected hidden">
                 <div class="alert alert-success">
                     Your order is ready for PiQUP!
                 </div>
-                <div class="pickup-code" id="pickupCode" onclick="flashScreen()">----</div>
+                <div style="position: relative;">
+                    <div class="pickup-code" id="pickupCode" onclick="flashScreen()">----</div>
+                    <div id="logoOverlay" class="logo-overlay"></div>
+                </div>
                 <div style="color: var(--text-secondary); margin-bottom: 20px;">
                     Show this code to the barista
                 </div>
@@ -622,6 +685,7 @@
         let estimatedCompletionTime = null;
         let orderStatusInterval = null;
         let logoRainInterval = null;
+        let logoOverlayInterval = null; // New: for logo overlay protection
         let currentLogo = null;
         let logoSettings = null;
 
@@ -722,38 +786,65 @@
         }
 
         function updateLogoDisplays() {
-            if (!currentLogo || !logoSettings || !logoSettings.show_client) {
+            console.log('Updating client logo displays...', { currentLogo, logoSettings });
+            if (!currentLogo) {
+                console.log('No current logo - using default URL');
+                currentLogo = {
+                    logo_url: 'https://eorhgophbjjbiguvkygo.supabase.co/storage/v1/object/public/company-assets/logos/logo-1749419576950.png'
+                };
+            }
+            if (!logoSettings) {
+                logoSettings = { show_client: true, client_size: 50, enable_rain: true, rain_intensity: 3, rain_opacity: 30 };
+            }
+            if (!logoSettings.show_client) {
+                console.log('Logo settings prevent client display');
                 return;
             }
-
             const loginLogo = document.getElementById('loginLogo');
             const appLogo = document.getElementById('appLogo');
-
             if (loginLogo && appLogo) {
                 const logoUrl = currentLogo.logo_url;
                 const logoSize = logoSettings.client_size || 50;
-
+                console.log('Setting client logos:', logoUrl);
                 loginLogo.src = logoUrl;
                 loginLogo.style.height = logoSize + 'px';
                 loginLogo.style.display = 'block';
-
                 appLogo.src = logoUrl;
                 appLogo.style.height = logoSize + 'px';
                 appLogo.style.display = 'block';
-
-                console.log('Logo displays updated');
+                console.log('Logo displays updated for client');
+            } else {
+                console.error('Logo elements not found');
             }
         }
 
         // Logo Rain System
         function startLogoRain() {
-            if (!currentLogo || !logoSettings || !logoSettings.enable_rain) {
+            console.log('Starting logo rain...', { currentLogo, logoSettings });
+            if (!currentLogo) {
+                console.log('No current logo - using default URL for rain');
+                currentLogo = {
+                    logo_url: 'https://eorhgophbjjbiguvkygo.supabase.co/storage/v1/object/public/company-assets/logos/logo-1749419576950.png'
+                };
+            }
+            if (!logoSettings) {
+                logoSettings = { enable_rain: true, rain_intensity: 3, rain_opacity: 30 };
+            }
+            if (!logoSettings.enable_rain) {
+                console.log('Logo rain disabled');
                 return;
             }
 
             const rainContainer = document.getElementById('logoRain');
+            if (!rainContainer) {
+                console.error('Rain container not found');
+                return;
+            }
+
             const rainIntensity = logoSettings.rain_intensity || 3;
             const rainOpacity = (logoSettings.rain_opacity || 30) / 100;
+
+            console.log('Rain settings:', { rainIntensity, rainOpacity });
 
             logoRainInterval = setInterval(() => {
                 createRainLogo(rainContainer, rainOpacity);
@@ -793,12 +884,89 @@
             if (logoRainInterval) {
                 clearInterval(logoRainInterval);
                 logoRainInterval = null;
-                
+
                 // Clear existing rain logos
                 const rainContainer = document.getElementById('logoRain');
                 rainContainer.innerHTML = '';
-                
+
                 console.log('Logo rain stopped');
+            }
+        }
+
+        // NEW: Logo Overlay Protection System
+        function startLogoOverlay() {
+            console.log('Starting logo overlay protection...');
+            if (!currentLogo) {
+                console.log('No current logo - using default URL for overlay');
+                currentLogo = {
+                    logo_url: 'https://eorhgophbjjbiguvkygo.supabase.co/storage/v1/object/public/company-assets/logos/logo-1749419576950.png'
+                };
+            }
+
+            const overlayContainer = document.getElementById('logoOverlay');
+            if (!overlayContainer) {
+                console.error('Overlay container not found');
+                return;
+            }
+
+            // Create multiple floating logos over the pickup code
+            for (let i = 0; i < 8; i++) {
+                createOverlayLogo(overlayContainer, i);
+            }
+
+            // Continuously add new logos to maintain coverage
+            logoOverlayInterval = setInterval(() => {
+                if (overlayContainer.children.length < 12) {
+                    createOverlayLogo(overlayContainer, Math.floor(Math.random() * 100));
+                }
+            }, 2000);
+
+            console.log('Logo overlay protection started');
+        }
+
+        function createOverlayLogo(container, index) {
+            if (!currentLogo) return;
+
+            const logo = document.createElement('img');
+            logo.src = currentLogo.logo_url;
+            logo.className = 'overlay-logo';
+            
+            // Random positioning within the overlay area
+            logo.style.left = Math.random() * 90 + 5 + '%';
+            logo.style.top = Math.random() * 90 + 5 + '%';
+            
+            // Vary animation duration and delay for more randomness
+            logo.style.animationDuration = (2 + Math.random() * 3) + 's';
+            logo.style.animationDelay = (Math.random() * 2) + 's';
+
+            // Prevent drag and context menu
+            logo.draggable = false;
+            logo.oncontextmenu = () => false;
+            logo.onselectstart = () => false;
+            logo.ondragstart = () => false;
+
+            container.appendChild(logo);
+
+            // Remove after some time and replace
+            setTimeout(() => {
+                if (logo.parentNode) {
+                    logo.remove();
+                }
+            }, 8000 + Math.random() * 4000);
+        }
+
+        function stopLogoOverlay() {
+            if (logoOverlayInterval) {
+                clearInterval(logoOverlayInterval);
+                logoOverlayInterval = null;
+
+                // Clear existing overlay logos
+                const overlayContainer = document.getElementById('logoOverlay');
+                if (overlayContainer) {
+                    overlayContainer.innerHTML = '';
+                }
+
+                console.log('Logo overlay protection stopped');
             }
         }
 
@@ -851,6 +1019,7 @@
 
                 // Cleanup
                 stopLogoRain();
+                stopLogoOverlay(); // New cleanup
                 if (socket) {
                     socket.disconnect();
                     socket = null;
@@ -906,6 +1075,7 @@
             hideElement('appScreen');
             showElement('loginScreen');
             stopLogoRain();
+            stopLogoOverlay(); // New cleanup
 
             // Clear form
             document.getElementById('email').value = '';
@@ -1290,6 +1460,9 @@
 
             // Start logo rain when PiQUP code is shown
             startLogoRain();
+            
+            // NEW: Start logo overlay protection
+            startLogoOverlay();
 
             // Stop timers but KEEP polling to detect completion
             if (waitTimeInterval) {
@@ -1308,9 +1481,10 @@
         function showOrderComplete() {
             hideElement('orderStatus');
             hideElement('pickupSection');
-            
-            // Stop logo rain
+
+            // Stop logo rain and overlay
             stopLogoRain();
+            stopLogoOverlay(); // NEW
 
             // Stop all intervals
             if (waitTimeInterval) {
@@ -1336,8 +1510,9 @@
             currentOrder = null;
             estimatedCompletionTime = null;
 
-            // Stop logo rain
+            // Stop logo rain and overlay
             stopLogoRain();
+            stopLogoOverlay(); // NEW
 
             // Stop all intervals
             if (waitTimeInterval) {
@@ -1480,4 +1655,3 @@
         init();
     </script>
 </body>
-</html>

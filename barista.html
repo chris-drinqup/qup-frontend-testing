@@ -764,28 +764,47 @@
         }
 
         function updateLogoDisplays() {
-            if (!currentLogo || !logoSettings || !logoSettings.show_barista) {
-                return;
-            }
+    console.log('Updating barista logo displays...', { currentLogo, logoSettings });
+    
+    if (!currentLogo) {
+        console.log('No current logo - using default URL');
+        currentLogo = { 
+            logo_url: 'https://eorhgophbjjbiguvkygo.supabase.co/storage/v1/object/public/company-assets/logos/logo-1749419576950.png' 
+        };
+    }
+    
+    if (!logoSettings) {
+        logoSettings = { show_barista: true, barista_size: 40 };
+    }
+    
+    if (!logoSettings.show_barista) {
+        console.log('Logo settings prevent barista display');
+        return;
+    }
 
-            const loginLogo = document.getElementById('loginLogo');
-            const headerLogo = document.getElementById('headerLogo');
+    const loginLogo = document.getElementById('loginLogo');
+    const headerLogo = document.getElementById('headerLogo');
 
-            if (loginLogo && headerLogo) {
-                const logoUrl = currentLogo.logo_url;
-                const logoSize = logoSettings.barista_size || 40;
+    if (loginLogo && headerLogo) {
+        const logoUrl = currentLogo.logo_url;
+        const logoSize = logoSettings.barista_size || 40;
 
-                loginLogo.src = logoUrl;
-                loginLogo.style.height = logoSize + 'px';
-                loginLogo.style.display = 'block';
+        console.log('Setting barista logos:', logoUrl);
 
-                headerLogo.src = logoUrl;
-                headerLogo.style.height = logoSize + 'px';
-                headerLogo.style.display = 'block';
+        loginLogo.src = logoUrl;
+        loginLogo.style.height = logoSize + 'px';
+        loginLogo.style.display = 'block';
 
-                console.log('Logo displays updated for barista dashboard');
-            }
-        }
+        headerLogo.src = logoUrl;
+        headerLogo.style.height = logoSize + 'px';
+        headerLogo.style.display = 'block';
+
+        console.log('Logo displays updated for barista dashboard');
+    } else {
+        console.error('Logo elements not found');
+    }
+}
+
 
         function showUserInfo(user) {
             const userInfoSpan = document.getElementById('userInfo');
