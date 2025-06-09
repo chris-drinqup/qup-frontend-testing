@@ -38,7 +38,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow-x: hidden;
         }
 
         .container {
@@ -55,23 +54,6 @@
             backdrop-filter: blur(10px);
             box-shadow: 0 15px 40px var(--shadow);
             text-align: center;
-            position: relative;
-            z-index: 10;
-        }
-
-        .logo-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .company-logo {
-            height: 50px;
-            width: auto;
-            border-radius: 8px;
-            object-fit: contain;
         }
 
         .logo {
@@ -80,6 +62,7 @@
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
 
         .subtitle {
@@ -270,8 +253,6 @@
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            z-index: 20;
         }
 
         .pickup-code:hover {
@@ -364,85 +345,6 @@
             display: none;
         }
 
-        /* Logo Rain Animation System */
-        .logo-rain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 5;
-            overflow: hidden;
-        }
-
-        .rain-logo {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            opacity: 0.3;
-            animation: rainFall linear infinite;
-            pointer-events: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            transform: rotate(15deg);
-        }
-
-        @keyframes rainFall {
-            from {
-                top: -40px;
-                transform: rotate(0deg) scale(1);
-            }
-            50% {
-                transform: rotate(180deg) scale(1.2);
-            }
-            to {
-                top: 100vh;
-                transform: rotate(360deg) scale(0.8);
-            }
-        }
-
-        .rain-logo:nth-child(odd) {
-            animation-direction: reverse;
-        }
-
-        .rain-logo:nth-child(3n) {
-            animation-duration: 4s;
-        }
-
-        .rain-logo:nth-child(3n+1) {
-            animation-duration: 6s;
-        }
-
-        .rain-logo:nth-child(3n+2) {
-            animation-duration: 5s;
-        }
-
-        /* Anti-screenshot measures */
-        .pickup-section-protected {
-            position: relative;
-        }
-
-        .pickup-section-protected::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(255,255,255,0.1) 31%, rgba(255,255,255,0.1) 32%, transparent 33%);
-            background-size: 20px 20px;
-            animation: backgroundShimmer 2s linear infinite;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        @keyframes backgroundShimmer {
-            0% { background-position: 0 0; }
-            100% { background-position: 20px 20px; }
-        }
-
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -473,24 +375,14 @@
             .logo {
                 font-size: 2.5rem;
             }
-
-            .company-logo {
-                height: 40px;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Logo Rain Container -->
-    <div id="logoRain" class="logo-rain"></div>
-
     <div class="container">
         <!-- Login Screen -->
         <div id="loginScreen" class="card">
-            <div class="logo-header">
-                <img id="loginLogo" class="company-logo" src="" alt="Logo" style="display: none;">
-                <div class="logo">QUP</div>
-            </div>
+            <div class="logo">QUP</div>
             <div class="subtitle">Sign in to place your order</div>
 
             <div class="form-group">
@@ -522,10 +414,7 @@
 
         <!-- Main App Screen -->
         <div id="appScreen" class="card hidden">
-            <div class="logo-header">
-                <img id="appLogo" class="company-logo" src="" alt="Logo" style="display: none;">
-                <div class="logo">QUP</div>
-            </div>
+            <div class="logo">QUP</div>
             <div class="subtitle">Place Your Order</div>
 
             <div class="user-info">
@@ -579,8 +468,8 @@
                 </div>
             </div>
 
-            <!-- Pickup Code Display with Protection -->
-            <div id="pickupSection" class="pickup-section-protected hidden">
+            <!-- Pickup Code Display -->
+            <div id="pickupSection" class="hidden">
                 <div class="alert alert-success">
                     Your order is ready for PiQUP!
                 </div>
@@ -605,25 +494,12 @@
     </div>
 
     <script>
-        // Configuration
+        // Configuration - YOUR SUPABASE DETAILS
         const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
-        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
 
         // Initialize Supabase
         let supabase = null;
-
-        // Global state
-        let socket = null;
-        let currentUser = null;
-        let currentOrder = null;
-        let developerKey = null;
-        let waitTimeInterval = null;
-        let estimatedCompletionTime = null;
-        let orderStatusInterval = null;
-        let logoRainInterval = null;
-        let currentLogo = null;
-        let logoSettings = null;
 
         function initializeSupabase() {
             try {
@@ -644,6 +520,18 @@
             }
         }
 
+        // Global state
+        let socket = null;
+        let currentUser = null;
+        let currentOrder = null;
+        let developerKey = null;
+        let waitTimeInterval = null;
+        let estimatedCompletionTime = null;
+        let orderStatusInterval = null;
+
+        // API Configuration - YOUR GCP QUP API SERVER
+        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
+
         // Initialize app
         async function init() {
             console.log('QUP Client initializing...');
@@ -653,9 +541,6 @@
                 showLogin();
                 return;
             }
-
-            // Load logo and settings
-            await loadCompanyAssets();
 
             // Check if user is already logged in
             try {
@@ -668,137 +553,6 @@
             } catch (error) {
                 console.error('Failed to check user session:', error);
                 showLogin();
-            }
-        }
-
-        // Load company logo and settings
-        async function loadCompanyAssets() {
-            try {
-                // Load current logo
-                const { data: logoData, error: logoError } = await supabase
-                    .from('company_logos')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('uploaded_at', { ascending: false })
-                    .limit(1);
-
-                if (!logoError && logoData && logoData.length > 0) {
-                    currentLogo = logoData[0];
-                    updateLogoDisplays();
-                }
-
-                // Load logo settings
-                const { data: settingsData, error: settingsError } = await supabase
-                    .from('logo_settings')
-                    .select('*')
-                    .limit(1);
-
-                if (!settingsError && settingsData && settingsData.length > 0) {
-                    logoSettings = settingsData[0];
-                } else {
-                    // Default settings
-                    logoSettings = {
-                        show_client: true,
-                        client_size: 50,
-                        enable_rain: true,
-                        rain_intensity: 3,
-                        rain_opacity: 30
-                    };
-                }
-
-                console.log('Company assets loaded:', { currentLogo: !!currentLogo, logoSettings });
-
-            } catch (error) {
-                console.error('Failed to load company assets:', error);
-                // Use defaults
-                logoSettings = {
-                    show_client: true,
-                    client_size: 50,
-                    enable_rain: true,
-                    rain_intensity: 3,
-                    rain_opacity: 30
-                };
-            }
-        }
-
-        function updateLogoDisplays() {
-            if (!currentLogo || !logoSettings || !logoSettings.show_client) {
-                return;
-            }
-
-            const loginLogo = document.getElementById('loginLogo');
-            const appLogo = document.getElementById('appLogo');
-
-            if (loginLogo && appLogo) {
-                const logoUrl = currentLogo.logo_url;
-                const logoSize = logoSettings.client_size || 50;
-
-                loginLogo.src = logoUrl;
-                loginLogo.style.height = logoSize + 'px';
-                loginLogo.style.display = 'block';
-
-                appLogo.src = logoUrl;
-                appLogo.style.height = logoSize + 'px';
-                appLogo.style.display = 'block';
-
-                console.log('Logo displays updated');
-            }
-        }
-
-        // Logo Rain System
-        function startLogoRain() {
-            if (!currentLogo || !logoSettings || !logoSettings.enable_rain) {
-                return;
-            }
-
-            const rainContainer = document.getElementById('logoRain');
-            const rainIntensity = logoSettings.rain_intensity || 3;
-            const rainOpacity = (logoSettings.rain_opacity || 30) / 100;
-
-            logoRainInterval = setInterval(() => {
-                createRainLogo(rainContainer, rainOpacity);
-            }, 1000 / rainIntensity);
-
-            console.log('Logo rain started');
-        }
-
-        function createRainLogo(container, opacity) {
-            if (!currentLogo) return;
-
-            const logo = document.createElement('img');
-            logo.src = currentLogo.logo_url;
-            logo.className = 'rain-logo';
-            logo.style.left = Math.random() * window.innerWidth + 'px';
-            logo.style.opacity = opacity;
-            logo.style.animationDuration = (Math.random() * 3 + 3) + 's';
-            logo.style.animationDelay = Math.random() * 2 + 's';
-
-            // Prevent drag and context menu
-            logo.draggable = false;
-            logo.oncontextmenu = () => false;
-            logo.onselectstart = () => false;
-            logo.ondragstart = () => false;
-
-            container.appendChild(logo);
-
-            // Remove after animation
-            setTimeout(() => {
-                if (logo.parentNode) {
-                    logo.remove();
-                }
-            }, 8000);
-        }
-
-        function stopLogoRain() {
-            if (logoRainInterval) {
-                clearInterval(logoRainInterval);
-                logoRainInterval = null;
-                
-                // Clear existing rain logos
-                const rainContainer = document.getElementById('logoRain');
-                rainContainer.innerHTML = '';
-                
-                console.log('Logo rain stopped');
             }
         }
 
@@ -850,7 +604,6 @@
                 console.log('Logged out');
 
                 // Cleanup
-                stopLogoRain();
                 if (socket) {
                     socket.disconnect();
                     socket = null;
@@ -905,7 +658,6 @@
         function showLogin() {
             hideElement('appScreen');
             showElement('loginScreen');
-            stopLogoRain();
 
             // Clear form
             document.getElementById('email').value = '';
@@ -1288,9 +1040,6 @@
             hideElement('orderStatus');
             showElement('pickupSection');
 
-            // Start logo rain when PiQUP code is shown
-            startLogoRain();
-
             // Stop timers but KEEP polling to detect completion
             if (waitTimeInterval) {
                 clearInterval(waitTimeInterval);
@@ -1308,9 +1057,7 @@
         function showOrderComplete() {
             hideElement('orderStatus');
             hideElement('pickupSection');
-            
-            // Stop logo rain
-            stopLogoRain();
+            // Don't show the complete section, just go straight back to order form
 
             // Stop all intervals
             if (waitTimeInterval) {
@@ -1335,9 +1082,6 @@
             // Reset state
             currentOrder = null;
             estimatedCompletionTime = null;
-
-            // Stop logo rain
-            stopLogoRain();
 
             // Stop all intervals
             if (waitTimeInterval) {

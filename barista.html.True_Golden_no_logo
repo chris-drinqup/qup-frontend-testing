@@ -65,23 +65,9 @@
             box-shadow: 0 25px 60px var(--shadow);
         }
 
-        .login-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 35px;
-        }
-
-        .company-logo {
-            height: 50px;
-            width: auto;
-            border-radius: 8px;
-            object-fit: contain;
-        }
-
         .login-form h2 {
             color: var(--text-primary);
+            margin-bottom: 35px;
             font-size: 32px;
             font-weight: 800;
             letter-spacing: -0.5px;
@@ -177,19 +163,6 @@
             padding: 25px;
             border-radius: 20px;
             margin: -10px -10px 30px -10px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-logo {
-            height: 40px;
-            width: auto;
-            border-radius: 8px;
-            object-fit: contain;
         }
 
         h2 {
@@ -562,10 +535,6 @@
                 padding: 20px;
             }
 
-            .header-left {
-                justify-content: center;
-            }
-
             h2 {
                 font-size: 24px;
             }
@@ -606,10 +575,7 @@
     <!-- Login Screen -->
     <div class="login-container" id="loginContainer">
         <div class="login-form">
-            <div class="login-header">
-                <img id="loginLogo" class="company-logo" src="" alt="Logo" style="display: none;">
-                <h2>QUP Barista Dashboard</h2>
-            </div>
+            <h2>QUP Barista Dashboard</h2>
             <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" placeholder="Enter your email">
@@ -630,10 +596,7 @@
     <div class="dashboard-container" id="dashboardContainer">
         <div class="container">
             <div class="header">
-                <div class="header-left">
-                    <img id="headerLogo" class="header-logo" src="" alt="Logo" style="display: none;">
-                    <h2>QUP Barista</h2>
-                </div>
+                <h2>QUP Barista</h2>
                 <div style="display: flex; align-items: center;">
                     <span id="userInfo" class="user-info"></span>
                     <span id="websocketStatus" class="websocket-status disconnected">Real-time: OFF</span>
@@ -668,7 +631,7 @@
 
             <!-- Mobile card layout -->
             <div class="mobile-orders" id="mobileOrders">
-                <div style="text-align:center; color: var(--text-secondary); font-style: italic; padding: 20px;">
+                <div style="text-align:center; color: #666; font-style: italic; padding: 20px;">
                     Connecting to real-time updates...
                 </div>
             </div>
@@ -692,15 +655,10 @@
         let liveTimerInterval = null;
         let isActionInProgress = false;
         let autoRefreshInterval = null;
-        let currentLogo = null;
-        let logoSettings = null;
 
         // Check if user is already logged in
         async function init() {
             console.log('QUP Barista Dashboard initializing...');
-
-            // Load company assets first
-            await loadCompanyAssets();
 
             try {
                 const { data: { user } } = await supabase.auth.getUser();
@@ -717,74 +675,6 @@
 
             // Add event listener for login button
             document.getElementById('loginButton').addEventListener('click', handleLogin);
-        }
-
-        // Load company logo and settings
-        async function loadCompanyAssets() {
-            try {
-                // Load current logo
-                const { data: logoData, error: logoError } = await supabase
-                    .from('company_logos')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('uploaded_at', { ascending: false })
-                    .limit(1);
-
-                if (!logoError && logoData && logoData.length > 0) {
-                    currentLogo = logoData[0];
-                    updateLogoDisplays();
-                }
-
-                // Load logo settings
-                const { data: settingsData, error: settingsError } = await supabase
-                    .from('logo_settings')
-                    .select('*')
-                    .limit(1);
-
-                if (!settingsError && settingsData && settingsData.length > 0) {
-                    logoSettings = settingsData[0];
-                } else {
-                    // Default settings
-                    logoSettings = {
-                        show_barista: true,
-                        barista_size: 40
-                    };
-                }
-
-                console.log('Company assets loaded:', { currentLogo: !!currentLogo, logoSettings });
-
-            } catch (error) {
-                console.error('Failed to load company assets:', error);
-                // Use defaults
-                logoSettings = {
-                    show_barista: true,
-                    barista_size: 40
-                };
-            }
-        }
-
-        function updateLogoDisplays() {
-            if (!currentLogo || !logoSettings || !logoSettings.show_barista) {
-                return;
-            }
-
-            const loginLogo = document.getElementById('loginLogo');
-            const headerLogo = document.getElementById('headerLogo');
-
-            if (loginLogo && headerLogo) {
-                const logoUrl = currentLogo.logo_url;
-                const logoSize = logoSettings.barista_size || 40;
-
-                loginLogo.src = logoUrl;
-                loginLogo.style.height = logoSize + 'px';
-                loginLogo.style.display = 'block';
-
-                headerLogo.src = logoUrl;
-                headerLogo.style.height = logoSize + 'px';
-                headerLogo.style.display = 'block';
-
-                console.log('Logo displays updated for barista dashboard');
-            }
         }
 
         function showUserInfo(user) {
