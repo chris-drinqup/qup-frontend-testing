@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}:root{--primary:#667eea;--secondary:#764ba2;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;--bg-primary:#0f0f23;--bg-secondary:#1a1a3e;--bg-card:#262654;--text-primary:#ffffff;--text-secondary:#a5a5c9;--border:#3a3a6b}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg-primary) 0%,var(--bg-secondary) 100%);color:var(--text-primary);min-height:100vh}.container{max-width:1400px;margin:0 auto;padding:20px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;background:var(--bg-card);padding:20px;border-radius:15px;border:1px solid var(--border)}.logo{font-size:2rem;font-weight:800;background:linear-gradient(45deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}.user-info{display:flex;align-items:center;gap:15px}.connection-status{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:20px;font-size:0.9rem;font-weight:600}.connection-status.connected{background:rgba(16,185,129,0.2);color:var(--success);border:1px solid var(--success)}.connection-status.disconnected{background:rgba(239,68,68,0.2);color:var(--danger);border:1px solid var(--danger)}.connection-dot{width:6px;height:6px;border-radius:50%;animation:pulse 2s infinite}.tabs{display:flex;gap:10px;margin-bottom:30px;overflow-x:auto}.tab{padding:12px 24px;border:1px solid var(--border);border-radius:10px;background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;transition:all 0.3s ease;white-space:nowrap}.tab.active{background:var(--primary);color:white;border-color:var(--primary)}.tab:hover:not(.active){background:var(--bg-card);color:var(--text-primary)}.tab-content{display:none}.tab-content.active{display:block}.card{background:var(--bg-card);border-radius:15px;padding:25px;border:1px solid var(--border);margin-bottom:20px}.card h3{color:var(--primary);margin-bottom:20px;font-size:1.3rem}.form-group{margin-bottom:15px}.form-group label{display:block;margin-bottom:5px;font-weight:600;color:var(--text-primary);font-size:0.85rem}.form-control{width:100%;padding:8px 12px;border:2px solid var(--border);border-radius:6px;background:var(--bg-primary);color:var(--text-primary);font-size:0.9rem;transition:border-color 0.3s ease}.form-control:focus{outline:none;border-color:var(--primary)}.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all 0.3s ease;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:linear-gradient(45deg,var(--primary),var(--secondary));color:white}.btn-success{background:var(--success);color:white}.btn-danger{background:var(--danger);color:white}.btn-warning{background:var(--warning);color:white}.btn-info{background:var(--info);color:white}.btn:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,0.3)}.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}.btn-group{display:flex;gap:8px;flex-wrap:wrap}.alert{padding:10px 15px;border-radius:8px;margin:10px 0;font-weight:600;border:1px solid;font-size:0.85rem}.alert-success{background:rgba(16,185,129,0.15);color:var(--success);border-color:var(--success)}.alert-error{background:rgba(239,68,68,0.15);color:var(--danger);border-color:var(--danger)}.alert-info{background:rgba(59,130,246,0.15);color:var(--info);border-color:var(--info)}.alert-warning{background:rgba(245,158,11,0.15);color:var(--warning);border-color:var(--warning)}.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px}.metric-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:15px;text-align:center}.metric-value{font-size:1.5rem;font-weight:800;color:var(--primary);margin-bottom:5px}.metric-label{color:var(--text-secondary);font-size:0.8rem}.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:#fff;animation:spin 1s ease-in-out infinite}.hidden{display:none}.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}.login-card{background:var(--bg-card);border-radius:20px;padding:40px;border:1px solid var(--border);width:100%;max-width:400px;text-align:center}.two-column{display:grid;grid-template-columns:1fr 1fr;gap:20px}.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-bottom:20px}.settings-section{background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:15px}.settings-section h4{color:var(--primary);margin-bottom:10px;font-size:1rem}.queue-item{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}.queue-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.queue-position{background:var(--primary);color:white;width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:0.8rem}.status-badge{padding:3px 8px;border-radius:15px;font-size:0.7rem;font-weight:600}.status-waiting{background:rgba(251,191,36,0.2);color:var(--warning)}.status-processing{background:rgba(59,130,246,0.2);color:var(--info)}.status-pickup_ready{background:rgba(16,185,129,0.2);color:var(--success)}.status-completed{background:rgba(107,114,128,0.2);color:var(--text-secondary)}.upload-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;background:var(--bg-secondary);transition:all 0.3s ease;cursor:pointer;margin-bottom:15px}.upload-area:hover{border-color:var(--primary);background:var(--bg-card)}.upload-area.dragover{border-color:var(--success);background:rgba(16,185,129,0.1)}.upload-icon{font-size:2rem;color:var(--text-secondary);margin-bottom:10px}.upload-text{color:var(--text-secondary);margin-bottom:10px;font-size:0.85rem}.file-input{display:none}.logo-preview{text-align:center}.preview-image{max-width:120px;max-height:120px;border-radius:10px;border:2px solid var(--border);margin-bottom:10px;object-fit:contain;background:var(--bg-primary)}.logo-info{background:var(--bg-primary);border-radius:8px;padding:10px;margin-top:10px;font-size:0.8rem}.info-row{display:flex;justify-content:space-between;margin-bottom:5px}.info-label{color:var(--text-secondary)}.info-value{color:var(--text-primary);font-weight:600}.checkbox-group{display:flex;align-items:center;margin-bottom:8px;gap:8px}.checkbox-group input[type="checkbox"]{width:auto;margin:0}.current-logo{width:40px;height:40px;border-radius:8px;border:2px solid var(--border);object-fit:contain;background:var(--bg-secondary)}.config-actions{display:flex;gap:10px;justify-content:center;margin-top:20px;padding-top:15px;border-top:1px solid var(--border)}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}@media (max-width:768px){.container{padding:10px}.two-column{grid-template-columns:1fr}.btn-group{flex-direction:column}.header{flex-direction:column;gap:15px;text-align:center}.settings-grid{grid-template-columns:1fr}.config-actions{flex-direction:column}}
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <div class="logo">QUP Admin</div>
+            <div style="color: var(--text-secondary); margin-bottom: 30px;">Dynamic Authentication System</div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" class="form-control" placeholder="admin" value="admin">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" class="form-control" placeholder="admin123" value="admin123">
+                </div>
+                <button type="button" class="btn btn-primary" id="loginBtn" style="width: 100%;">
+                    <span id="loginText">Sign In</span>
+                    <div id="loginLoading" class="loading hidden"></div>
+                </button>
+            </form>
+            <div id="loginError" class="alert alert-error hidden">Login failed. Please check your credentials.</div>
+            <div style="margin-top: 20px; font-size: 0.9rem; color: var(--text-secondary);">
+                Use admin/admin123 or developer/dev123 to access the dashboard.
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="container hidden">
+        <!-- Header -->
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img id="headerLogo" class="current-logo" src="" alt="Logo" style="display: none;">
+                <div>
+                    <div class="logo">QUP Admin Dashboard</div>
+                    <div style="color: var(--text-secondary); margin-top: 5px;">Enterprise Queue Management</div>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="connection-status" id="connectionStatus">
+                    <div class="connection-dot"></div>
+                    <span>Connecting...</span>
+                </div>
+                <span id="adminUser" style="color: var(--text-secondary);"></span>
+                <button class="btn btn-danger" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <!-- Metrics Overview -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="totalOrders">-</div>
+                <div class="metric-label">Total Orders</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="activeOrders">-</div>
+                <div class="metric-label">Active Orders</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="poolTime">-</div>
+                <div class="metric-label">Pool Time (s)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="connectedClients">-</div>
+                <div class="metric-label">Connected Clients</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="queue">Queue</div>
+            <div class="tab" data-tab="orders">Orders</div>
+            <div class="tab" data-tab="settings">Settings</div>
+            <div class="tab" data-tab="system">System</div>
+            <div class="tab" data-tab="config">Config</div>
+        </div>
+
+        <!-- Queue Management Tab -->
+        <div id="queueTab" class="tab-content active">
+            <div class="card">
+                <h3>Live Queue</h3>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="refreshQueueBtn">Refresh</button>
+                    <button class="btn btn-success" id="exportQueueBtn">Export</button>
+                </div>
+                <div id="queueContainer">
+                    <div id="queueLoading" class="alert alert-info">Loading queue...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Operations Tab -->
+        <div id="ordersTab" class="tab-content">
+            <div class="two-column">
+                <div class="card">
+                    <h3>Add Order</h3>
+                    <div class="form-group">
+                        <label for="orderId">Order ID:</label>
+                        <input type="text" id="orderId" class="form-control" placeholder="auto-generated">
+                    </div>
+                    <div class="form-group">
+                        <label for="orderDescription">Description:</label>
+                        <textarea id="orderDescription" class="form-control" rows="2" placeholder="Large coffee with milk"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Customer Email:</label>
+                        <input type="email" id="customerEmail" class="form-control" placeholder="customer@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority:</label>
+                        <input type="number" id="priority" class="form-control" value="500" min="100" max="1000">
+                    </div>
+                    <button type="button" class="btn btn-primary" id="addOrderBtn">Add Order</button>
+                </div>
+                <div class="card">
+                    <h3>Order Actions</h3>
+                    <div class="form-group">
+                        <label for="actionOrderId">Order ID:</label>
+                        <input type="text" id="actionOrderId" class="form-control" placeholder="Enter order ID">
+                    </div>
+                    <div class="btn-group" style="flex-direction: column;">
+                        <button class="btn btn-info" id="startProcessingBtn">Start Processing</button>
+                        <button class="btn btn-warning" id="markReadyBtn">Mark Ready</button>
+                        <button class="btn btn-success" id="completeOrderBtn">Complete</button>
+                        <button class="btn btn-danger" id="cancelOrderBtn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settingsTab" class="tab-content">
+            <!-- Logo Management -->
+            <div class="card">
+                <h3>🎨 Company Branding & Logo</h3>
+                <div class="two-column">
+                    <div>
+                        <div class="upload-area" onclick="document.getElementById('logoFile').click()">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">
+                                <strong>Click to upload logo</strong><br>
+                                or drag and drop here
+                            </div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 8px;">
+                                PNG, JPG, SVG (Max 2MB)
+                            </div>
+                        </div>
+                        <input type="file" id="logoFile" class="file-input" accept="image/*">
+                        <div class="btn-group">
+                            <button class="btn btn-success" id="uploadBtn" disabled>
+                                <span id="uploadText">Upload</span>
+                                <div id="uploadLoading" class="loading hidden"></div>
+                            </button>
+                            <button class="btn btn-danger" id="deleteLogoBtn">Delete</button>
+                            <button class="btn btn-info" id="loadLogoBtn">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="logo-preview">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Preview</h4>
+                        <img id="previewImage" class="preview-image" src="" alt="Logo Preview" style="display: none;">
+                        <div id="noPreview" style="color: var(--text-secondary); font-style: italic;">No logo selected</div>
+                        <div class="logo-info" id="logoInfo" style="display: none;">
+                            <div class="info-row">
+                                <span class="info-label">File:</span>
+                                <span class="info-value" id="fileName">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Size:</span>
+                                <span class="info-value" id="fileSize">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Dimensions:</span>
+                                <span class="info-value" id="fileDimensions">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Logo Display Settings -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px 0;">Display Settings</h4>
+                <div class="settings-grid">
+                    <div class="settings-section">
+                        <h4>Barista Dashboard</h4>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showBarista" checked>
+                            <label for="showBarista">Show in barista dashboard</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="baristaSize">Size (px):</label>
+                            <input type="number" id="baristaSize" class="form-control" value="40" min="20" max="100">
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h4>Client App</h4>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showClient" checked>
+                            <label for="showClient">Show in client app</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="clientSize">Size (px):</label>
+                            <input type="number" id="clientSize" class="form-control" value="50" min="20" max="100">
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h4>PiQUP Screen</h4>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableRain" checked>
+                            <label for="enableRain">Enable logo rain protection</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="rainIntensity">Rain intensity:</label>
+                            <input type="number" id="rainIntensity" class="form-control" value="3" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-success" id="saveLogoSettingsBtn">Save Logo Settings</button>
+            </div>
+
+            <!-- System Configuration -->
+            <div class="card">
+                <h3>⚙️ System Configuration</h3>
+                <div class="settings-grid">
+                    <!-- Queue Settings -->
+                    <div class="settings-section">
+                        <h4>Queue Settings</h4>
+                        <div class="form-group">
+                            <label for="queueName">Queue Name:</label>
+                            <input type="text" id="queueName" class="form-control" value="Production Queue">
+                        </div>
+                        <div class="form-group">
+                            <label for="queueMode">Mode:</label>
+                            <select id="queueMode" class="form-control">
+                                <option value="fifo">FIFO</option>
+                                <option value="super_qup">Super QUP</option>
+                                <option value="negotiation">Negotiation</option>
+                                <option value="chaos">Chaos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxQueueSize">Max Size:</label>
+                            <input type="number" id="maxQueueSize" class="form-control" value="1000">
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableQueue" checked>
+                            <label for="enableQueue">Enable Processing</label>
+                        </div>
+                    </div>
+
+                    <!-- Time Management -->
+                    <div class="settings-section">
+                        <h4>Time Management</h4>
+                        <div class="form-group">
+                            <label for="defaultTimeEstimate">Default Time (s):</label>
+                            <input type="number" id="defaultTimeEstimate" class="form-control" value="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="poolTimeBuffer">Pool Buffer (s):</label>
+                            <input type="number" id="poolTimeBuffer" class="form-control" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="timeDecayRate">Decay Rate:</label>
+                            <input type="number" id="timeDecayRate" class="form-control" step="0.1" value="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxPoolTime">Max Pool (s):</label>
+                            <input type="number" id="maxPoolTime" class="form-control" value="300">
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableTimeManagement" checked>
+                            <label for="enableTimeManagement">Enable Time Mgmt</label>
+                        </div>
+                    </div>
+
+                    <!-- Priority Settings -->
+                    <div class="settings-section">
+                        <h4>Priority Settings</h4>
+                        <div class="form-group">
+                            <label for="basePriority">Base Priority:</label>
+                            <input type="number" id="basePriority" class="form-control" value="500">
+                        </div>
+                        <div class="form-group">
+                            <label for="priorityIncrement">Increment:</label>
+                            <input type="number" id="priorityIncrement" class="form-control" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxPriority">Max Priority:</label>
+                            <input type="number" id="maxPriority" class="form-control" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="minPriority">Min Priority:</label>
+                            <input type="number" id="minPriority" class="form-control" value="100">
+                        </div>
+                    </div>
+
+                    <!-- Super QUP Settings -->
+                    <div class="settings-section">
+                        <h4>Super QUP Settings</h4>
+                        <div class="form-group">
+                            <label for="superQupCost">Cost:</label>
+                            <input type="number" id="superQupCost" class="form-control" step="0.01" value="1.50">
+                        </div>
+                        <div class="form-group">
+                            <label for="superQupTimeBonus">Time Bonus (s):</label>
+                            <input type="number" id="superQupTimeBonus" class="form-control" value="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="superQupPriorityBonus">Priority Bonus:</label>
+                            <input type="number" id="superQupPriorityBonus" class="form-control" value="200">
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableSuperQup" checked>
+                            <label for="enableSuperQup">Enable Super QUP</label>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="settings-section">
+                        <h4>Notification Settings</h4>
+                        <div class="form-group">
+                            <label for="notificationDelay">Delay (ms):</label>
+                            <input type="number" id="notificationDelay" class="form-control" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="emailNotificationThreshold">Email Threshold:</label>
+                            <input type="number" id="emailNotificationThreshold" class="form-control" value="50">
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableNotifications" checked>
+                            <label for="enableNotifications">Enable Notifications</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableEmailNotifications">
+                            <label for="enableEmailNotifications">Enable Email</label>
+                        </div>
+                    </div>
+
+                    <!-- Debug Settings -->
+                    <div class="settings-section">
+                        <h4>Debug Settings</h4>
+                        <div class="form-group">
+                            <label for="logLevel">Log Level:</label>
+                            <select id="logLevel" class="form-control">
+                                <option value="error">Error</option>
+                                <option value="warn">Warning</option>
+                                <option value="info" selected>Info</option>
+                                <option value="debug">Debug</option>
+                                <option value="trace">Trace</option>
+                            </select>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableDebugMode">
+                            <label for="enableDebugMode">Debug Mode</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableVerboseLogging">
+                            <label for="enableVerboseLogging">Verbose Logging</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-actions">
+                    <button class="btn btn-primary" id="saveAllSettingsBtn">Save All Settings</button>
+                    <button class="btn btn-warning" id="loadSettingsBtn">Reload from Server</button>
+                    <button class="btn btn-info" id="exportSettingsBtn">Export Settings</button>
+                    <button class="btn btn-danger" id="resetAllSettingsBtn">Reset to Defaults</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status Tab -->
+        <div id="systemTab" class="tab-content">
+            <div class="card">
+                <h3>System Health</h3>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="refreshHealthBtn">Refresh</button>
+                    <button class="btn btn-info" id="wsStatusBtn">WebSocket</button>
+                    <button class="btn btn-success" id="authConfigBtn">Auth Config</button>
+                    <button class="btn btn-warning" id="clientConfigBtn">Client Config</button>
+                </div>
+                <div id="systemHealth">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Configuration Tab -->
+        <div id="configTab" class="tab-content">
+            <div class="card">
+                <h3>System Configuration</h3>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="loadConfigBtn">Load</button>
+                    <button class="btn btn-success" id="saveConfigBtn">Save</button>
+                    <button class="btn btn-warning" id="resetConfigBtn">Reset</button>
+                </div>
+                <div id="configContainer">
+                    <div class="alert alert-info">Click "Load" to view configuration</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Container -->
+        <div id="alertsContainer"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
+        const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
+        
+        let adminKey = null;
+        let socket = null;
+        let refreshInterval = null;
+        let supabase = null;
+        let currentUser = null;
+        let selectedFile = null;
+        let currentLogo = null;
+
+        const DEFAULT_CONFIG = {
+            queueName: 'Production Queue', queueMode: 'super_qup', maxQueueSize: 1000, enableQueue: true,
+            defaultTimeEstimate: 120, poolTimeBuffer: 30, timeDecayRate: 0.1, maxPoolTime: 300, enableTimeManagement: true,
+            basePriority: 500, priorityIncrement: 50, maxPriority: 1000, minPriority: 100,
+            superQupCost: 1.50, superQupTimeBonus: 60, superQupPriorityBonus: 200, enableSuperQup: true,
+            notificationDelay: 1000, emailNotificationThreshold: 50, enableNotifications: true, enableEmailNotifications: false,
+            logLevel: 'info', enableDebugMode: false, enableVerboseLogging: false
+        };
+
+        function init() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialized');
+            } catch (error) {
+                console.error('Supabase init failed:', error);
+            }
+            setupEventListeners();
+            loadDefaultSettings();
+            setupDragAndDrop();
+            showLogin();
+            console.log('QUP Admin Dashboard initialized');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('loginBtn').addEventListener('click', login);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', (e) => showTab(e.target.getAttribute('data-tab')));
+            });
+
+            // Queue & Orders
+            document.getElementById('refreshQueueBtn').addEventListener('click', refreshQueue);
+            document.getElementById('exportQueueBtn').addEventListener('click', exportQueue);
+            document.getElementById('addOrderBtn').addEventListener('click', addOrder);
+            document.getElementById('startProcessingBtn').addEventListener('click', startProcessing);
+            document.getElementById('markReadyBtn').addEventListener('click', markReady);
+            document.getElementById('completeOrderBtn').addEventListener('click', completeOrder);
+            document.getElementById('cancelOrderBtn').addEventListener('click', cancelOrder);
+
+            // System
+            document.getElementById('refreshHealthBtn').addEventListener('click', loadSystemHealth);
+            document.getElementById('wsStatusBtn').addEventListener('click', checkWebSocketStatus);
+            document.getElementById('authConfigBtn').addEventListener('click', checkAuthConfig);
+            document.getElementById('clientConfigBtn').addEventListener('click', checkClientConfig);
+
+            // Config
+            document.getElementById('loadConfigBtn').addEventListener('click', loadConfiguration);
+            document.getElementById('saveConfigBtn').addEventListener('click', saveConfiguration);
+            document.getElementById('resetConfigBtn').addEventListener('click', resetConfiguration);
+
+            // Settings & Logo
+            document.getElementById('logoFile').addEventListener('change', handleFileSelect);
+            document.getElementById('uploadBtn').addEventListener('click', uploadLogo);
+            document.getElementById('deleteLogoBtn').addEventListener('click', deleteLogo);
+            document.getElementById('loadLogoBtn').addEventListener('click', loadCurrentLogo);
+            document.getElementById('saveLogoSettingsBtn').addEventListener('click', saveLogoSettings);
+            document.getElementById('saveAllSettingsBtn').addEventListener('click', saveAllSettings);
+            document.getElementById('loadSettingsBtn').addEventListener('click', loadSettings);
+            document.getElementById('exportSettingsBtn').addEventListener('click', exportSettings);
+            document.getElementById('resetAllSettingsBtn').addEventListener('click', resetAllSettings);
+
+            // Enter keys
+            document.getElementById('username').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('password').focus();
+            });
+            document.getElementById('password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') login();
+            });
+        }
+
+        function loadDefaultSettings() {
+            Object.keys(DEFAULT_CONFIG).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        element.checked = DEFAULT_CONFIG[key];
+                    } else {
+                        element.value = DEFAULT_CONFIG[key];
+                    }
+                }
+            });
+        }
+
+        function setupDragAndDrop() {
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) handleFile(files[0]);
+            });
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                showAlert('Please enter both username and password', 'error');
+                return;
+            }
+
+            setLoading('login', true);
+            document.getElementById('loginError').classList.add('hidden');
+
+            try {
+                const endpoint = username === 'admin' ? '/api/auth/admin/login' : '/api/auth/developer/login';
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && (data.admin_key || data.developer_key)) {
+                    adminKey = data.admin_key || data.developer_key;
+                    document.getElementById('adminUser').textContent = `${data.user_type}: ${username}`;
+                    console.log('Login successful:', data);
+                    showDashboard();
+                    showAlert('Login successful!', 'success');
+                } else {
+                    throw new Error(data.error || 'Authentication failed');
+                }
+            } catch (error) {
+                console.error('Login failed:', error);
+                document.getElementById('loginError').classList.remove('hidden');
+                showAlert('Login failed: ' + error.message, 'error');
+            } finally {
+                setLoading('login', false);
+            }
+        }
+
+        function logout() {
+            adminKey = null;
+            currentUser = null;
+            if (socket) { socket.disconnect(); socket = null; }
+            if (refreshInterval) { clearInterval(refreshInterval); refreshInterval = null; }
+            updateConnectionStatus(false);
+            showLogin();
+            showAlert('Logged out successfully', 'info');
+        }
+
+        function showLogin() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.remove('hidden');
+            connectWebSocket();
+            loadInitialData();
+            startPeriodicRefresh();
+            loadCurrentLogo();
+        }
+
+        function connectWebSocket() {
+            try {
+                socket = io(API_BASE, { transports: ['websocket', 'polling'], timeout: 20000, forceNew: true });
+                socket.on('connect', () => { updateConnectionStatus(true); console.log('WebSocket connected'); });
+                socket.on('disconnect', () => { updateConnectionStatus(false); });
+                socket.on('order_update', () => refreshQueue());
+                socket.on('error', (error) => { console.error('WebSocket error:', error); updateConnectionStatus(false); });
+            } catch (error) {
+                console.error('WebSocket failed:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            status.className = connected ? 'connection-status connected' : 'connection-status disconnected';
+            status.innerHTML = `<div class="connection-dot"></div><span>${connected ? 'Connected' : 'Disconnected'}</span>`;
+        }
+
+        async function loadInitialData() {
+            await Promise.all([refreshQueue(), updateMetrics(), loadSystemHealth()]);
+        }
+
+        function startPeriodicRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+                updateMetrics();
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab && activeTab.id === 'queueTab') refreshQueue();
+            }, 5000);
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const defaultOptions = {
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(adminKey && { 'X-Admin-Key': adminKey })
+                }
+            };
+            return fetch(url, { ...defaultOptions, ...options });
+        }
+
+        // Logo Management Functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) handleFile(file);
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showAlert('Please select an image file', 'error');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('File size must be less than 2MB', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewImage = document.getElementById('previewImage');
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                document.getElementById('noPreview').style.display = 'none';
+                showFileInfo(file, e.target.result);
+            };
+            reader.readAsDataURL(file);
+            document.getElementById('uploadBtn').disabled = false;
+        }
+
+        function showFileInfo(file, dataUrl) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('logoInfo').style.display = 'block';
+
+            const img = new Image();
+            img.onload = () => {
+                document.getElementById('fileDimensions').textContent = `${img.width} × ${img.height}`;
+            };
+            img.src = dataUrl;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+       async function uploadLogo() {
+            if (!selectedFile) {
+                showAlert('Please select a file first', 'error');
+                return;
+            }
+
+            setLoading('upload', true);
+
+            try {
+                const fileExt = selectedFile.name.split('.').pop();
+                const fileName = `logo-${Date.now()}.${fileExt}`;
+
+                const { data, error } = await supabase.storage
+                    .from('company-assets')
+                    .upload(`logos/${fileName}`, selectedFile, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (error) throw error;
+
+                const { data: urlData } = supabase.storage
+                    .from('company-assets')
+                    .getPublicUrl(`logos/${fileName}`);
+
+                const logoUrl = urlData.publicUrl;
+
+                const logoData = {
+                    logo_url: logoUrl,
+                    file_name: selectedFile.name,
+                    file_size: selectedFile.size,
+                    file_type: selectedFile.type || 'image/png',
+                    uploaded_at: new Date().toISOString(),
+                    is_active: true
+                };
+
+                const { error: dbError } = await supabase
+                    .from('company_logos')
+                    .upsert(logoData, { onConflict: 'is_active' });
+
+                if (dbError) throw dbError;
+
+                currentLogo = logoData;
+                updateHeaderLogo(logoUrl);
+                showAlert('Logo uploaded successfully!', 'success');
+
+                selectedFile = null;
+                document.getElementById('logoFile').value = '';
+                document.getElementById('uploadBtn').disabled = true;
+
+            } catch (error) {
+                console.error('Upload failed:', error);
+                showAlert('Upload failed: ' + error.message, 'error');
+            } finally {
+                setLoading('upload', false);
+            }
+        }
+
+        async function loadCurrentLogo() {
+            try {
+                const { data, error } = await supabase
+                    .from('company_logos')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('uploaded_at', { ascending: false })
+                    .limit(1);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    currentLogo = data[0];
+                    updateHeaderLogo(currentLogo.logo_url);
+                    showAlert('Logo loaded successfully', 'success');
+                } else {
+                    document.getElementById('headerLogo').style.display = 'none';
+                    showAlert('No logo found', 'info');
+                }
+
+                await loadLogoSettings();
+
+            } catch (error) {
+                console.error('Failed to load logo:', error);
+                showAlert('Failed to load logo: ' + error.message, 'error');
+            }
+        }
+
+        function updateHeaderLogo(logoUrl) {
+            const headerLogo = document.getElementById('headerLogo');
+            headerLogo.src = logoUrl;
+            headerLogo.style.display = 'block';
+        }
+
+        async function deleteLogo() {
+            if (!currentLogo) {
+                showAlert('No logo to delete', 'error');
+                return;
+            }
+
+            if (!confirm('Delete current logo?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('company_logos')
+                    .update({ is_active: false })
+                    .eq('id', currentLogo.id);
+
+                if (error) throw error;
+
+                document.getElementById('headerLogo').style.display = 'none';
+                currentLogo = null;
+                showAlert('Logo deleted successfully', 'success');
+
+            } catch (error) {
+                console.error('Delete failed:', error);
+                showAlert('Failed to delete logo: ' + error.message, 'error');
+            }
+        }
+
+        async function saveLogoSettings() {
+            const settings = {
+                show_barista: document.getElementById('showBarista').checked,
+                barista_size: parseInt(document.getElementById('baristaSize').value),
+                show_client: document.getElementById('showClient').checked,
+                client_size: parseInt(document.getElementById('clientSize').value),
+                enable_rain: document.getElementById('enableRain').checked,
+                rain_intensity: parseInt(document.getElementById('rainIntensity').value),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const { error } = await supabase
+                    .from('logo_settings')
+                    .upsert(settings, { onConflict: 'id' });
+
+                if (error) throw error;
+                showAlert('Logo settings saved!', 'success');
+
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+                showAlert('Failed to save settings: ' + error.message, 'error');
+            }
+        }
+
+        async function loadLogoSettings() {
+            try {
+                const { data, error } = await supabase
+                    .from('logo_settings')
+                    .select('*')
+                    .limit(1);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const settings = data[0];
+                    document.getElementById('showBarista').checked = settings.show_barista ?? true;
+                    document.getElementById('baristaSize').value = settings.barista_size ?? 40;
+                    document.getElementById('showClient').checked = settings.show_client ?? true;
+                    document.getElementById('clientSize').value = settings.client_size ?? 50;
+                    document.getElementById('enableRain').checked = settings.enable_rain ?? true;
+                    document.getElementById('rainIntensity').value = settings.rain_intensity ?? 3;
+                }
+
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+
+        // Settings Management
+        function getCurrentSettings() {
+            const settings = {};
+            Object.keys(DEFAULT_CONFIG).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        settings[key] = element.checked;
+                    } else if (element.type === 'number') {
+                        settings[key] = parseFloat(element.value) || 0;
+                    } else {
+                        settings[key] = element.value;
+                    }
+                }
+            });
+            return settings;
+        }
+
+        function applySettingsToForm(settings) {
+            Object.keys(settings).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        element.checked = settings[key];
+                    } else {
+                        element.value = settings[key];
+                    }
+                }
+            });
+        }
+
+        async function saveAllSettings() {
+            const settings = getCurrentSettings();
+
+            try {
+                const apiConfig = {
+                    queue_name: settings.queueName,
+                    mode: settings.queueMode,
+                    max_queue_size: settings.maxQueueSize,
+                    default_time_estimate: settings.defaultTimeEstimate,
+                    default_priority: settings.basePriority,
+                    super_qup_enabled: settings.enableSuperQup
+                };
+
+                const response = await apiCall('/api/v1/config/update', {
+                    method: 'POST',
+                    body: JSON.stringify(apiConfig)
+                });
+
+                if (response.ok) {
+                    await saveLogoSettings();
+                    showAlert('All settings saved successfully!', 'success');
+                } else {
+                    throw new Error('Server rejected configuration');
+                }
+
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+                localStorage.setItem('qup_admin_settings', JSON.stringify(settings));
+                await saveLogoSettings();
+                showAlert('Settings saved locally (server error)', 'warning');
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const response = await apiCall('/api/v1/config/get');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const serverConfig = data.config;
+                    const mappedSettings = {
+                        queueName: serverConfig.queue_name || 'Production Queue',
+                        queueMode: serverConfig.mode || 'super_qup',
+                        maxQueueSize: serverConfig.max_queue_size || 1000,
+                        enableQueue: true,
+                        defaultTimeEstimate: serverConfig.default_time_estimate || 120,
+                        poolTimeBuffer: 30,
+                        timeDecayRate: 0.1,
+                        maxPoolTime: 300,
+                        enableTimeManagement: true,
+                        basePriority: serverConfig.default_priority || 500,
+                        priorityIncrement: 50,
+                        maxPriority: 1000,
+                        minPriority: 100,
+                        superQupCost: 1.50,
+                        superQupTimeBonus: 60,
+                        superQupPriorityBonus: 200,
+                        enableSuperQup: serverConfig.super_qup_enabled !== false,
+                        notificationDelay: 1000,
+                        emailNotificationThreshold: 50,
+                        enableNotifications: true,
+                        enableEmailNotifications: false,
+                        logLevel: 'info',
+                        enableDebugMode: false,
+                        enableVerboseLogging: false
+                    };
+
+                    applySettingsToForm(mappedSettings);
+                    showAlert('Settings loaded from server', 'success');
+                    await loadLogoSettings();
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to load from server:', error);
+            }
+
+            try {
+                const localSettings = localStorage.getItem('qup_admin_settings');
+                if (localSettings) {
+                    const parsedSettings = JSON.parse(localSettings);
+                    applySettingsToForm({ ...DEFAULT_CONFIG, ...parsedSettings });
+                    showAlert('Settings loaded from local storage', 'info');
+                } else {
+                    applySettingsToForm(DEFAULT_CONFIG);
+                    showAlert('Using default settings', 'info');
+                }
+            } catch (error) {
+                applySettingsToForm(DEFAULT_CONFIG);
+                showAlert('Using default settings', 'info');
+            }
+
+            try {
+                await loadLogoSettings();
+            } catch (error) {
+                console.error('Logo settings load failed:', error);
+            }
+        }
+
+        function exportSettings() {
+            const settings = getCurrentSettings();
+            const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qup-settings-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showAlert('Settings exported', 'success');
+        }
+
+        function resetAllSettings() {
+            if (!confirm('Reset all settings to defaults?')) return;
+
+            apiCall('/api/v1/config/reset', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        applySettingsToForm(DEFAULT_CONFIG);
+                        localStorage.removeItem('qup_admin_settings');
+                        showAlert('Settings reset successfully', 'success');
+                        setTimeout(() => loadSettings(), 1000);
+                    } else {
+                        throw new Error('Server reset failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Server reset failed:', error);
+                    applySettingsToForm(DEFAULT_CONFIG);
+                    localStorage.removeItem('qup_admin_settings');
+                    showAlert('Settings reset locally only', 'warning');
+                });
+        }
+
+        // Queue & Order Management
+        async function refreshQueue() {
+            try {
+                const response = await apiCall('/api/v1/queue/list');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayQueue(data.queue || []);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch queue');
+                }
+            } catch (error) {
+                console.error('Failed to refresh queue:', error);
+                showAlert('Failed to refresh queue: ' + error.message, 'error');
+                document.getElementById('queueContainer').innerHTML = '<div class="alert alert-error">Failed to load queue</div>';
+            }
+        }
+
+        function displayQueue(queueData) {
+            const container = document.getElementById('queueContainer');
+            const loading = document.getElementById('queueLoading');
+            if (loading) loading.style.display = 'none';
+
+            if (queueData.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">Queue is empty</div>';
+                return;
+            }
+
+            const queueHtml = queueData.map((order, index) => `
+                <div class="queue-item">
+                    <div class="queue-item-header">
+                        <div class="queue-position">${order.position + 1}</div>
+                        <div class="status-badge status-${order.status || 'waiting'}">${order.status || 'waiting'}</div>
+                    </div>
+                    <div style="font-size: 0.8rem;">
+                        <strong>ID:</strong> ${order.id}<br>
+                        <strong>Priority:</strong> ${order.priority || 0}<br>
+                        <strong>Time:</strong> ${order.assigned_time || 0}s<br>
+                        <strong>Remaining:</strong> ${order.remaining_time || 'N/A'}<br>
+                        ${order.pickup_code ? `<strong>Code:</strong> ${order.pickup_code}<br>` : ''}
+                        ${order.estimated_completion ? `<strong>ETA:</strong> ${new Date(order.estimated_completion).toLocaleTimeString()}<br>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            container.innerHTML = queueHtml;
+        }
+
+        function exportQueue() { showAlert('Queue export coming soon', 'info'); }
+
+        async function addOrder() {
+            const orderId = document.getElementById('orderId').value.trim() || `order_${Date.now()}`;
+            const description = document.getElementById('orderDescription').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const priority = parseInt(document.getElementById('priority').value) || 500;
+
+            if (!description) {
+                showAlert('Order description required', 'error');
+                return;
+            }
+
+            try {
+                const orderData = {
+                    id: orderId,
+                    payload: {
+                        description: description,
+                        customer_email: email,
+                        items: [{ name: description, quantity: 1, special_instructions: [] }]
+                    },
+                    priority: priority,
+                    user_id: orderId
+                };
+
+                const response = await apiCall('/api/v1/queue/add', {
+                    method: 'POST',
+                    body: JSON.stringify(orderData)
+                });
+
+                if (response.ok) {
+                    showAlert(`Order added: ${orderId}`, 'success');
+                    document.getElementById('orderId').value = '';
+                    document.getElementById('orderDescription').value = '';
+                    document.getElementById('customerEmail').value = '';
+                    document.getElementById('priority').value = '500';
+                    refreshQueue();
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to add order');
+                }
+            } catch (error) {
+                console.error('Failed to add order:', error);
+                showAlert('Failed to add order: ' + error.message, 'error');
+            }
+        }
+
+        async function startProcessing() {
+            const orderId = document.getElementById('actionOrderId').value.trim();
+            if (!orderId) { showAlert('Enter order ID', 'error'); return; }
+
+            try {
+                const response = await apiCall('/api/v1/queue/start-processing', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: orderId, server_id: 'admin' })
+                });
+
+                if (response.ok) {
+                    showAlert('Processing started', 'success');
+                    refreshQueue();
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to start processing');
+                }
+            } catch (error) {
+                showAlert('Failed to start processing: ' + error.message, 'error');
+            }
+        }
+
+        async function markReady() {
+            const orderId = document.getElementById('actionOrderId').value.trim();
+            if (!orderId) { showAlert('Enter order ID', 'error'); return; }
+
+            try {
+                const response = await apiCall('/api/v1/queue/finalize', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                if (response.ok) {
+                    showAlert('Marked ready for pickup', 'success');
+                    refreshQueue();
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to mark ready');
+                }
+            } catch (error) {
+                showAlert('Failed to mark ready: ' + error.message, 'error');
+            }
+        }
+
+        async function completeOrder() {
+            const orderId = document.getElementById('actionOrderId').value.trim();
+            if (!orderId) { showAlert('Enter order ID', 'error'); return; }
+
+            try {
+                const response = await apiCall('/api/v1/queue/complete', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                if (response.ok) {
+                    showAlert('Order completed', 'success');
+                    refreshQueue();
+                    document.getElementById('actionOrderId').value = '';
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to complete');
+                }
+            } catch (error) {
+                showAlert('Failed to complete: ' + error.message, 'error');
+            }
+        }
+
+        async function cancelOrder() {
+            const orderId = document.getElementById('actionOrderId').value.trim();
+            if (!orderId) { showAlert('Enter order ID', 'error'); return; }
+            if (!confirm(`Cancel order ${orderId}?`)) return;
+
+            try {
+                const response = await apiCall('/api/v1/queue/cancel', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                if (response.ok) {
+                    showAlert('Order cancelled', 'success');
+                    refreshQueue();
+                    document.getElementById('actionOrderId').value = '';
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to cancel');
+                }
+            } catch (error) {
+                showAlert('Failed to cancel: ' + error.message, 'error');
+            }
+        }
+
+        // System Functions
+        async function loadSystemHealth() {
+            try {
+                const response = await apiCall('/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    displaySystemHealth(data);
+                } else {
+                    throw new Error('Failed to fetch health');
+                }
+            } catch (error) {
+                document.getElementById('systemHealth').innerHTML = '<div class="alert alert-error">Failed to load system health</div>';
+            }
+        }
+
+        function displaySystemHealth(data) {
+            const container = document.getElementById('systemHealth');
+            const html = `
+                <div class="two-column">
+                    <div class="settings-section">
+                        <h4>Server Status</h4>
+                        <p><strong>Status:</strong> ${data.status || 'Unknown'}</p>
+                        <p><strong>Service:</strong> ${data.service || 'Unknown'}</p>
+                        <p><strong>Version:</strong> ${data.version || 'Unknown'}</p>
+                        <p><strong>Enterprise:</strong> ${data.enterprise_app_created ? 'Yes' : 'No'}</p>
+                        <p><strong>Supabase:</strong> ${data.supabase || 'Unknown'}</p>
+                    </div>
+                    <div class="settings-section">
+                        <h4>Features</h4>
+                        ${data.features ? Object.entries(data.features).map(([key, value]) => 
+                            `<p><strong>${key}:</strong> ${value ? 'Enabled' : 'Disabled'}</p>`
+                        ).join('') : '<p>No feature information</p>'}
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4>Authentication</h4>
+                    <p><strong>Admin Keys:</strong> ${data.authentication?.admin_keys || 0}</p>
+                    <p><strong>Developer Hashes:</strong> ${data.authentication?.developer_hashes || 0}</p>
+                    <p><strong>System Type:</strong> ${data.authentication?.system_type || 'Unknown'}</p>
+                </div>
+                <div class="settings-section">
+                    <h4>WebSocket</h4>
+                    <p><strong>Server Type:</strong> ${data.websocket?.server_type || 'Unknown'}</p>
+                    <p><strong>Connected Clients:</strong> ${data.websocket?.connected_clients || 0}</p>
+                    <p><strong>Transport:</strong> ${data.websocket?.transport || 'Unknown'}</p>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        async function checkWebSocketStatus() {
+            try {
+                const response = await apiCall('/api/websocket/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    showAlert(`WebSocket: ${data.status} - ${data.connected_clients} clients`, 'info');
+                } else {
+                    throw new Error('Failed to get WebSocket status');
+                }
+            } catch (error) {
+                showAlert('Failed to get WebSocket status: ' + error.message, 'error');
+            }
+        }
+
+        async function checkAuthConfig() {
+            try {
+                const response = await apiCall('/api/auth/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    showAlert(`Auth Methods: ${data.auth_methods.join(', ')}`, 'info');
+                } else {
+                    throw new Error('Failed to get auth config');
+                }
+            } catch (error) {
+                showAlert('Failed to get auth config: ' + error.message, 'error');
+            }
+        }
+
+        async function checkClientConfig() {
+            try {
+                const response = await apiCall('/api/client/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    showAlert(`Client Config: ${Object.keys(data.config.features).length} features`, 'info');
+                } else {
+                    throw new Error('Failed to get client config');
+                }
+            } catch (error) {
+                showAlert('Failed to get client config: ' + error.message, 'error');
+            }
+        }
+
+        // Configuration Management
+        async function loadConfiguration() {
+            try {
+                const response = await apiCall('/api/v1/config/get');
+                if (response.ok) {
+                    const data = await response.json();
+                    displayConfiguration(data.config);
+                } else {
+                    throw new Error('Failed to load configuration');
+                }
+            } catch (error) {
+                document.getElementById('configContainer').innerHTML = '<div class="alert alert-error">Failed to load configuration</div>';
+            }
+        }
+
+        function displayConfiguration(config) {
+            const container = document.getElementById('configContainer');
+            const html = `
+                <div class="settings-section">
+                    <h4>Current Configuration</h4>
+                    <pre style="background: var(--bg-primary); padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 0.8rem;">${JSON.stringify(config, null, 2)}</pre>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        async function saveConfiguration() {
+            showAlert('Configuration save functionality coming soon', 'info');
+        }
+
+        async function resetConfiguration() {
+            if (!confirm('Reset configuration to defaults?')) return;
+
+            try {
+                const response = await apiCall('/api/v1/config/reset', { method: 'POST' });
+                if (response.ok) {
+                    showAlert('Configuration reset successfully', 'success');
+                    loadConfiguration();
+                } else {
+                    throw new Error('Failed to reset configuration');
+                }
+            } catch (error) {
+                showAlert('Failed to reset configuration: ' + error.message, 'error');
+            }
+        }
+
+        async function updateMetrics() {
+            try {
+                const response = await apiCall('/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    document.getElementById('totalOrders').textContent = data.total_queue_elements || '-';
+                    document.getElementById('activeOrders').textContent = data.queue_managers || '-';
+                    document.getElementById('poolTime').textContent = 
+                        data.time_management?.available_pool_time ? 
+                        Math.round(data.time_management.available_pool_time) : '-';
+                    document.getElementById('connectedClients').textContent = 
+                        data.websocket?.connected_clients || '-';
+                }
+            } catch (error) {
+                console.error('Failed to update metrics:', error);
+            }
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            switch (tabName) {
+                case 'queue': refreshQueue(); break;
+                case 'system': loadSystemHealth(); break;
+                case 'config': loadConfiguration(); break;
+                case 'settings': loadSettings(); break;
+            }
+        }
+
+        function setLoading(elementId, loading) {
+            const textElement = document.getElementById(elementId + 'Text');
+            const loadingElement = document.getElementById(elementId + 'Loading');
+
+            if (textElement && loadingElement) {
+                if (loading) {
+                    textElement.style.display = 'none';
+                    loadingElement.classList.remove('hidden');
+                } else {
+                    textElement.style.display = 'inline';
+                    loadingElement.classList.add('hidden');
+                }
+            }
+        }
+
+        function showAlert(message, type = 'info', duration = 5000) {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+
+            alertsContainer.appendChild(alert);
+
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, duration);
+
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUP Testing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0f0f23;
+            --bg-secondary: #1a1a3e;
+            --bg-card: #262654;
+            --text-primary: #ffffff;
+            --text-secondary: #a5a5c9;
+            --border: #3a3a6b;
+            --primary: #667eea;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --qup: #ff6b6b;
+            --fifo: #9ca3af;
+            --negotiation: #f59e0b;
+            --chaos: #ff8c42;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--qup));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .nav-section {
+            margin-bottom: 30px;
+        }
+
+        .nav-section h3 {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-item.fifo:hover, .nav-item.fifo.active {
+            background: var(--fifo);
+        }
+
+        .nav-item.super_qup:hover, .nav-item.super_qup.active {
+            background: var(--qup);
+        }
+
+        .nav-item.negotiation:hover, .nav-item.negotiation.active {
+            background: var(--negotiation);
+        }
+
+        .nav-item.chaos:hover, .nav-item.chaos.active {
+            background: var(--chaos);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .mode-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .mode-indicator.fifo {
+            background: rgba(156, 163, 175, 0.2);
+            color: var(--fifo);
+            border: 1px solid var(--fifo);
+        }
+
+        .mode-indicator.super_qup {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--qup);
+            border: 1px solid var(--qup);
+        }
+
+        .mode-indicator.negotiation {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--negotiation);
+            border: 1px solid var(--negotiation);
+        }
+
+        .mode-indicator.chaos {
+            background: linear-gradient(45deg, rgba(255, 107, 107, 0.2), rgba(245, 158, 11, 0.2));
+            color: var(--chaos);
+            border: 1px solid var(--chaos);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-qup {
+            background: var(--qup);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+        }
+
+        .queue-visual {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .queue-item.finalized {
+            border-left-color: var(--success);
+            opacity: 0.7;
+        }
+
+        .queue-item.qup-active {
+            border-left-color: var(--qup);
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .queue-position {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
+            min-width: 30px;
+        }
+
+        .queue-details {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .queue-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .queue-order {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .queue-metadata {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .queue-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .queue-actions button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            min-width: auto;
+        }
+
+        .rules-list {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .rules-list h4 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .rules-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .rules-list li:last-child {
+            border-bottom: none;
+        }
+
+        .rules-list li::before {
+            content: "→";
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .variable-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .variable-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .variable-value {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .mock-user-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .json-output {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">QUP Testing</div>
+            
+            <div class="nav-section">
+                <h3>Connection</h3>
+                <div class="input-group">
+                    <label>API URL</label>
+                    <input type="text" id="apiUrl" value="https://qupcore-supercode-692478335867.us-central1.run.app">
+                </div>
+                <div class="input-group">
+                    <label>Developer Key</label>
+                    <input type="password" id="devKey" placeholder="Auto-fetch">
+                </div>
+                <button class="btn btn-success" onclick="connectAPI()">Connect</button>
+                <div id="connectionStatus" class="status-badge status-disconnected" style="margin-top: 10px;">Disconnected</div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Queue Modes</h3>
+                <a class="nav-item fifo" onclick="showTab('fifo')">FIFO Mode</a>
+                <a class="nav-item super_qup" onclick="showTab('super_qup')">Super QUP Mode</a>
+                <a class="nav-item negotiation" onclick="showTab('negotiation')">Negotiation Mode</a>
+                <a class="nav-item chaos" onclick="showTab('chaos')">Chaos Mode</a>
+            </div>
+
+            <div class="nav-section">
+                <h3>Tools</h3>
+                <a class="nav-item" onclick="showTab('simulator')">Queue Simulator</a>
+                <a class="nav-item" onclick="showTab('analytics')">Analytics</a>
+                <a class="nav-item" onclick="showTab('api-debug')">API Debug</a>
+            </div>
+
+            <div class="nav-section">
+                <h3>Quick Actions</h3>
+                <button class="btn btn-warning" onclick="clearQueue()">Clear Queue</button>
+                <button class="btn btn-qup" onclick="addMockUsers()">Add Mock Users</button>
+                <button class="btn" onclick="refreshQueue()">Refresh</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Current Queue Status -->
+            <div class="card">
+                <h2>Current Queue Status</h2>
+                <div id="currentModeIndicator" class="mode-indicator">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></div>
+                    <span>Loading...</span>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalOrders">0</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeOrders">0</div>
+                        <div class="stat-label">Active Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="poolTime">0</div>
+                        <div class="stat-label">Pool Time (s)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgWaitTime">0</div>
+                        <div class="stat-label">Avg Wait (min)</div>
+                    </div>
+                </div>
+
+                <div id="queueVisual" class="queue-visual">
+                    <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
+                        Connect to API to see queue data
+                    </div>
+                </div>
+            </div>
+
+            <!-- FIFO Mode Tab -->
+            <div id="fifo-tab" class="tab-content">
+                <div class="card">
+                    <h2>🔄 FIFO Mode (First In, First Out)</h2>
+                    <div class="mode-indicator fifo">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></div>
+                        <span>Traditional Queue System</span>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div>
+                            <h3>Mode Variables</h3>
+                            <div class="variable-control">
+                                <span class="variable-name">Average Service Time</span>
+                                <span class="variable-value" id="fifo-service-time">120s</span>
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Skipper Codes Enabled</span>
+                                <span class="variable-value" id="fifo-skipper-enabled">Yes</span>
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Minor Skip Positions</span>
+                                <span class="variable-value" id="fifo-minor-skip">2-3</span>
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Major Skip Positions</span>
+                                <span class="variable-value" id="fifo-major-skip">5-8</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Test Actions</h3>
+                            <button class="btn" onclick="setQueueMode('fifo')">Set FIFO Mode</button>
+                            <button class="btn btn-warning" onclick="testSkipperCode('minor')">Test Minor Skip</button>
+                            <button class="btn btn-danger" onclick="testSkipperCode('major')">Test Major Skip</button>
+                            <button class="btn btn-success" onclick="simulateFIFOScenario()">Run FIFO Scenario</button>
+                        </div>
+                    </div>
+
+                    <div class="rules-list">
+                        <h4>FIFO Rules</h4>
+                        <ul>
+                            <li>Orders are processed in the exact order they arrive</li>
+                            <li>No position changes allowed except with valid skipper codes</li>
+                            <li>Minor skipper codes allow 2-3 position jumps</li>
+                            <li>Major skipper codes allow 5-8 position jumps</li>
+                            <li>Skipper codes are single-use and must be validated</li>
+                            <li>Queue position is immutable once set</li>
+                            <li>Estimated wait time = position × average service time</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Super QUP Mode Tab -->
+            <div id="super_qup-tab" class="tab-content">
+                <div class="card">
+                    <h2>⚡ Super QUP Mode (Pool Time System)</h2>
+                    <div class="mode-indicator super_qup">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></div>
+                        <span>Time Banking System</span>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div>
+                            <h3>Mode Variables</h3>
+                            <div class="variable-control">
+                                <span class="variable-name">Pool Time per Person</span>
+                                <input type="number" id="super-pool-per-person" value="30" min="0" max="120" onchange="updateSuperQUPConfig()">
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Total Pool Time</span>
+                                <span class="variable-value" id="super-total-pool">0s</span>
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Cost per Jump</span>
+                                <input type="number" id="super-cost-per-jump" value="15" min="1" max="60" onchange="updateSuperQUPConfig()">
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Max Jump Distance</span>
+                                <input type="number" id="super-max-jump" value="3" min="1" max="10" onchange="updateSuperQUPConfig()">
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Test Actions</h3>
+                            <button class="btn" onclick="setQueueMode('super_qup')">Set Super QUP Mode</button>
+                            <button class="btn btn-qup" onclick="testSuperQUP('plus')">Test +1 Jump</button>
+                            <button class="btn btn-warning" onclick="testSuperQUP('minus')">Test -1 Jump</button>
+                            <button class="btn btn-success" onclick="testSuperQUP('max')">Test Max Jump</button>
+                            <button class="btn btn-success" onclick="simulateSuperQUPScenario()">Run Scenario</button>
+                        </div>
+                    </div>
+
+                    <div class="rules-list">
+                        <h4>Super QUP Rules</h4>
+                        <ul>
+                            <li>Pool time = queue_length × time_per_person</li>
+                            <li>Each person gets equal share of pool time initially</li>
+                            <li>Moving up 1 position costs X seconds from your pool time</li>
+                            <li>Moving down 1 position gives you back time</li>
+                            <li>Cannot move if insufficient pool time</li>
+                            <li>Cannot move to position 0 (front of queue) - must wait your turn</li>
+                            <li>Max jump distance configurable per establishment</li>
+                            <li>Pool time redistributed when people leave queue</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Negotiation Mode Tab -->
+            <div id="negotiation-tab" class="tab-content">
+                <div class="card">
+                    <h2>🤝 Negotiation Mode (Voluntary Swapping)</h2>
+                    <div class="mode-indicator negotiation">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></div>
+                        <span>Social Coordination System</span>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div>
+                            <h3>Mode Variables</h3>
+                            <div class="variable-control">
+                                <span class="variable-name">Request Timeout</span>
+                                <input type="number" id="negotiation-timeout" value="30" min="10" max="120" onchange="updateNegotiationConfig()">
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Max Pending Requests</span>
+                                <input type="number" id="negotiation-max-pending" value="3" min="1" max="10" onchange="updateNegotiationConfig()">
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Reputation System</span>
+                                <span class="variable-value" id="negotiation-reputation">Enabled</span>
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Auto-Decline After</span>
+                                <span class="variable-value" id="negotiation-auto-decline">3 declines</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Test Actions</h3>
+                            <button class="btn" onclick="setQueueMode('negotiation')">Set Negotiation Mode</button>
+                            <button class="btn btn-warning" onclick="testNegotiationRequest()">Test Swap Request</button>
+                            <button class="btn btn-success" onclick="testNegotiationAccept()">Test Accept</button>
+                            <button class="btn btn-danger" onclick="testNegotiationDecline()">Test Decline</button>
+                            <button class="btn btn-success" onclick="simulateNegotiationScenario()">Run Scenario</button>
+                        </div>
+                    </div>
+
+                    <div class="rules-list">
+                        <h4>Negotiation Rules</h4>
+                        <ul>
+                            <li>Users can request to swap with people ahead of them</li>
+                            <li>Target user must explicitly accept the swap</li>
+                            <li>Only people willing to wait can be approached</li>
+                            <li>Maximum 3 pending requests per user at a time</li>
+                            <li>Requests timeout after 30 seconds</li>
+                            <li>Users can set their availability (willing to wait/skip)</li>
+                            <li>Reputation affects swap request success rates</li>
+                            <li>Cannot swap with finalized orders</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chaos Mode Tab -->
+            <div id="chaos-tab" class="tab-content">
+                <div class="card">
+                    <h2>🎲 Chaos Mode (Free Movement)</h2>
+                    <div class="mode-indicator chaos">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></div>
+                        <span>Unrestricted Queue System</span>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div>
+                            <h3>Mode Variables</h3>
+                            <div class="variable-control">
+                                <span class="variable-name">Movement Cooldown</span>
+                                <input type="number" id="chaos-cooldown" value="5" min="0" max="30" onchange="updateChaosConfig()">
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Max Moves per Hour</span>
+                                <input type="number" id="chaos-max-moves" value="10" min="1" max="50" onchange="updateChaosConfig()">
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Randomization Factor</span>
+                                <input type="range" id="chaos-random-factor" min="0" max="100" value="20" onchange="updateChaosConfig()">
+                            </div>
+                            <div class="variable-control">
+                                <span class="variable-name">Chaos Events</span>
+                                <span class="variable-value" id="chaos-events">Enabled</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Test Actions</h3>
+                            <button class="btn" onclick="setQueueMode('chaos')">Set Chaos Mode</button>
+                            <button class="btn btn-qup" onclick="testChaosMove('up')">Test Move Up</button>
+                            <button class="btn btn-warning" onclick="testChaosMove('down')">Test Move Down</button>
+                            <button class="btn btn-danger" onclick="triggerChaosEvent()">Trigger Chaos Event</button>
+                            <button class="btn btn-success" onclick="simulateChaosScenario()">Run Scenario</button>
+                        </div>
+                    </div>
+
+                    <div class="rules-list">
+                        <h4>Chaos Rules</h4>
+                        <ul>
+                            <li>Users can move up or down freely with minimal restrictions</li>
+                            <li>Movement has a cooldown period to prevent spam</li>
+                            <li>Limited number of moves per hour per user</li>
+                            <li>Random chaos events can shuffle the entire queue</li>
+                            <li>Cannot move to position 0 without staff approval</li>
+                            <li>Randomization factor adds uncertainty to movements</li>
+                            <li>Staff can trigger manual chaos events</li>
+                            <li>Queue positions constantly changing - pure chaos!</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Queue Simulator Tab -->
+            <div id="simulator-tab" class="tab-content">
+                <div class="card">
+                    <h2>🧪 Queue Simulator</h2>
+                    
+                    <div class="grid grid-2">
+                        <div>
+                            <h3>Add Mock Users</>
+                            <div class="mock-user-form">
+                                <div class="input-group">
+                                    <label>Name</label>
+                                    <input type="text" id="mockName" placeholder="John Doe">
+                                </div>
+                                <div class="input-group">
+                                    <label>Order</label>
+                                    <input type="text" id="mockOrder" placeholder="Large coffee">
+                                </div>
+                                <div class="input-group">
+                                    <label>Type</label>
+                                    <select id="mockType">
+                                        <option value="normal">Normal</option>
+                                        <option value="skipper">Has Skipper Code</option>
+                                        <option value="willing_wait">Willing to Wait</option>
+                                        <option value="wants_skip">Wants to Skip</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-success" onclick="addMockUser()">Add</button>
+                            </div>
+
+                            <div style="margin-top: 20px;">
+                                <h4>Quick Scenarios</h4>
+                                <button class="btn" onclick="addBusyMorningScenario()">Busy Morning (8 people)</button>
+                                <button class="btn" onclick="addLunchRushScenario()">Lunch Rush (15 people)</button>
+                                <button class="btn" onclick="addMixedPreferencesScenario()">Mixed Preferences</button>
+                                <button class="btn btn-warning" onclick="clearQueue()">Clear All</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Simulation Controls</h3>
+                            <div class="input-group">
+                                <label>Simulation Speed</label>
+                                <select id="simSpeed">
+                                    <option value="1000">Real Time</option>
+                                    <option value="500">2x Speed</option>
+                                    <option value="200" selected>5x Speed</option>
+                                    <option value="100">10x Speed</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Auto-QUP Behavior</label>
+                                <select id="autoQupBehavior">
+                                    <option value="none">Manual Only</option>
+                                    <option value="random">Random QUPs</option>
+                                    <option value="aggressive">Aggressive Users</option>
+                                    <option value="polite">Polite Users</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-success" onclick="startSimulation()">Start Simulation</button>
+                            <button class="btn btn-warning" onclick="pauseSimulation()">Pause</button>
+                            <button class="btn btn-danger" onclick="stopSimulation()">Stop</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics-tab" class="tab-content">
+                <div class="card">
+                    <h2>📊 Queue Analytics</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="analytics-total-qups">0</div>
+                            <div class="stat-label">Total QUPs Today</div>
+                      </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="analytics-successful-qups">0</div>
+                            <div class="stat-label">Successful QUPs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="analytics-avg-wait-reduction">0</div>
+                            <div class="stat-label">Avg Wait Reduction (min)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="analytics-customer-satisfaction">95%</div>
+                            <div class="stat-label">Customer Satisfaction</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div>
+                            <h3>QUP Performance by Mode</h3>
+                            <div id="qupPerformanceChart" class="json-output">
+                                Mode performance data will appear here...
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Queue Efficiency Metrics</h3>
+                            <div id="efficiencyMetrics" class="json-output">
+                                Efficiency metrics will appear here...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Debug Tab -->
+            <div id="api-debug-tab" class="tab-content">
+                <div class="card">
+                    <h2>🔧 API Debug Console</h2>
+                    
+                    <div class="grid grid-2">
+                        <div>
+                            <h3>API Endpoints</h3>
+                            <button class="btn" onclick="debugEndpoint('/api/v1/queue/list')">GET Queue List</button>
+                            <button class="btn" onclick="debugEndpoint/api/v1/queue/list?admin=true')">GET Admin Queue</button>
+                            <button class="btn" onclick="debugEndpoint('/api/v1/queue/config')">GET Config</button>
+                            <button class="btn btn-warning" onclick="testQUPEndpoint()">POST QUP Test</button>
+                        </div>
+                        <div>
+                            <h3>WebSocket Debug</h3>
+                            <button class="btn" onclick="connectWebSocket()">Connect WebSocket</button>
+                            <button class="btn btn-warning" onclick="sendTestMessage()">Send Test Message</button>
+                            <button class="btn btn-danger" onclick="disconnectWebSocket()">Disconnect</button>
+                            <div id="wsStatus" class="status-badge status-disconnected" style="margin-top: 10px;">WebSocket: Disconnected</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <h3>API Response Log</h3>
+                        <div id="apiResponseLog" class="json-output" style="height: 300px;">
+                            API responses will appear here...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let apiUrl = '';
+        let developerKey = '';
+        let socket = null;
+        let simulationInterval = null;
+        let currentQueueData = [];
+        let currentMode = 'fifo';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            showTab('fifo');
+            apiUrl = document.getElementById('apiUrl').value;
+            connectAPI();
+        });
+
+        // API Connection
+        async function connectAPI() {
+            apiUrl = document.getElementById('apiUrl').value;
+            const statusEl = document.getElementById('connectionStatus');
+            
+            try {
+                statusEl.textContent = 'Connecting...';
+                statusEl.className = 'status-badge status-disconnected';
+
+                // Get developer key
+                const response = await fetch(`${apiUrl}/api/auth/developer/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'developer', password: 'dev123' })
+                });
+
+                const data = await response.json();
+                if (data.developer_key) {
+                    developerKey = data.developer_key;
+                    document.getElementById('devKey').value = developerKey;
+                    statusEl.textContent = 'Connected';
+                    statusEl.className = 'status-badge status-connected';
+                    
+                    // Load initial queue data
+                    await refreshQueue();
+                } else {
+                    throw new Error('No developer key received');
+                }
+            } catch (error) {
+                statusEl.textContent = 'Connection Failed';
+                statusEl.className = 'status-badge status-disconnected';
+                console.error('Connection failed:', error);
+            }
+        }
+
+        // Queue Management
+        async function refreshQueue() {
+            if (!developerKey) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/queue/list?admin=true`, {
+                    headers: { 'X-API-Key': developerKey }
+                });
+
+                const data = await response.json();
+                currentQueueData = data.queue || [];
+                currentMode = data.queue_mode || 'fifo';
+                
+                updateQueueDisplay(data);
+                updateStats(data);
+                updateModeIndicator(data.queue_mode);
+                
+            } catch (error) {
+                console.error('Failed to refresh queue:', error);
+            }
+        }
+
+        function updateQueueDisplay(data) {
+            const visual = document.getElementById('queueVisual');
+            const queue = data.queue || [];
+
+            if (queue.length === 0) {
+                visual.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 40px;">Queue is empty</div>';
+                return;
+            }
+
+            visual.innerHTML = queue.map((order, index) => `
+                <div class="queue-item ${order.finalized ? 'finalized' : ''} ${order.qup_active ? 'qup-active' : ''}">
+                    <div class="queue-position">${index + 1}</div>
+                    <div class="queue-details">
+                        <div class="queue-name">${order.payload?.customer_name || order.user_id}</div>
+                        <div class="queue-order">${order.payload?.order || 'No order details'}</div>
+                        <div class="queue-metadata">
+                            ${order.finalized ? 'Finalized' : 'Waiting'} | 
+                            ${order.qup_time_available ? `Pool Time: ${Math.floor(order.qup_time_available)}s` : 'No pool time'} |
+                            ${order.pickup_code ? `Code: ${order.pickup_code}` : 'No code'}
+                        </div>
+                    </div>
+                    <div class="queue-actions">
+                        ${!order.finalized ? `
+                            <button class="btn btn-qup" onclick="performQUPAction('${order.id}', 'up')">↑</button>
+                            <button class="btn btn-warning" onclick="performQUPAction('${order.id}', 'down')">↓</butto                           <button class="btn btn-success" onclick="finalizeOrder('${order.id}')">✓</button>
+                        ` : `
+                            <button class="btn btn-success" onclick="completeOrder('${order.id}')">Complete</button>
+                        `}
+                        <button class="btn btn-danger" onclick="removeOrder('${order.id}')">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats(data) {         const queue = data.queue || [];
+            const activeOrders = queue.filter(o => !o.finalized).length;
+            const poolTime = data.pool_time || 0;
+            
+            document.getElementById('totalOrders').textContent = queue.length;
+            document.getElementById('activeOrders').textContent = activeOrders;
+            document.getElementById('poolTime').textContent = poolTime;
+            document.getElementById('avgWaitTime').textContent = activeOrders > 0 ? Math.floor(poolTime / activeOrders / 60) : 0;
+        }
+
+        function updateModeIndicator(mode) {
+            const indicator = document.getElementById('currentModeIndicator');
+            const modeNames = {
+                'fifo': 'FIFO Mode (First In, First Out)',
+                'super_qup': 'Super QUP Mode (Pool Time System)', 
+                'negotiation': 'Negotiation Mode (Voluntary Swapping)',
+                'chaos': 'Chaos Mode (Free Movement)'
+            };
+            
+            indicator.className = `mode-indicator ${mode}`;
+            indicator.querySelector('span').textContent = modeNames[mode] || mode;
+        }
+
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const tab = document.getElementById(tabName + '-tab');
+            if (tab) {
+                tab.classList.add('active');
+            }
+            
+            // Add active class to nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.onclick && item.onclick.toString().includes(tabName)) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Queue Mode Management
+        async function setQueueMode(mode) {
+            if (!developerKey) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/queue/mode`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({ mode: mode })
+                });
+
+                if (response.ok) {
+                    currentMode = mode;
+                    await refreshQueue();
+                    alert(`Queue mode set to ${mode}`);
+                } else {
+                    alert('Failed to set queue mode');
+                }
+            } catch (error) {
+                console.error('Failed to set queue mode:', error);
+                alert('Error setting queue mode');
+            }
+        }
+
+        // Mock User Management
+        async function addMockUser() {
+            const name = document.getElementById('mockName').value || `User ${Date.now()}`;
+            const order = document.getElementById('mockOrder').value || 'Test Order';
+            const type = document.getElementById('mockType').value;
+
+            const payload = {
+                customer_name: name,
+                order: order,
+                customer_email: `${name.toLowerCase().replace(' ', '.')}@test.com`,
+                items: [{ name: order, quantity: 1 }]
+            };
+
+            // Add type-specific data
+            switch (type) {
+                case 'skipper':
+                    payload.skipper_codes = { minor: 'TEST123', major: 'MAJOR456' };
+                    break;
+                case 'willing_wait':
+                    payload.negotiation_data = { willing_to_wait: true, willing_to_skip: false };
+                    break;
+                case 'wants_skip':
+                    payload.negotiation_data = { willing_to_wait: false, willing_to_skip: true };
+                    break;
+            }
+
+            try {
+                const orderId = `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const response = await fetch(`${apiUrl}/api/v1/queue/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        id: orderId,
+                        payload: payload,
+                        user_id: payload.customer_email,
+                        priority: 500
+                    })
+                });
+
+                if (response.ok) {
+                    await refreshQueue();
+                    // Clear form
+                    document.getElementById('mockName').value = '';
+                    document.getElementById('mockOrder').value = '';
+                } else {
+                    alert('Failed to add mock user');
+                }
+            } catch (error) {
+                console.error('Failed to add mock user:', error);
+            }
+        }
+
+        async function addMockUsers() {
+            const users = [
+                { name: 'Alice Johnson', order: 'Large Latte', type: 'normal' },
+                { name: 'Bob Smith', order: 'Espresso Shot', type: 'skipper' },
+                { name: 'Carol Davis', order: 'Cappuccino', type: 'willing_wait' },
+                { name: 'David Wilson', order: 'Green Tea', type: 'wants_skip' },
+                { name: 'Eve Brown', order: 'Americano', type: 'normal' }
+            ];
+
+            for (const user of users) {
+                document.getElementById('mockName').value = user.name;
+                document.getElementById('mockOrder').value = user.order;
+                document.getElementById('mockType').value = user.type;
+                await addMockUser();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
+            }
+        }
+
+        // Scenario Functions
+        async function simulateFIFOScenario() {
+            await addBusyMorningScenario();
+            alert('FIFO scenario loaded! Try testing skipper codes on the queue.');
+        }
+
+        async function simulateSuperQUPScenario() {
+            await setQueueMode('super_qup');
+            await addMockUsers();
+            alert('Super QUP scenario loaded! Users now have pool time to spend on position changes.');
+        }
+
+        async function simulateNegotiationScenario() {
+            await setQueueMode('negotiation');
+            await addMixedPreferencesScenario();
+            alert('Negotiation scenario loaded! Users can now request swaps with each other.');
+        }
+
+        async function simulateChaosScenario() {
+            await setQueueMode('chaos');
+            await addLunchRushScenario();
+            alert('Chaos scenario loaded! Users can move freely with minimal restrictions.');
+        }
+
+        async function addBusyMorningScenario() {
+            const users = [
+                'Sarah (Regular Coffee)', 'Mike (Espresso)', 'Jenny (Latte)', 
+                'Tom (Americano)', 'Lisa (Cappuccino)', 'Jack (Tea)',
+                'Amy (Mocha)', 'Chris (Frappuccino)'
+            ];
+            
+            for (const user of users) {
+                const [name, order] = user.split(' (');
+                document.getElementById('mockName').value = name;
+                document.getElementById('mockOrder').value = order.replace(')', '');
+                document.getElementById('mockType').value = 'normal';
+                await addMockUser();
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+        }
+
+        async function addLunchRushScenario() {
+            // Add 15 people with various preferences
+            for (let i = 1; i <= 15; i++) {
+                document.getElementById('mockName').value = `Customer ${i}`;
+                document.getElementById('mockOrder').value = `Lunch Order ${i}`;
+                const types = ['normal', 'willing_wait', 'wants_skip', 'skipper'];
+                document.getElementById('mockType').value = types[i % 4];
+                await addMockUser();
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        }
+
+        async function addMixedPreferencesScenario() {
+            const scenarios = [
+                { name: 'Patient Pete', order: 'Coffee', type: 'willing_wait' },
+                { name: 'Rushed Rachel', order: 'Quick Espresso', type: 'wants_skip' },
+                { name: 'Normal Nancy', order: 'Regular Latte', type: 'normal' },
+                { name: 'Skipper Sam', order: 'Emergency Coffee', type: 'skipper' },
+                { name: 'Flexible Fiona', order: 'Whatever', type: 'willing_wait' },
+                { name: 'Hurried Harry', order: 'Fast Coffee', type: 'wants_skip' }
+            ];
+
+            for (const user of scenarios) {
+                document.getElementById('mockName').value = user.name;
+                document.getElementById('mockOrder').value = user.order;
+                document.getElementById('mockType').value = user.type;
+                await addMockUser();
+                await new Promise(resolve => setTimeout(resolve, 400));
+            }
+        }
+
+        // QUP Actions
+        async function performQUPAction(orderId, direction) {
+            if (!developerKey) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/queue/qup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        user_id: orderId,
+                        qup_type: currentMode === 'super_qup' ? 'super' : currentMode,
+                        direction: direction === 'up' ? 'plus' : 'minus'
+                    })
+                });
+
+                if (response.ok) {
+                    await refreshQueue();
+                } else {
+                    const error = await response.json();
+                    alert(`QUP failed: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('QUP action failed:', error);
+            }
+        }
+
+        async function clearQueue() {
+            if (!confirm('Clear entire queue?')) return;
+            
+            for (const order of currentQueueData) {
+                await removeOrder(order.id);
+            }
+        }
+
+        async function removeOrder(orderId) {
+            if (!developerKey) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/queue/remove`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                if (response.ok) {
+                    await refreshQueue();
+                }
+            } catch (error) {
+                console.error('Failed to remove order:', error);
+            }
+        }
+
+        async function finalizeOrder(orderId) {
+            if (!developerKey) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/queue/finalize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                if (response.ok) {
+                    await refreshQueue();
+                }
+            } catch (error) {
+                console.error('Failed to finalize order:', error);
+            }
+        }
+
+        async function completeOrder(orderId) {
+            if (!developerKey) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/queue/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                if (response.ok) {
+                    await refreshQueue();
+                }
+            } catch (error) {
+                console.error('Failed to complete order:', error);
+            }
+        }
+
+        // Test Functions
+        function testSkipperCode(type) {
+            alert(`Testing ${type} skipper code functionality`);
+        }
+
+        function testSuperQUP(action) {
+            alert(`Testing Super QUP ${action} action`);
+        }
+
+        function testNegotiationRequest() {
+            alert('Testing negotiation swap request');
+        }
+
+        function testNegotiationAccept() {
+            alert('Testing negotiation accept');
+        }
+
+        function testNegotiationDecline() {
+            alert('Testing negotiation decline');
+        }
+
+        function testChaosMove(direction) {
+            alert(`Testing chaos move ${direction}`);
+        }
+
+        function triggerChaosEvent() {
+            alert('Triggering chaos event - queue shuffle!');
+        }
+
+        // Configuration Updates
+        function updateSuperQUPConfig() {
+            const poolPerPerson = document.getElementById('super-pool-per-person').value;
+            const totalPool = poolPerPerson * currentQueueData.length;
+            document.getElementById('super-total-pool').textContent = totalPool + 's';
+        }
+
+        function updateNegotiationConfig() {
+            // Update negotiation configuration
+        }
+
+        function updateChaosConfig() {
+            const randomFactor = document.getElementById('chaos-random-factor').value;
+            document.querySelector('label[for="chaos-random-factor"]').textContent = `Randomization Factor (${randomFactor}%)`;
+        }
+
+        // Debug Functions
+        async function debugEndpoint(endpoint) {
+            if (!developerKey) return;
+
+            try {
+                const response = await fetch(`${apiUrl}${endpoint}`, {
+                    headers: { 'X-API-Key': developerKey }
+                });
+                const data = await response.json();
+                
+                const log = document.getElementById('apiResponseLog');
+                log.textContent += `\n[${new Date().toLocaleTimeString()}] ${endpoint}:\n${JSON.stringify(data, null, 2)}\n---\n`;
+                log.scrollTop = log.scrollHeight;
+            } catch (error) {
+                console.error('Debug endpoint failed:', error);
+            }
+        }
+
+        // Auto-refresh queue every 5 seconds
+        setInterval(() => {
+            if (developerKey) {
+                refreshQueue();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
