@@ -407,26 +407,6 @@
             transform: translateX(0);
         }
 
-        .qup-notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-            z-index: 1000;
-            opacity: 0;
-            transform: translateX(400px);
-            transition: all 0.3s ease;
-        }
-
-        .qup-notification.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
         .error-message {
             background: rgba(239, 68, 68, 0.15);
             color: var(--danger);
@@ -784,46 +764,47 @@
         }
 
         function updateLogoDisplays() {
-            console.log('Updating barista logo displays...', { currentLogo, logoSettings });
+    console.log('Updating barista logo displays...', { currentLogo, logoSettings });
+    
+    if (!currentLogo) {
+        console.log('No current logo - using default URL');
+        currentLogo = { 
+            logo_url: 'https://eorhgophbjjbiguvkygo.supabase.co/storage/v1/object/public/company-assets/logos/logo-1749419576950.png' 
+        };
+    }
+    
+    if (!logoSettings) {
+        logoSettings = { show_barista: true, barista_size: 40 };
+    }
+    
+    if (!logoSettings.show_barista) {
+        console.log('Logo settings prevent barista display');
+        return;
+    }
 
-            if (!currentLogo) {
-                console.log('No current logo - using default URL');
-                currentLogo = {
-                    logo_url: 'https://eorhgophbjjbiguvkygo.supabase.co/storage/v1/object/public/company-assets/logos/logo-1749419576950.png'
-                };
-            }
+    const loginLogo = document.getElementById('loginLogo');
+    const headerLogo = document.getElementById('headerLogo');
 
-            if (!logoSettings) {
-                logoSettings = { show_barista: true, barista_size: 40 };
-            }
+    if (loginLogo && headerLogo) {
+        const logoUrl = currentLogo.logo_url;
+        const logoSize = logoSettings.barista_size || 40;
 
-            if (!logoSettings.show_barista) {
-                console.log('Logo settings prevent barista display');
-                return;
-            }
+        console.log('Setting barista logos:', logoUrl);
 
-            const loginLogo = document.getElementById('loginLogo');
-            const headerLogo = document.getElementById('headerLogo');
+        loginLogo.src = logoUrl;
+        loginLogo.style.height = logoSize + 'px';
+        loginLogo.style.display = 'block';
 
-            if (loginLogo && headerLogo) {
-                const logoUrl = currentLogo.logo_url;
-                const logoSize = logoSettings.barista_size || 40;
+        headerLogo.src = logoUrl;
+        headerLogo.style.height = logoSize + 'px';
+        headerLogo.style.display = 'block';
 
-                console.log('Setting barista logos:', logoUrl);
+        console.log('Logo displays updated for barista dashboard');
+    } else {
+        console.error('Logo elements not found');
+    }
+}
 
-                loginLogo.src = logoUrl;
-                loginLogo.style.height = logoSize + 'px';
-                loginLogo.style.display = 'block';
-
-                headerLogo.src = logoUrl;
-                headerLogo.style.height = logoSize + 'px';
-                headerLogo.style.display = 'block';
-
-                console.log('Logo displays updated for barista dashboard');
-            } else {
-                console.error('Logo elements not found');
-            }
-        }
 
         function showUserInfo(user) {
             const userInfoSpan = document.getElementById('userInfo');
@@ -947,10 +928,10 @@
             }
         }
 
-        // Enhanced WebSocket connection with QUP event handling
+        // WebSocket connection
         function connectWebSocket() {
             try {
-                console.log('Connecting to Enhanced WebSocket...');
+                console.log('Connecting to WebSocket...');
 
                 socket = io(API_BASE, {
                     transports: ['websocket', 'polling'],
@@ -979,37 +960,9 @@
                     updateWebSocketStatus('disconnected');
                 });
 
-                // Enhanced order update handler
                 socket.on('order_update', (data) => {
                     console.log('Order update received:', data);
                     handleOrderUpdate(data);
-                });
-
-                // NEW: QUP-specific event handlers
-                socket.on('qup_performed', (data) => {
-                    console.log('QUP operation performed:', data);
-                    handleQUPUpdate(data);
-                });
-
-                socket.on('position_changed', (data) => {
-                    console.log('Position change detected:', data);
-                    handlePositionChange(data);
-                });
-
-                socket.on('queue_order_changed', (data) => {
-                    console.log('Queue order changed:', data);
-                    handleQueueOrderChange(data);
-                });
-
-                // Enhanced queue update handler
-                socket.on('queue_update', (data) => {
-                    console.log('Queue update received:', data);
-                    if (data.queue) {
-                        updateOrdersDisplay(data.queue);
-                    } else {
-                        // If no queue data, refresh
-                        setTimeout(fetchQueue, 500);
-                    }
                 });
 
                 socket.on('order_created', (data) => {
@@ -1019,15 +972,11 @@
                     setTimeout(fetchQueue, 500);
                 });
 
-                // NEW: Listen for Enhanced Super QUP events
-                socket.on('enhanced_super_qup', (data) => {
-                    console.log('Enhanced Super QUP performed:', data);
-                    handleEnhancedQUPUpdate(data);
-                });
-
-                socket.on('downward_movement', (data) => {
-                    console.log('Downward movement performed:', data);
-                    handleDownwardMovement(data);
+                socket.on('queue_update', (data) => {
+                    console.log('Queue update received:', data);
+                    if (data.queue) {
+                        updateOrdersDisplay(data.queue);
+                    }
                 });
 
                 updateWebSocketStatus('connecting');
@@ -1062,84 +1011,15 @@
             });
         }
 
-        // NEW: Enhanced event handlers for QUP operations
-        function handleQUPUpdate(data) {
-            console.log('Handling QUP update:', data);
-            
-            showQUPNotification(`QUP performed: ${data.userId || data.orderId} moved positions`);
-            
-            // Force immediate queue refresh for QUP operations
-            if (!isActionInProgress) {
-                setTimeout(fetchQueue, 300);
-            }
-        }
-
-        function handlePositionChange(data) {
-            console.log('Handling position change:', data);
-            
-            if (data.fromPosition !== undefined && data.toPosition !== undefined) {
-                showQUPNotification(`Position change: ${data.fromPosition} → ${data.toPosition}`);
-            }
-                       // Refresh queue to show new order
-            if (!isActionInProgress) {
-                setTimeout(fetchQueue, 300);
-            }
-        }
-
-        function handleQueueOrderChange(data) {
-            console.log('Handling queue order change:', data);
-            
-            showQUPNotification('Queue order updated');
-            
-            // Immediate refresh for queue order changes
-            if (!isActionInProgress) {
-                setTimeout(fetchQueue, 200);
-            }
-        }
-
-        function handleEnhancedQUPUpdate(data) {
-            console.log('Handling Enhanced Super QUP update:', data);
-            
-            showQUPNotification(`Enhanced QUP: ${data.details?.qup_type || 'position change'}`);
-            
-            // Force immediate refresh for enhanced QUP
-            if (!isActionInProgress) {
-                setTimeout(fetchQueue, 200);
-            }
-        }
-
-        function handleDownwardMovement(data) {
-            console.log('Handling downward movement:', data);
-            
-            showQUPNotification('Customer moved down in queue');
-            
-            // Refresh queue to show new order
-            if (!isActionInProgress) {
-                setTimeout(fetchQueue, 300);
-            }
-        }
-
         function handleOrderUpdate(data) {
             console.log('Handling order update:', data.action);
 
             // Show notification
             showOrderNotification(`Order ${data.orderId}: ${data.action}`);
 
-            // For QUP-related actions, force immediate refresh
-            if (data.action && (
-                data.action.toLowerCase().includes('qup') ||
-                data.action.toLowerCase().includes('position') ||
-                data.action.toLowerCase().includes('moved')
-            )) {
-                console.log('QUP-related action detected, forcing immediate refresh');
-                if (!isActionInProgress) {
-                    setTimeout(fetchQueue, 200);
-                }
-            } else {
-                // Regular refresh for other actions
-                if (!isActionInProgress) {
-                    setTimeout(fetchQueue, 1000);
-                }
+            // Refresh queue after a short delay
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 1000);
             }
         }
 
@@ -1162,28 +1042,6 @@
                     }
                 }, 300);
             }, 3000);
-        }
-
-        // NEW: QUP-specific notification
-        function showQUPNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'qup-notification';
-            notification.innerHTML = `<strong>QUP Update</strong><br>${message}`;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                }, 300);
-            }, 4000);
         }
 
         // API calls
@@ -1608,18 +1466,17 @@
             }
         }
 
-        // Enhanced auto-refresh with QUP awareness
         function startAutoRefresh() {
             if (autoRefreshInterval) {
                 clearInterval(autoRefreshInterval);
             }
 
-            // Reduced auto-refresh interval since we have better real-time updates for QUP
+            // Auto-refresh queue every 5 seconds to catch new orders
             autoRefreshInterval = setInterval(() => {
                 if (!isActionInProgress) {
                     fetchQueue();
                 }
-            }, 8000); // Increased from 5 to 8 seconds since WebSocket handles most updates
+            }, 5000);
         }
 
         function setLoading(loading) {
