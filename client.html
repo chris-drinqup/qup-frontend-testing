@@ -200,46 +200,6 @@
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .btn-success {
-            background: linear-gradient(45deg, var(--success), #059669);
-            color: white;
-        }
-
-        .btn-qup {
-            background: linear-gradient(45deg, #10b981, #059669);
-            color: white;
-            font-size: 1rem;
-            padding: 12px 20px;
-            margin: 5px;
-            width: auto;
-            display: inline-block;
-        }
-
-        .btn-qup:active {
-            transform: translateY(2px) scale(0.96);
-            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-move-down {
-            background: linear-gradient(45deg, #f59e0b, #d97706);
-            color: white;
-            font-size: 1rem;
-            padding: 12px 20px;
-            margin: 5px;
-            width: auto;
-            display: inline-block;
-        }
-
-        .btn-move-down:active {
-            transform: translateY(2px) scale(0.96);
-            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
-        }
-
-        .btn-danger {
-            background: linear-gradient(45deg, var(--danger), #dc2626);
-            color: white;
-        }
-
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -309,98 +269,6 @@
             font-weight: 600;
         }
 
-        .queue-actions {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .queue-actions h4 {
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .queue-info {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .queue-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 15px 0;
-            font-size: 0.9rem;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .stat-item:last-child {
-            border-bottom: none;
-        }
-
-        .pickup-code {
-            background: linear-gradient(45deg, var(--success), #059669);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin: 20px 0;
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 15;
-        }
-
-        .pickup-code:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
-        }
-
-        .pickup-code:active {
-            transform: scale(1.02);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-        }
-
-        .screen-flash {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(16, 185, 129, 0.9);
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            animation: flashEffect 0.8s ease-in-out;
-        }
-
-        @keyframes flashEffect {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        .countdown {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--warning);
-            margin: 10px 0;
-        }
-
         .alert {
             padding: 15px 20px;
             border-radius: 12px;
@@ -462,28 +330,165 @@
             transform: translateY(1px);
         }
 
-        .skip-login-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            cursor: pointer;
-            text-decoration: underline;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            transition: all 0.15s ease;
-        }
-
-        .skip-login-btn:hover {
-            color: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        .skip-login-btn:active {
-            transform: translateY(1px);
-        }
-
         .hidden {
             display: none;
+        }
+
+        /* Queue Preview Styles */
+        .queue-preview {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .queue-preview h4 {
+            color: var(--info);
+            margin-bottom: 15px;
+        }
+
+        .preview-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .preview-stat {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .preview-stat .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .preview-stat .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* QUP Toggle Styles */
+        .qup-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qup-checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .qup-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .qup-checkbox label {
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* QUP Controls Styles */
+        .qup-controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--success);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qup-controls h4 {
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .position-display {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 20px 0;
+            color: var(--text-primary);
+        }
+
+        .qup-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .qup-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qup-btn.up {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+        }
+
+        .qup-btn.down {
+            background: linear-gradient(45deg, var(--warning), #d97706);
+            color: white;
+        }
+
+        .qup-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .qup-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qup-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qup-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .time-savings {
+            font-size: 0.9rem;
+            color: var(--success);
+            margin: 10px 0;
+        }
+
+        .countdown {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--warning);
+            margin: 10px 0;
         }
 
         /* Logo Rain Animation System */
@@ -604,6 +609,51 @@
             animation-delay: -2s;
         }
 
+        .pickup-code {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 15;
+        }
+
+        .pickup-code:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+        }
+
+        .pickup-code:active {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(16, 185, 129, 0.9);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            animation: flashEffect 0.8s ease-in-out;
+        }
+
+        @keyframes flashEffect {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -637,6 +687,20 @@
 
             .company-logo {
                 height: 40px;
+            }
+
+            .preview-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .qup-buttons {
+                gap: 15px;
+            }
+
+            .qup-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -674,10 +738,7 @@
             </div>
 
             <div style="margin-top: 20px; font-size: 0.9rem; color: var(--text-secondary);">
-                Need an account? Contact your administrator.<br>
-                <button type="button" class="skip-login-btn" id="skipAuthButton">
-                    Skip Login (Test Mode)
-                </button>
+                Need an account? Contact your administrator.
             </div>
         </div>
 
@@ -699,6 +760,24 @@
                 <span>Connecting...</span>
             </div>
 
+            <!-- Queue Preview Section -->
+            <div id="queuePreview" class="queue-preview">
+                <h4>📊 Current Queue Status</h4>
+                <div class="preview-stats">
+                    <div class="preview-stat">
+                        <div class="stat-value" id="previewWaitTime">Loading...</div>
+                        <div class="stat-label">Est. Wait Time</div>
+                    </div>
+                    <div class="preview-stat">
+                        <div class="stat-value" id="previewPosition">Loading...</div>
+                        <div class="stat-label">Your Position</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">
+                    This shows where you'll be placed when you order
+                </div>
+            </div>
+
             <!-- Order Form -->
             <div id="orderForm">
                 <div class="form-group">
@@ -711,6 +790,40 @@
                     <label for="orderDescription">What would you like to order?</label>
                     <input type="text" id="orderDescription" class="form-control"
                            placeholder="e.g., Large coffee with milk, no sugar">
+                </div>
+
+                <!-- QUP Toggle -->
+                <div id="qupToggle" class="qup-toggle">
+                    <h4>🚀 Enhanced Queue Experience</h4>
+                    <div class="qup-checkbox">
+                        <input type="checkbox" id="enableQup" />
+                        <label for="enableQup">Enable QUP Controls (Move up/down in line)</label>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">
+                        With QUP enabled, you can adjust your position in line after ordering to reduce wait time.
+                    </div>
+                    <button class="btn btn-primary" id="saveQupButton" onclick="saveQupSettings()" style="margin-top: 15px; display: none;">
+                        Save QUP Settings
+                    </button>
+                </div>
+
+                <!-- QUP Preview Controls (before ordering) -->
+                <div id="qupPreviewControls" class="qup-controls hidden">
+                    <h4>🚀 QUP Preview - Try Before You Order!</h4>
+                    <div class="position-display">
+                        Preview Position: <span id="previewQupPosition">#3</span>
+                    </div>
+                    <div class="qup-buttons">
+                        <button id="previewQupUpBtn" class="qup-btn up" title="Preview move up" onclick="previewQupUp()">+</button>
+                        <button id="previewQupDownBtn" class="qup-btn down" title="Preview move down" onclick="previewQupDown()">-</button>
+                    </div>
+                    <div class="time-savings" id="previewTimeSavings">
+                        Potential time saved: 2 minutes
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 15px;">
+                        <strong>Preview Mode:</strong> This simulates your total wait time (including your order processing) |
+                        <strong>Cost:</strong> 60s per QUP move
+                    </div>
                 </div>
 
                 <button class="btn btn-primary" id="orderButton">
@@ -744,48 +857,29 @@
                 </div>
             </div>
 
-            <!-- QUP Actions (when order is in queue) -->
-            <div id="qupActions" class="queue-actions hidden">
-                <h4>🚀 Queue Actions</h4>
-                <div class="queue-info">
-                    You can QUP (move up) when pool time is available, or move down to refund time and go back towards your starting position.
+            <!-- QUP Controls (after ordering, when QUP is enabled) -->
+            <div id="qupControls" class="qup-controls hidden">
+                <h4>🚀 Queue Position Control</h4>
+                <div class="position-display">
+                    Position: <span id="currentQupPosition">#1</span>
                 </div>
-
-                <div class="queue-stats">
-                    <div class="stat-item">
-                        <span>Pool Time Available:</span>
-                        <span id="poolTimeAvailable">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>QUP Cost:</span>
-                        <span id="qupCost">60s</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Downward Moves:</span>
-                        <span id="downwardMovesAvailable">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Force QUP:</span>
-                        <span id="forceQupStatus">Admin Controlled</span>
-                    </div>
+                <div class="qup-buttons">
+                  <button id="qupUpBtn" class="qup-btn up" title="Move up in line">+</button>
+                    <button id="qupDownBtn" class="qup-btn down" title="Move down in line">-</button>
                 </div>
-
-                <div style="margin-top: 15px;">
-                    <button id="qupButton" class="btn btn-qup" disabled>
-                        🚀 QUP (Move Up)
-                    </button>
-                    <button id="moveDownButton" class="btn btn-move-down" disabled>
-                        ↓ Move Down
-                    </button>
+                <div class="time-savings" id="timeSavings">
+                    Time saved by moving up: 0 minutes
                 </div>
-
-                <div id="movementHistory" style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);"></div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 15px;">
+                    <strong>Pool Time Available:</strong> <span id="poolTimeDisplay">120s</span> |
+                    <strong>QUP Cost:</strong> 60s per move
+                </div>
             </div>
 
             <!-- Pickup Code Display with Logo Protection -->
             <div id="pickupSection" class="pickup-section-protected hidden">
                 <div class="alert alert-success">
-                    Your order is ready for PiQUP!
+                    Your order is ready for pickup!
                 </div>
                 <div style="position: relative;">
                     <div class="pickup-code" id="pickupCode" onclick="flashScreen()">----</div>
@@ -814,10 +908,10 @@
         // Default logo URL constant
         const DEFAULT_LOGO_URL = 'https://eorhgophbjjbiguvkygo.supabase.co/storage/v1/object/public/company-assets/logos/logo-1749419576950.png';
 
-        // Configuration - Point to localhost for testing
+        // Configuration
         let SUPABASE_URL = '';
         let SUPABASE_ANON_KEY = '';
-        let API_BASE = 'https://qupcore-supercode-modular-692478335867.us-central1.run.app'; // Change this to point to your local server
+        let API_BASE = 'https://qupcore-supercode-modular-692478335867.us-central1.run.app';
 
         // Initialize Supabase
         let supabase = null;
@@ -826,7 +920,7 @@
         let socket = null;
         let currentUser = null;
         let currentOrder = null;
-        let currentOrderData = null; // Store full order data for QUP actions
+        let currentOrderData = null;
         let developerKey = null;
         let waitTimeInterval = null;
         let estimatedCompletionTime = null;
@@ -835,15 +929,296 @@
         let logoOverlayInterval = null;
         let currentLogo = null;
         let logoSettings = null;
+        let qupEnabled = false;
+        let currentPosition = 1;
+        let previewQupPosition = 3; // Start at estimated position from queue preview
+        let orderSubmitting = false; // Prevent multiple submissions
+
+        // Handle QUP checkbox change
+        function handleQupToggle() {
+            const checkbox = document.getElementById('enableQup');
+            const saveButton = document.getElementById('saveQupButton');
+
+            if (checkbox.checked) {
+                saveButton.style.display = 'block';
+            } else {
+                saveButton.style.display = 'none';
+                hideElement('qupPreviewControls');
+            }
+        }
+
+        // Save QUP settings and show preview
+        function saveQupSettings() {
+            qupEnabled = document.getElementById('enableQup').checked;
+
+            if (qupEnabled) {
+                // Get current queue position from preview
+                const previewPositionText = document.getElementById('previewPosition').textContent;
+                const positionMatch = previewPositionText.match(/\d+/);
+                previewQupPosition = positionMatch ? parseInt(positionMatch[0]) - 1 : 2; // Convert to 0-based
+
+                showElement('qupPreviewControls');
+                updateQupPreview();
+                showAlert('QUP controls enabled! Try the preview buttons above.', 'success');
+
+                // Hide the save button
+                document.getElementById('saveQupButton').style.display = 'none';
+            }
+        }
+
+        // Update QUP preview display
+        function updateQupPreview() {
+            document.getElementById('previewQupPosition').textContent = '#' + (previewQupPosition + 1);
+            updatePreviewQupButtons();
+            updatePreviewTimeSavings();
+        }
+
+        // Enhanced updatePreviewQupButtons with feasibility-based disabling
+        function updatePreviewQupButtons() {
+            const upBtn = document.getElementById('previewQupUpBtn');
+            const downBtn = document.getElementById('previewQupDownBtn');
+
+            // Basic position limits
+            upBtn.disabled = previewQupPosition <= 0;
+            downBtn.disabled = previewQupPosition >= 10; // Reasonable limit
+            
+            // The feasibility check will be done in updatePreviewWaitTime()
+            // and will disable the up button if position is not reachable
+        }
+
+        // Update preview time savings
+        function updatePreviewTimeSavings() {
+            const baseTimePerPosition = 60; // 1 minute per position
+            const originalPosition = parseInt(document.getElementById('previewPosition').textContent.match(/\d+/)[0]) - 1;
+            const timeSaved = Math.max(0, (originalPosition - previewQupPosition) * baseTimePerPosition);
+            const minutes = Math.floor(timeSaved / 60);
+
+            document.getElementById('previewTimeSavings').textContent =
+                'Potential time saved: ' + minutes + ' minute' + (minutes !== 1 ? 's' : '');
+        }
+
+        // Enhanced updatePreviewWaitTime function with real backend data
+        async function updatePreviewWaitTime() {
+            if (!developerKey) {
+                console.warn('No API key available for live queue data');
+                calculatePreviewWaitTimeFromEstimate();
+                return;
+            }
+
+            try {
+                // Use actual queue list endpoint to get live data
+                const response = await fetch(API_BASE + '/api/v1/queue/list', {
+                    headers: { 'X-API-Key': developerKey }
+                });
+
+                if (response.ok) {
+                    const queueData = await response.json();
+                    calculatePreviewWaitTimeFromQueue(queueData);
+                } else {
+                    console.error('Failed to get queue data:', response.status);
+                    calculatePreviewWaitTimeFromEstimate();
+                }
+            } catch (error) {
+                console.error('Failed to get live queue data for preview:', error);
+                calculatePreviewWaitTimeFromEstimate();
+            }
+        }
+
+        // Enhanced calculatePreviewWaitTimeFromQueue with REAL feasibility checking
+        function calculatePreviewWaitTimeFromQueue(queueData) {
+            try {
+                const queue = queueData.queue || [];
+                const timeStats = queueData.enhanced_time_management || {};
+
+                // Get actual pool time and QUP cost from backend
+                const availablePoolTime = timeStats.available_pool_time || 0;
+                const qupCostPerMove = timeStats.current_qup_cost || 60;
+                
+                console.log('Real pool time check:', {
+                    available_pool_time: availablePoolTime,
+                    qup_cost_per_move: qupCostPerMove
+                });
+
+                // Calculate how many positions can actually be afforded
+                const maxAffordablePositions = Math.floor(availablePoolTime / qupCostPerMove);
+                
+                const currentQueueLength = queue.length;
+                const normalPosition = currentQueueLength; // Where you'd normally be placed (0-based)
+                
+                // Limit preview position to what's actually affordable
+                const maxReachablePosition = Math.max(0, normalPosition - maxAffordablePositions);
+                
+                if (previewQupPosition < maxReachablePosition) {
+                    console.log('Position not affordable, adjusting:', {
+                        requested: previewQupPosition + 1,
+                        max_reachable: maxReachablePosition + 1,
+                        reason: 'insufficient_pool_time'
+                    });
+                    
+                    // Adjust to max reachable position
+                    previewQupPosition = maxReachablePosition;
+                    showAlert('Position adjusted to maximum affordable with current pool time', 'warning');
+                }
+
+                const targetPosition = previewQupPosition; // Where you want to be (0-based)
+
+                // Calculate wait time at preview position
+                let waitTimeAtPosition = 0;
+                const baseTimePerItem = timeStats.current_base_time_per_item ||
+                                       timeStats.current_qup_cost ||
+                                       60; // fallback seconds
+
+                if (targetPosition < queue.length) {
+                    // Sum up remaining times for orders ahead of preview position
+                    for (let i = 0; i < targetPosition; i++) {
+                        if (queue[i]) {
+                            waitTimeAtPosition += queue[i].remaining_seconds ||
+                                                 queue[i].assigned_time ||
+                                                 baseTimePerItem;
+                        }
+                    }
+                } else {
+                    // Preview position is beyond current queue
+                    waitTimeAtPosition = targetPosition * baseTimePerItem;
+                }
+
+                // Add your order's processing time
+                const yourOrderProcessingTime = baseTimePerItem;
+                const totalWaitTime = waitTimeAtPosition + yourOrderProcessingTime;
+
+                // Calculate cost to reach this position
+                const positionsToSkip = Math.max(0, normalPosition - targetPosition);
+                const totalQupCost = positionsToSkip * qupCostPerMove;
+                
+                // Check if this position is actually reachable
+                const isReachable = totalQupCost <= availablePoolTime;
+
+                // Calculate time savings vs normal position
+                const normalWaitTime = (normalPosition + 1) * baseTimePerItem;
+                const timeSaved = normalWaitTime - totalWaitTime;
+
+                updatePreviewDisplay(totalWaitTime, baseTimePerItem, timeSaved, normalPosition + 1, {
+                    positions_to_skip: positionsToSkip,
+                    total_qup_cost: totalQupCost,
+                    available_pool_time: availablePoolTime,
+                    is_reachable: isReachable,
+                    max_affordable_positions: maxAffordablePositions
+                });
+
+            } catch (error) {
+                console.error('Error calculating preview wait time from queue data:', error);
+                calculatePreviewWaitTimeFromEstimate();
+            }
+        }
+
+        // Last resort: Use reasonable estimates
+        function calculatePreviewWaitTimeFromEstimate() {
+            const estimatedTimePerOrder = 45; // 45 seconds default
+            const cumulativeWaitTime = previewQupPosition * estimatedTimePerOrder;
+            updatePreviewDisplay(cumulativeWaitTime, estimatedTimePerOrder);
+        }
+
+        // Enhanced updatePreviewDisplay with feasibility validation
+        function updatePreviewDisplay(waitTimeSeconds, avgTimePerOrder, timeSaved, normalPosition, feasibilityData) {
+            // Format and display the wait time
+            const waitMinutes = Math.floor(waitTimeSeconds / 60);
+            const waitSecondsRemainder = Math.floor(waitTimeSeconds % 60);
+            const waitDisplay = waitMinutes > 0 ? waitMinutes + 'm ' + waitSecondsRemainder + 's' : waitSecondsRemainder + 's';
+
+            document.getElementById('previewWaitTime').textContent = waitDisplay;
+
+            // Update time savings display with feasibility check
+            let timeSavingsText;
+            
+            if (feasibilityData && !feasibilityData.is_reachable) {
+                // Position not reachable due to insufficient pool time
+                const costDisplay = Math.floor(feasibilityData.total_qup_cost);
+                const availableDisplay = Math.floor(feasibilityData.available_pool_time);
+                
+                timeSavingsText = 'Position not reachable - Need ' + costDisplay + 's pool time, have ' + availableDisplay + 's';
+                
+                // Disable the up button if current position is not reachable
+                const upBtn = document.getElementById('previewQupUpBtn');
+                if (upBtn) {
+                    upBtn.disabled = true;
+                    upBtn.title = 'Insufficient pool time for this position';
+                }
+                
+            } else if (timeSaved > 0) {
+                const savedMinutes = Math.floor(timeSaved / 60);
+                const savedSeconds = Math.floor(timeSaved % 60);
+                timeSavingsText = 'Time saved: ' + savedMinutes + 'm ' + savedSeconds + 's vs normal position #' + normalPosition;
+                
+                if (feasibilityData) {
+                    const costDisplay = Math.floor(feasibilityData.total_qup_cost);
+                    timeSavingsText += ' (Cost: ' + costDisplay + 's pool time)';
+                }
+                
+            } else if (timeSaved < 0) {
+                const extraMinutes = Math.floor(Math.abs(timeSaved) / 60);
+                const extraSeconds = Math.floor(Math.abs(timeSaved) % 60);
+                timeSavingsText = 'Extra wait time: ' + extraMinutes + 'm ' + extraSeconds + 's vs normal position #' + normalPosition;
+                
+            } else {
+                timeSavingsText = 'At normal position #' + normalPosition + ' - no time change';
+            }
+
+            document.getElementById('previewTimeSavings').textContent = timeSavingsText;
+
+            console.log('Live preview update: Position ' + (previewQupPosition + 1) + ', Wait: ' + waitDisplay + ', Time saved: ' + Math.floor(timeSaved || 0) + 's', feasibilityData || '');
+        }
+
+        // Enhanced previewQupUp function with real feasibility checking
+        function previewQupUp() {
+            if (previewQupPosition > 0) {
+                const previousPosition = previewQupPosition;
+                previewQupPosition--;
+                
+                // Update display first
+                updateQupPreview();
+                
+                // Check if this new position is actually reachable
+                updatePreviewWaitTime().then(() => {
+                    // The updatePreviewWaitTime function will adjust position if not reachable
+                    if (previewQupPosition !== previousPosition - 1) {
+                        // Position was adjusted due to feasibility
+                        updateQupPreview(); // Update display again
+                        showAlert('Reached maximum affordable position with current pool time', 'warning');
+                    } else {
+                        showAlert('Preview: Moving to position ' + (previewQupPosition + 1) + ' - Check time savings!', 'success');
+                    }
+                }).catch(error => {
+                    console.error('Failed to validate preview position:', error);
+                    showAlert('Preview: Moving to position ' + (previewQupPosition + 1), 'info');
+                });
+            } else {
+                showAlert('Cannot move up further - already at front!', 'error');
+            }
+        }
+
+        // Enhanced previewQupDown function
+        function previewQupDown() {
+            // Get current queue length for reasonable limit
+            const maxPosition = Math.max(10, parseInt(document.getElementById('previewPosition').textContent.match(/\d+/)[0]));
+
+            if (previewQupPosition < maxPosition) {
+                previewQupPosition++;
+                updateQupPreview();
+                updatePreviewWaitTime(); // Update wait time display with real data
+                showAlert('Preview: Moving to position ' + (previewQupPosition + 1), 'info');
+            } else {
+                showAlert('Cannot move down further', 'error');
+            }
+        }
 
         // Get client configuration from server
         async function getClientConfig() {
             try {
                 console.log('Getting client configuration from server...');
 
-                const response = await fetch(`${API_BASE}/api/client/config`);
+                const response = await fetch(API_BASE + '/api/client/config');
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
                 }
 
                 const contentType = response.headers.get('content-type');
@@ -951,15 +1326,15 @@
 
                 // Ensure default logo settings with null coalescing
                 logoSettings = {
-                    show_client: logoSettings?.show_client ?? true,
-                    client_size: logoSettings?.client_size ?? 50,
-                    enable_rain: logoSettings?.enable_rain ?? true,
-                    rain_intensity: logoSettings?.rain_intensity ?? 3,
-                    rain_opacity: logoSettings?.rain_opacity ?? 30
+                    show_client: logoSettings && logoSettings.show_client !== undefined ? logoSettings.show_client : true,
+                    client_size: logoSettings && logoSettings.client_size !== undefined ? logoSettings.client_size : 50,
+                    enable_rain: logoSettings && logoSettings.enable_rain !== undefined ? logoSettings.enable_rain : true,
+                    rain_intensity: logoSettings && logoSettings.rain_intensity !== undefined ? logoSettings.rain_intensity : 3,
+                    rain_opacity: logoSettings && logoSettings.rain_opacity !== undefined ? logoSettings.rain_opacity : 30
                 };
 
                 updateLogoDisplays();
-                console.log('Company assets loaded:', { currentLogo: !!currentLogo, logoSettings });
+                console.log('Company assets loaded:', { currentLogo: !!currentLogo, logoSettings: logoSettings });
 
             } catch (error) {
                 console.error('Failed to load company assets:', error);
@@ -976,7 +1351,7 @@
         }
 
         function updateLogoDisplays() {
-            console.log('Updating client logo displays...', { currentLogo, logoSettings });
+            console.log('Updating client logo displays...', { currentLogo: currentLogo, logoSettings: logoSettings });
             if (!currentLogo) {
                 currentLogo = { logo_url: DEFAULT_LOGO_URL };
             }
@@ -986,8 +1361,8 @@
 
             if (loginLogo && appLogo) {
                 const logoUrl = currentLogo.logo_url;
-                const logoSize = logoSettings?.client_size || 50;
-                const showClient = logoSettings?.show_client ?? true;
+                const logoSize = logoSettings && logoSettings.client_size ? logoSettings.client_size : 50;
+                const showClient = logoSettings && logoSettings.show_client !== undefined ? logoSettings.show_client : true;
 
                 console.log('Setting client logos:', logoUrl);
 
@@ -1011,7 +1386,7 @@
 
         // Logo Rain System
         function startLogoRain() {
-            console.log('Starting logo rain...', { currentLogo, logoSettings });
+            console.log('Starting logo rain...', { currentLogo: currentLogo, logoSettings: logoSettings });
             if (!currentLogo) {
                 console.log('No current logo - using default URL for rain');
                 currentLogo = {
@@ -1035,9 +1410,9 @@
             const rainIntensity = logoSettings.rain_intensity || 3;
             const rainOpacity = (logoSettings.rain_opacity || 30) / 100;
 
-            console.log('Rain settings:', { rainIntensity, rainOpacity });
+            console.log('Rain settings:', { rainIntensity: rainIntensity, rainOpacity: rainOpacity });
 
-            logoRainInterval = setInterval(() => {
+            logoRainInterval = setInterval(function() {
                 createRainLogo(rainContainer, rainOpacity);
             }, 1000 / rainIntensity);
 
@@ -1047,26 +1422,26 @@
         function createRainLogo(container, opacity) {
             if (!currentLogo) return;
 
-            const logo = document.createElement('img');
-            logo.src = currentLogo.logo_url;
-            logo.className = 'rain-logo';
-            logo.style.left = Math.random() * window.innerWidth + 'px';
-            logo.style.opacity = opacity;
-            logo.style.animationDuration = (Math.random() * 3 + 3) + 's';
-            logo.style.animationDelay = Math.random() * 2 + 's';
+            const logoElement = document.createElement('img');
+            logoElement.src = currentLogo.logo_url;
+            logoElement.className = 'rain-logo';
+            logoElement.style.left = Math.random() * window.innerWidth + 'px';
+            logoElement.style.opacity = opacity;
+            logoElement.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            logoElement.style.animationDelay = Math.random() * 2 + 's';
 
             // Prevent drag and context menu
-            logo.draggable = false;
-            logo.oncontextmenu = () => false;
-            logo.onselectstart = () => false;
-            logo.ondragstart = () => false;
+            logoElement.draggable = false;
+            logoElement.oncontextmenu = function() { return false; };
+            logoElement.onselectstart = function() { return false; };
+            logoElement.ondragstart = function() { return false; };
 
-            container.appendChild(logo);
+            container.appendChild(logoElement);
 
             // Remove after animation
-            setTimeout(() => {
-                if (logo.parentNode) {
-                    logo.remove();
+            setTimeout(function() {
+                if (logoElement.parentNode) {
+                    logoElement.remove();
                 }
             }, 8000);
         }
@@ -1106,7 +1481,7 @@
             }
 
             // Continuously add new logos to maintain coverage
-            logoOverlayInterval = setInterval(() => {
+            logoOverlayInterval = setInterval(function() {
                 if (overlayContainer.children.length < 12) {
                     createOverlayLogo(overlayContainer, Math.floor(Math.random() * 100));
                 }
@@ -1132,14 +1507,14 @@
 
             // Prevent drag and context menu
             logo.draggable = false;
-            logo.oncontextmenu = () => false;
-            logo.onselectstart = () => false;
-            logo.ondragstart = () => false;
+            logo.oncontextmenu = function() { return false; };
+            logo.onselectstart = function() { return false; };
+            logo.ondragstart = function() { return false; };
 
             container.appendChild(logo);
 
             // Remove after some time and replace
-            setTimeout(() => {
+            setTimeout(function() {
                 if (logo.parentNode) {
                     logo.remove();
                 }
@@ -1161,7 +1536,71 @@
             }
         }
 
-        // Authentication functions
+        // Load queue preview with current user context
+        async function loadQueuePreview() {
+            try {
+                console.log('Loading queue preview...');
+
+                // Use current user email if available
+                let previewEmail = currentUser && currentUser.email ? currentUser.email : 'chris@qupcorp.com';
+
+                const keyResponse = await fetch(API_BASE + '/api/client/api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_email: previewEmail })
+                });
+
+                if (keyResponse.ok) {
+                    const keyData = await keyResponse.json();
+                    const previewKey = keyData.api_key;
+
+                    console.log('Got preview API key, fetching queue preview...');
+
+                    // Get queue preview
+                    const response = await fetch(API_BASE + '/api/v1/queue/preview-join', {
+                        headers: { 'X-API-Key': previewKey }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Queue preview data:', data);
+                        updateQueuePreview(data);
+                    } else {
+                        console.error('Failed to get queue preview:', response.status);
+                        setDefaultPreview();
+                    }
+                } else {
+                    console.error('Failed to get preview API key');
+                    setDefaultPreview();
+                }
+            } catch (error) {
+                console.error('Failed to load queue preview:', error);
+                setDefaultPreview();
+            }
+        }
+
+        function setDefaultPreview() {
+            updateQueuePreview({
+                preview_data: {
+                    estimated_wait_time: 60,
+                    estimated_position: 1
+                }
+            });
+        }
+
+        // Update queue preview display
+        function updateQueuePreview(data) {
+            if (data.preview_data) {
+                const waitMinutes = Math.floor(data.preview_data.estimated_wait_time / 60);
+                const waitSeconds = data.preview_data.estimated_wait_time % 60;
+                const waitDisplay = waitMinutes > 0 ? waitMinutes + 'm ' + waitSeconds + 's' : waitSeconds + 's';
+
+                document.getElementById('previewWaitTime').textContent = waitDisplay;
+                document.getElementById('previewPosition').textContent = '#' + data.preview_data.estimated_position;
+            }
+        }
+
+        // Authentication functions - REQUIRED Supabase login
         async function handleLogin() {
             if (!supabase) {
                 showAlert('Authentication system not ready. Please refresh the page.', 'error');
@@ -1227,20 +1666,12 @@
                     orderStatusInterval = null;
                 }
 
-                if (logoRainInterval) {
-                    clearInterval(logoRainInterval);
-                    logoRainInterval = null;
-                }
-
-                if (logoOverlayInterval) {
-                    clearInterval(logoOverlayInterval);
-                    logoOverlayInterval = null;
-                }
-
                 currentUser = null;
                 currentOrder = null;
                 currentOrderData = null;
                 developerKey = null;
+                qupEnabled = false;
+                currentPosition = 1;
 
                 showLogin();
 
@@ -1263,9 +1694,12 @@
                 // Extract name from email (before @)
                 const emailUsername = user.email.split('@')[0];
                 // Convert underscores/dots to spaces and capitalize
-                const suggestedName = emailUsername.replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const suggestedName = emailUsername.replace(/[._]/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
                 customerNameField.value = suggestedName;
             }
+
+            // Load queue preview with user context
+            await loadQueuePreview();
 
             // Get developer key for API access
             await getDeveloperKey();
@@ -1292,7 +1726,7 @@
             try {
                 console.log('Getting API key from server...');
 
-                const response = await fetch(`${API_BASE}/api/client/api-key`, {
+                const response = await fetch(API_BASE + '/api/client/api-key', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1301,7 +1735,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
                 }
 
                 const contentType = response.headers.get('content-type');
@@ -1375,7 +1809,6 @@
                     }
                 });
 
-                // IMPROVED: More comprehensive completion event handling
                 socket.on('order_completed', function(data) {
                     console.log('Order completed event:', data);
                     if (currentOrder && (data.orderId === currentOrder || data.id === currentOrder || data.order_id === currentOrder)) {
@@ -1395,15 +1828,15 @@
                 // KEY FIX: Listen for queue updates and detect order removal
                 socket.on('queue_update', function(data) {
                     console.log('Queue update received:', data);
-                    
+
                     // Check if our order is no longer in the queue (indicating completion)
                     if (currentOrder && data.queue) {
                         const myOrder = data.queue.find(function(order) {
                             return order.id === currentOrder || order.order_id === currentOrder;
                         });
-                        
+
                         if (myOrder) {
-                            // Order still in queue, update its status
+                            // Order still in queue, update its status AND wait time
                             handleMyOrderUpdate(myOrder);
                         } else {
                             // Order not in queue anymore - it was completed!
@@ -1413,6 +1846,17 @@
                                 showOrderComplete();
                             }
                         }
+                    }
+
+                    // Update preview if user is currently previewing
+                    if (document.getElementById('qupPreviewControls').classList.contains('hidden') === false) {
+                        updatePreviewWaitTime();
+                    }
+
+                    // CRITICAL FIX: Update wait time for queue changes even without order data
+                    if (currentOrder && !data.queue) {
+                        // Force refresh order data when queue changes but no order data provided
+                        updateOrderDisplay();
                     }
                 });
 
@@ -1429,15 +1873,20 @@
                 socket.on('qup_performed', function(data) {
                     console.log('QUP performed:', data);
                     if (currentOrder && (data.element_id === currentOrder || data.user_id === currentUser.email)) {
-                        showAlert('🚀 QUP successful! Moved to position ' + (data.to_position + 1), 'success');
+                        showAlert('QUP successful! Moved to position ' + (data.to_position + 1), 'success');
                         updateOrderDisplay();
+                    }
+
+                    // Update preview if user is currently previewing
+                    if (document.getElementById('qupPreviewControls').classList.contains('hidden') === false) {
+                        updatePreviewWaitTime();
                     }
                 });
 
                 socket.on('downward_movement', function(data) {
                     console.log('Downward movement:', data);
-                  if (currentOrder && (data.element_id === currentOrder || data.user_id === currentUser.email)) {
-                        showAlert('↓ Moved down to position ' + (data.to_position + 1), 'info');
+                    if (currentOrder && (data.element_id === currentOrder || data.user_id === currentUser.email)) {
+                        showAlert('Moved down to position ' + (data.to_position + 1), 'info');
                         updateOrderDisplay();
                     }
                 });
@@ -1447,7 +1896,7 @@
                 });
 
             } catch (error) {
-                console.error('WebSocket connection iled:', error);
+                console.error('WebSocket connection failed:', error);
                 updateConnectionStatus(false);
             }
         }
@@ -1465,10 +1914,17 @@
             }
         }
 
-        // Order management
+        // Enhanced placeOrder function with adaptive direct placement
         async function placeOrder() {
+            // Prevent multiple submissions
+            if (orderSubmitting) {
+                console.log('Order already being submitted...');
+                return;
+            }
+
             const customerName = document.getElementById('customerName').value.trim();
             const description = document.getElementById('orderDescription').value.trim();
+            qupEnabled = document.getElementById('enableQup').checked;
 
             if (!customerName) {
                 showAlert('Please enter your name', 'error');
@@ -1485,50 +1941,81 @@
                 return;
             }
 
+            orderSubmitting = true;
             setLoading('order', true);
 
             try {
-                const orderId = `${currentUser.email.replace('@', '_').replace('.', '_')}_${Date.now()}`;
+                const orderId = currentUser.email.replace('@', '_').replace('.', '_') + '_' + Date.now();
 
-                const response = await fetch(`${API_BASE}/api/v1/queue/add`, {
+                // Prepare order data with preview position if QUP enabled
+                const orderPayload = {
+                    id: orderId,
+                    payload: {
+                        order: description,
+                        customer_email: currentUser.email,
+                        customer_name: customerName,
+                        items: [{ name: description, quantity: 1 }],
+                        qup_enabled: qupEnabled
+                    },
+                    user_id: currentUser.email,
+                    priority: 500
+                };
+
+                // Add target position for direct placement (works with regular QUP OR Force QUP)
+                if (qupEnabled && previewQupPosition !== null) {
+                    orderPayload.target_position = previewQupPosition + 1; // Convert to 1-based
+                    console.log('DIRECT PLACEMENT: Requesting position ' + (previewQupPosition + 1) + ' (backend will decide QUP method)');
+                }
+
+                console.log('Placing order:', orderPayload);
+
+                const response = await fetch(API_BASE + '/api/v1/queue/add', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-API-Key': developerKey
                     },
-                    body: JSON.stringify({
-                        id: orderId,
-                        payload: {
-                            order: description,
-                            customer_email: currentUser.email,
-                            customer_name: customerName,
-                            items: [{ name: description, quantity: 1 }]
-                        },
-                        user_id: currentUser.email,
-                        priority: 500
-                    })
+                    body: JSON.stringify(orderPayload)
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    currentOrder = orderId;
+                    // CRITICAL FIX: Use backend's order ID, not client's
+                    currentOrder = data.id || data.order_id || orderId;
+                    currentPosition = data.position || 0;
 
-                    // Subscribe to order updates
+                    console.log('Order result:', {
+                        client_id: orderId,
+                        backend_id: currentOrder,
+                        requested: orderPayload.target_position,
+                        actual: data.position + 1,
+                        type: data.placement_type,
+                        force_qup_used: data.enhanced_features && data.enhanced_features.force_qup_available ? data.enhanced_features.force_qup_available : false
+                    });
+
+                    // Adaptive success message based on what backend actually did
+                    const placementMessage = getPlacementMessage(data, orderPayload.target_position);
+                    showAlert(placementMessage.text, placementMessage.type);
+
+                    // Subscribe to order updates using BACKEND'S order ID
                     if (socket && socket.connected) {
-                        socket.emit('subscribe', { orderId: orderId });
-                        console.log('Subscribed to order updates for:', orderId);
+                        socket.emit('subscribe', { orderId: currentOrder });
+                        console.log('Subscribed to order updates for:', currentOrder);
                     }
 
                     // Show order status
                     showOrderStatus(customerName, description, data);
                     hideElement('orderForm');
+                    hideElement('queuePreview');
+
+                    // Show QUP controls if enabled
+                    if (qupEnabled) {
+                        showQupControls(data.position || 0);
+                    }
 
                     // Start polling for updates
                     startOrderPolling();
-
-                    console.log('Order placed:', orderId);
-                    showAlert('Order placed successfully!', 'success');
 
                 } else {
                     throw new Error(data.error || 'Failed to place order');
@@ -1539,151 +2026,86 @@
                 showAlert('Order failed: ' + error.message, 'error');
             } finally {
                 setLoading('order', false);
+                orderSubmitting = false;
             }
         }
 
-        function showOrderStatus(customerName, description, orderData) {
-            document.getElementById('orderCustomerName').textContent = customerName;
-            document.getElementById('orderDetails').textContent = description;
-            document.getElementById('orderCurrentStatus').textContent = 'Waiting in queue';
-            document.getElementById('orderPosition').textContent = `#${(orderData.position || 0) + 1}`;
+        // Adaptive placement message based on backend behavior
+        function getPlacementMessage(data, requestedPosition) {
+            const actualPosition = data.position + 1;
+            const placementType = data.placement_type;
+            const forceQupAvailable = data.enhanced_features && data.enhanced_features.force_qup_available ? data.enhanced_features.force_qup_available : false;
 
-            // Calculate estimated completion time
-            if (orderData.estimated_time) {
-                estimatedCompletionTime = new Date(Date.now() + (orderData.estimated_time * 1000));
-                startWaitTimeCountdown();
-            }
-
-            // Show order status and QUP actions immediately
-            showElement('orderStatus');
-
-            // Check if we should show QUP actions (for orders not at position 0)
-            if (orderData.position > 0) {
-                // Simulate order data for QUP actions
-                const simulatedOrderData = {
-                    can_qup: true,
-                    can_move_down: false,
-                    qup_time_available: 120,
-                    downward_moves_available: 0,
-                    force_qup_enabled: false,
-                    finalized: false
-                };
-                updateQUPActions(simulatedOrderData);
-            }
-        }
-
-        function startWaitTimeCountdown() {
-            if (waitTimeInterval) {
-                clearInterval(waitTimeInterval);
-            }
-
-            waitTimeInterval = setInterval(() => {
-                if (!estimatedCompletionTime) return;
-
-                const now = new Date();
-                const timeLeft = estimatedCompletionTime - now;
-
-                if (timeLeft <= 0) {
-                    document.getElementById('orderWaitTime').textContent = 'Any moment now...';
-                    clearInterval(waitTimeInterval);
-                    waitTimeInterval = null;
+            // Direct placement succeeded
+            if (placementType === 'direct_position' && requestedPosition && actualPosition === requestedPosition) {
+                if (forceQupAvailable) {
+                    return { text: 'Force QUP Success! Placed directly at position #' + actualPosition + '!', type: 'success' };
                 } else {
-                    const minutes = Math.floor(timeLeft / (1000 * 60));
-                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                    document.getElementById('orderWaitTime').textContent = `${minutes}m ${seconds}s`;
+                    return { text: 'Regular QUP Success! Placed directly at position #' + actualPosition + '!', type: 'success' };
                 }
-            }, 1000);
-        }
+            }
 
-        // Update order display with live data via WebSocket + polling fallback
-        async function updateOrderDisplay() {
-            if (!currentOrder || !developerKey) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/queue/list`, {
-                    headers: {
-                        'X-API-Key': developerKey
-                    }
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.queue) {
-                    const myOrder = data.queue.find(order => order.id === currentOrder);
-                    if (myOrder) {
-                        handleMyOrderUpdate(myOrder);
-                    }
+            // Direct placement attempted fell back
+            if (requestedPosition && actualPosition !== requestedPosition) {
+                if (forceQupAvailable) {
+                    return { text: 'Placed at #' + actualPosition + '. Target #' + requestedPosition + ' required more resources even with Force QUP.', type: 'info' };
+                } else {
+                    return { text: 'Placed at #' + actualPosition + '. Target #' + requestedPosition + ' required more pool time (Ask admin for Force QUP).', type: 'info' };
                 }
-            } catch (error) {
-                console.error('Failed to update order display:', error);
+            }
+
+            // Normal placement (no preview used)
+            if (forceQupAvailable) {
+                return { text: 'Order placed at position #' + actualPosition + ' (Force QUP available for moves)', type: 'success' };
+            } else {
+                return { text: 'Order placed at position #' + actualPosition, type: 'success' };
             }
         }
 
-        // Start polling for order updates every 3 seconds
-        function startOrderPolling() {
-            if (orderStatusInterval) {
-                clearInterval(orderStatusInterval);
-            }
-
-            orderStatusInterval = setInterval(() => {
-                if (currentOrder && !document.getElementById('pickupSection').classList.contains('hidden')) {
-                    // Stop polling if pickup code is showing
-                    clearInterval(orderStatusInterval);
-                    orderStatusInterval = null;
-                } else if (currentOrder) {
-                    updateOrderDisplay();
-                }
-            }, 3000);
+        // Show QUP controls
+        function showQupControls(position) {
+            currentPosition = position;
+            document.getElementById('currentQupPosition').textContent = '#' + (position + 1);
+            updateQupButtons();
+            showElement('qupControls');
+            updateTimeSavings();
         }
 
-        // QUP Actions with proper element_id/user_id structure
-        async function performQUP() {
-            if (!currentOrder || !currentOrderData || !developerKey) {
-                showAlert('Order data not available', 'error');
+        // Update QUP button states
+        function updateQupButtons() {
+            const upBtn = document.getElementById('qupUpBtn');
+            const downBtn = document.getElementById('qupDownBtn');
+
+            // Can move up if not at position 0 and have pool time
+            upBtn.disabled = currentPosition <= 0;
+
+            // Can move down if not at the back and have downward moves available
+            downBtn.disabled = currentPosition >= 10; // Reasonable limit
+
+            // Update pool time display
+            document.getElementById('poolTimeDisplay').textContent = '120s'; // Default for demo
+        }
+
+        // Update time savings display
+        function updateTimeSavings() {
+            const baseTimePerPosition = 60; // 1 minute per position
+            const timeSaved = (currentPosition) * baseTimePerPosition;
+            const minutes = Math.floor(timeSaved / 60);
+            document.getElementById('timeSavings').textContent =
+                'Time saved by moving up: ' + minutes + ' minute' + (minutes !== 1 ? 's' : '');
+        }
+
+        // Enhanced performQupUp with adaptive backend response handling
+        async function performQupUp() {
+            if (!currentOrder || !developerKey || currentPosition <= 0) {
+                showAlert('Cannot move up further', 'error');
                 return;
             }
 
             try {
-                showAlert('Performing QUP...', 'info');
+                showAlert('Moving up...', 'info');
 
-                const response = await fetch(`${API_BASE}/api/v1/queue/qup`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': developerKey
-                    },
-                    body: JSON.stringify({
-                        element_id: currentOrder,
-                        user_id: currentUser.email,
-                        qup_type: 'super'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.status === 'success') {
-                    showAlert(`${data.message}`, 'success');
-                    updateOrderDisplay();
-                } else {
-                    showAlert(`QUP failed: ${data.error}`, 'error');
-                }
-
-            } catch (error) {
-                console.error('QUP error:', error);
-                showAlert(`QUP error: ${error.message}`, 'error');
-            }
-        }
-
-        async function moveDown() {
-            if (!currentOrder || !currentOrderData || !developerKey) {
-                showAlert('Order data not available', 'error');
-                return;
-            }
-
-            try {
-                showAlert('Moving down...', 'info');
-
-                const response = await fetch(`${API_BASE}/api/v1/queue/move-down`, {
+                const response = await fetch(API_BASE + '/api/v1/queue/qup', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1698,10 +2120,85 @@
                 const data = await response.json();
 
                 if (response.ok && data.status === 'success') {
-                    showAlert('↓ ' + data.message, 'success');
+                    // Update position from backend response
+                    if (data.queue_info && data.queue_info.queue) {
+                        const myOrder = data.queue_info.queue.find(function(order) {
+                            return order.id === currentOrder;
+                        });
+                        if (myOrder) {
+                            currentPosition = myOrder.position;
+                        }
+                    } else {
+                        currentPosition = Math.max(0, currentPosition - 1);
+                    }
+
+                    document.getElementById('currentQupPosition').textContent = '#' + (currentPosition + 1);
+                    updateQupButtons();
+                    updateTimeSavings();
+
+                    // Adaptive success message based on backend method used
+                    const qupMessage = getQupSuccessMessage(data);
+                    showAlert(qupMessage, 'success');
                     updateOrderDisplay();
                 } else {
-                    showAlert('Move down failed: ' + data.error, 'error');
+                    const errorMsg = data.message || data.error || 'QUP failed';
+                    // Show helpful error message based on backend response
+                    const helpfulError = getHelpfulQupError(data, errorMsg);
+                    showAlert(helpfulError, 'error');
+                    console.log('QUP failed response:', data);
+                }
+
+            } catch (error) {
+                console.error('QUP error:', error);
+                showAlert('QUP error: ' + error.message, 'error');
+            }
+        }
+
+        // Enhanced performQupDown with adaptive backend response handling
+        async function performQupDown() {
+            if (!currentOrder || !developerKey) {
+                showAlert('Cannot move down', 'error');
+                return;
+            }
+
+            try {
+                showAlert('Moving down...', 'info');
+
+                const response = await fetch(API_BASE + '/api/v1/queue/move-down', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': developerKey
+                    },
+                    body: JSON.stringify({
+                        element_id: currentOrder,
+                        user_id: currentUser.email
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    // Update position from backend response
+                    if (data.queue_info && data.queue_info.queue) {
+                        const myOrder = data.queue_info.queue.find(function(order) {
+                            return order.id === currentOrder;
+                        });
+                        if (myOrder) {
+                            currentPosition = myOrder.position;
+                        }
+                    } else {
+                        currentPosition = currentPosition + 1;
+                    }
+
+                    document.getElementById('currentQupPosition').textContent = '#' + (currentPosition + 1);
+                    updateQupButtons();
+                    updateTimeSavings();
+                    showAlert('Moved down to position #' + (currentPosition + 1), 'success');
+                    updateOrderDisplay();
+                } else {
+                    const errorMsg = data.message || data.error || 'Move down failed';
+                    showAlert('Move down failed: ' + errorMsg, 'error');
                 }
 
             } catch (error) {
@@ -1710,54 +2207,230 @@
             }
         }
 
-        // Update QUP actions based on order data
-        function updateQUPActions(orderData) {
-            currentOrderData = orderData;
+        // Get success message based on backend QUP method used
+        function getQupSuccessMessage(data) {
+            const forceQupUsed = (data.revolutionary_features && data.revolutionary_features.robin_hood_of_time) ||
+                                data.force_qup_enabled ||
+                                (data.message && data.message.includes('Force QUP')) ||
+                                (data.message && data.message.includes('force'));
 
-            if (!orderData || orderData.finalized || orderData.status === 'pickup_ready') {
-                hideElement('qupActions');
-                return;
+            if (forceQupUsed) {
+                return 'Force QUP Success! Now at position #' + (currentPosition + 1) + ' (affected users compensated)';
+            } else {
+                return 'Regular QUP Success! Now at position #' + (currentPosition + 1);
+            }
+        }
+
+        // Get helpful error message based on backend response
+        function getHelpfulQupError(data, originalError) {
+            const error = originalError.toLowerCase();
+
+            // Check for common error patterns and provide helpful suggestions
+            if (error.includes('insufficient time') || error.includes('pool time')) {
+                if (data.force_qup_enabled === false) {
+                    return originalError + ' (Ask admin to enable Force QUP for unlimited moves)';
+                } else {
+                    return originalError;
+                }
             }
 
-            // Update pool time stats
-            document.getElementById('poolTimeAvailable').textContent =
-                orderData.qup_time_available ? `${Math.floor(orderData.qup_time_available)}s` : '0s';
-            document.getElementById('qupCost').textContent = '60s'; // Default QUP cost
-            document.getElementById('downwardMovesAvailable').textContent =
-                orderData.downward_moves_available || 0;
-            document.getElementById('forceQupStatus').textContent =
-                orderData.force_qup_enabled ? 'Enabled' : 'Admin Controlled';
-
-            // Update button states
-            const qupButton = document.getElementById('qupButton');
-            const moveDownButton = document.getElementById('moveDownButton');
-
-            if (qupButton) {
-                qupButton.disabled = !orderData.can_qup;
-                qupButton.textContent = orderData.can_qup ?
-                    '🚀 QUP (Move Up)' :
-                    '🚀 QUP (No Pool Time)';
+            if (error.includes('bypass') || error.includes('already bypassed')) {
+                return 'Cannot bypass same user twice (fairness rule)';
             }
 
-            if (moveDownButton) {
-            moveDownButton.disabled = !orderData.can_move_down || (orderData.downward_moves_available || 0) === 0;
-                moveDownButton.textContent = orderData.can_move_down ?
-                    'Move Down (' + (orderData.downward_moves_available || 0) + ' left)' :
-                    'Move Down (None Available)';
+            if (error.includes('position')) {
+                return originalError;
             }
 
-            // Show movement history if available
-            const historyDiv = document.getElementById('movementHistory');
-            if (orderData.qup_analytics_summary) {
-                const analytics = orderData.qup_analytics_summary;
-                historyDiv.innerHTML =
-                    '<strong>Your Movement Stats:</strong><br>' +
-                    'QUPs: ' + (analytics.successful_qups || 0) + '/' + (analytics.total_qup_attempts || 0) + ' • ' +
-                    'Success Rate: ' + (((analytics.qup_success_rate || 0) * 100).toFixed(0)) + '% • ' +
-                    'Downward Moves: ' + (analytics.downward_moves || 0);
+            // Default with suggestion
+            if (data.force_qup_enabled === false) {
+                return originalError + ' (Force QUP disabled - contact admin if needed)';
             }
 
-            showElement('qtions');
+            return originalError;
+        }
+
+        // Enhanced updateQupButtonsFromBackend to work with any backend state
+        function updateQupButtonsFromBackend(orderData) {
+            const upBtn = document.getElementById('qupUpBtn');
+            const downBtn = document.getElementById('qupDownBtn');
+
+            // Use backend flags for accurate button states (works with regular QUP or Force QUP)
+            upBtn.disabled = !orderData.can_qup || currentPosition <= 0;
+            downBtn.disabled = !orderData.can_move_down;
+
+            // Update pool time display from backend
+            if (orderData.qup_time_available !== undefined) {
+                document.getElementById('poolTimeDisplay').textContent = Math.round(orderData.qup_time_available) + 's';
+            }
+
+            // Adaptive status messages based on backend capabilities
+            const timeSavingsElement = document.getElementById('timeSavings');
+            // Show status based on what backend tells us
+            if (!orderData.can_qup) {
+                if (orderData.qup_time_available < 60) {
+                    const shortfall = 60 - Math.round(orderData.qup_time_available);
+                    timeSavingsElement.textContent = 'Need ' + shortfall + 's more pool time for regular QUP';
+                } else if (orderData.consecutive_up_moves > 0) {
+                    timeSavingsElement.textContent = 'QUP limit reached (' + orderData.consecutive_up_moves + ' moves used)';
+                } else {
+                    timeSavingsElement.textContent = 'QUP not available';
+                }
+
+                // Add Force QUP hint if available
+                if (orderData.force_qup_available === false) {
+                    timeSavingsElement.textContent += ' (Ask admin for Force QUP)';
+                }
+            } else if (!orderData.can_move_down) {
+                timeSavingsElement.textContent = 'Move down not available';
+            } else {
+                // Both QUP and move down available - show normal time savings
+                updateTimeSavings();
+
+                // Add backend method indicator
+                if (orderData.force_qup_available) {
+                    timeSavingsElement.textContent += ' (Force QUP enabled)';
+                } else {
+                    timeSavingsElement.textContent += ' (Regular QUP)';
+                }
+            }
+        }
+
+        // Add this new function to show backend status in real-time
+        function updateBackendStatus(orderData) {
+            // Update pool time display with backend method indication
+            const poolDisplay = document.getElementById('poolTimeDisplay');
+            if (poolDisplay && orderData.qup_time_available !== undefined) {
+                const poolTime = Math.round(orderData.qup_time_available);
+                const forceQupAvailable = orderData.force_qup_available;
+
+                if (forceQupAvailable) {
+                    poolDisplay.textContent = poolTime + 's + Force QUP';
+                } else {
+                    poolDisplay.textContent = poolTime + 's (regular)';
+                }
+            }
+
+            // Log backend capabilities for debugging
+            console.log('Backend QUP Status:', {
+                can_qup: orderData.can_qup,
+                can_move_down: orderData.can_move_down,
+                pool_time: orderData.qup_time_available,
+                force_qup_available: orderData.force_qup_available,
+                consecutive_moves: orderData.consecutive_up_moves
+            });
+        }
+
+        function showOrderStatus(customerName, description, orderData) {
+            document.getElementById('orderCustomerName').textContent = customerName;
+            document.getElementById('orderDetails').textContent = description;
+            document.getElementById('orderCurrentStatus').textContent = 'Waiting in queue';
+            document.getElementById('orderPosition').textContent = '#' + ((orderData.position || 0) + 1);
+
+            // Calculate estimated completion time
+            if (orderData.estimated_time) {
+                estimatedCompletionTime = new Date(Date.now() + (orderData.estimated_time * 1000));
+                startWaitTimeCountdown();
+            }
+
+            // Show order status
+            showElement('orderStatus');
+        }
+
+        function startWaitTimeCountdown() {
+            if (waitTimeInterval) {
+                clearInterval(waitTimeInterval);
+            }
+
+            waitTimeInterval = setInterval(function() {
+                if (!estimatedCompletionTime) return;
+
+                const now = new Date();
+                const timeLeft = estimatedCompletionTime - now;
+
+                if (timeLeft <= 0) {
+                    document.getElementById('orderWaitTime').textContent = 'Any moment now...';
+                    clearInterval(waitTimeInterval);
+                    waitTimeInterval = null;
+                } else {
+                    const minutes = Math.floor(timeLeft / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    document.getElementById('orderWaitTime').textContent = minutes + 'm ' + seconds + 's';
+                }
+            }, 1000);
+        }
+
+        // Enhanced updateOrderDisplay with wait time updates
+        async function updateOrderDisplay() {
+            if (!currentOrder || !developerKey) return;
+
+            try {
+                const response = await fetch(API_BASE + '/api/v1/queue/list', {
+                    headers: {
+                        'X-API-Key': developerKey
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.queue) {
+                    const myOrder = data.queue.find(function(order) {
+                        return order.id === currentOrder;
+                    });
+                    if (myOrder) {
+                        handleMyOrderUpdate(myOrder);
+                    } else {
+                        console.log('Order not found in queue - checking if completed');
+                        // Order might be completed, check completion
+                        checkOrderCompletion();
+                    }
+                } else {
+                    console.error('Failed to get queue data:', data);
+                }
+            } catch (error) {
+                console.error('Failed to update order display:', error);
+            }
+        }
+
+        // NEW: Check if order was completed
+        async function checkOrderCompletion() {
+            try {
+                const response = await fetch(API_BASE + '/api/v1/queue/order/' + currentOrder, {
+                    headers: {
+                        'X-API-Key': developerKey
+                    }
+                });
+
+                if (response.ok) {
+                    const orderData = await response.json();
+                    if (orderData.status === 'completed' || orderData.completed) {
+                        showOrderComplete();
+                    }
+                } else if (response.status === 404) {
+                    // Order not found, likely completed
+                    console.log('Order not found via API - assuming completed');
+                    showOrderComplete();
+                }
+            } catch (error) {
+                console.error('Failed to check order completion:', error);
+            }
+        }
+
+        // Start polling for order updates every 3 seconds
+        function startOrderPolling() {
+            if (orderStatusInterval) {
+                clearInterval(orderStatusInterval);
+            }
+
+            orderStatusInterval = setInterval(function() {
+                if (currentOrder && !document.getElementById('pickupSection').classList.contains('hidden')) {
+                    // Stop polling if pickup code is showing
+                    clearInterval(orderStatusInterval);
+                    orderStatusInterval = null;
+                } else if (currentOrder) {
+                    updateOrderDisplay();
+                }
+            }, 3000);
         }
 
         function handleOrderUpdate(data) {
@@ -1768,7 +2441,7 @@
             console.log('Handling order update for my order:', data.action || data.status);
 
             // Check for completion first
-            if (data.action === 'completed' || data.action === 'complete' || 
+            if (data.action === 'completed' || data.action === 'complete' ||
                 data.status === 'completed' || data.status === 'complete' ||
                 data.completed === true || data.is_completed === true) {
                 console.log('Order completion detected in update');
@@ -1792,6 +2465,7 @@
             }
         }
 
+        // Enhanced handleMyOrderUpdate with live wait time calculation
         function handleMyOrderUpdate(orderData) {
             console.log('My order data updated:', orderData);
             currentOrderData = orderData;
@@ -1807,7 +2481,18 @@
             const positionElement = document.getElementById('orderPosition');
             if (positionElement) {
                 positionElement.textContent = '#' + (orderData.position + 1);
+
+                // Update QUP controls position if enabled
+                if (qupEnabled) {
+                    currentPosition = orderData.position;
+                    document.getElementById('currentQupPosition').textContent = '#' + (currentPosition + 1);
+                    updateQupButtonsFromBackend(orderData); // Use backend data for button states
+                    updateTimeSavings();
+                }
             }
+
+            // CRITICAL FIX: Update wait time in real-time
+            updateLiveWaitTime(orderData);
 
             if (orderData.finalized && orderData.pickup_code && orderData.pickup_code !== 'PENDING') {
                 // Only show pickup code if not already showing it
@@ -1818,27 +2503,35 @@
                 showAlert('Your order has been cancelled', 'error');
                 startNewOrder();
             } else {
-                // Always show QUP actions for active orders (unless at position 0)
-                if (!orderData.finalized) {
-                    // Create QUP data with reasonable defaults
-                    var qupData = {
-                        can_qup: orderData.position > 0, // Can QUP if not first
-                        can_move_down: orderData.position < 5, // Can move down if not too far back
-                        qup_time_available: 120, // Default pool time
-                        downward_moves_available: orderData.position > 0 ? 1 : 0,
-                        force_qup_enabled: false,
-                        finalized: false
-                    };
-                    // Override with actual data if available
-                    for (var key in orderData) {
-                        if (orderData.hasOwnProperty(key)) {
-                            qupData[key] = orderData[key];
-                        }
-                    }
-                    updateQUPActions(qupData);
-                    updateOrderPosition(orderData);
-                }
+                updateOrderPosition(orderData);
             }
+        }
+
+        // NEW: Update wait time in real-time based on current queue state
+        function updateLiveWaitTime(orderData) {
+            // Calculate live wait time based on current position and queue state
+            if (orderData.remaining_seconds !== undefined) {
+                // Use backend's calculated remaining time
+                estimatedCompletionTime = new Date(Date.now() + (orderData.remaining_seconds * 1000));
+            } else if (orderData.estimated_completion) {
+                // Use backend's estimated completion time
+                estimatedCompletionTime = new Date(orderData.estimated_completion);
+            } else {
+                // Fallback: calculate based on position (60 seconds per position)
+                const estimatedSeconds = (orderData.position + 1) * 60;
+                estimatedCompletionTime = new Date(Date.now() + (estimatedSeconds * 1000));
+            }
+
+            // Restart countdown with new time
+            if (!waitTimeInterval) {
+                startWaitTimeCountdown();
+            }
+
+            console.log('Live wait time updated:', {
+                position: orderData.position + 1,
+                estimated_completion: estimatedCompletionTime,
+                remaining_seconds: orderData.remaining_seconds
+            });
         }
 
         function updateOrderPosition(orderData) {
@@ -1852,44 +2545,226 @@
         }
 
         function showPickupCode(code) {
-            console.log('🏷️ Showing pickup code:', code);
-        document.getElementById('orderCurrentStatus').textContent = 'Ready for PiQUP';
+            console.log('Showing pickup code:', code);
+            document.getElementById('orderCurrentStatus').textContent = 'Ready for pickup';
             document.getElementById('pickupCode').textContent = code;
 
             hideElement('orderStatus');
-            hideElement('qupActions'); // Hide QUP actions when pickup ready
+            hideElement('qupControls'); // Hide QUP controls when pickup ready
             showElement('pickupSection');
 
-            // Start logo rain when PiQUP code is shown
+            // Start logo rain when pickup code is shown
             startLogoRain();
             // Start logo overlay protection
             startLogoOverlay();
+
+            // Start phone notifications (vibration + sound)
+            startPickupNotifications();
+        }
+
+        // Phone notification system for pickup alerts
+        function startPickupNotifications() {
+            console.log('Starting pickup notifications...');
+
+            // Request notification permission if not already granted
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        showPickupNotification();
+                    }
+                });
+            } else if (Notification.permission === 'granted') {
+                showPickupNotification();
+            }
+
+            // Start vibration pattern (if supported)
+            startPickupVibration();
+
+            // Start notification sound
+            startPickupSound();
+
+            // Set interval for repeated notifications
+            window.pickupNotificationInterval = setInterval(function() {
+                if (!document.getElementById('pickupSection').classList.contains('hidden')) {
+                    startPickupVibration();
+                    startPickupSound();
+                    showPickupNotification();
+                } else {
+                    stopPickupNotifications();
+                }
+            }, 10000); // Repeat every 10 seconds
+        }
+
+        // Show browser notification
+        function showPickupNotification() {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notification = new Notification('Your QUP Order is Ready!', {
+                    body: 'Your order is ready for pickup. Show your code to the barista.',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%234CAF50"/><text x="50" y="60" font-family="Arial" font-size="30" fill="white" text-anchor="middle">QUP</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%234CAF50"/></svg>',
+                    tag: 'qup-pickup',
+                    requireInteraction: true, // Keeps notification visible until user interacts
+                    silent: false
+                });
+
+                // Auto-close notification after 8 seconds
+                setTimeout(function() {
+                    notification.close();
+                }, 8000);
+            }
+        }
+
+        // Phone vibration patterns
+        function startPickupVibration() {
+            if ('vibrate' in navigator) {
+                // Vibration pattern: [vibrate, pause, vibrate, pause, ...]
+                // Pattern: 3 short bursts, pause, 3 short bursts, long vibration
+                const vibrationPattern = [200, 100, 200, 100, 200, 300, 500];
+                navigator.vibrate(vibrationPattern);
+                console.log('Phone vibration triggered');
+            } else {
+                console.log('Vibration not supported on this device');
+            }
+        }
+
+        // Notification sound system
+        function startPickupSound() {
+            try {
+                // Create audio context for notification sound
+                if (!window.audioContext) {
+                    window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                // Play pickup notification sound
+                playPickupNotificationSound();
+                console.log('Pickup notification sound played');
+
+            } catch (error) {
+                console.log('Audio not supported:', error);
+                // Fallback: Try to play a simple beep
+                playFallbackBeep();
+            }
+        }
+
+        // Generate notification sound using Web Audio API
+        function playPickupNotificationSound() {
+            const audioContext = window.audioContext;
+            const duration = 0.3; // seconds
+
+            // Create a pleasant notification tone (ascending notes)
+            const frequencies = [523.25, 659.25, 783.99]; // C, E, G notes
+
+            frequencies.forEach(function(freq, index) {
+                setTimeout(function() {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    oscillator.type = 'sine'; // Smooth sine wave
+
+                    // Envelope: fade in and out
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + duration);
+                }, index * 200); // Stagger the notes
+            });
+        }
+
+        // Fallback beep sound
+        function playFallbackBeep() {
+            try {
+                // Create a simple data URL audio beep
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.type = 'square';
+
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (error) {
+                console.log('Fallback beep also failed:', error);
+            }
+        }
+
+        // Stop all pickup notifications
+        function stopPickupNotifications() {
+            console.log('Stopping pickup notifications...');
+
+            // Stop vibration
+            if ('vibrate' in navigator) {
+                navigator.vibrate(0); // Stop any ongoing vibration
+            }
+
+            // Clear notification interval
+            if (window.pickupNotificationInterval) {
+                clearInterval(window.pickupNotificationInterval);
+                window.pickupNotificationInterval = null;
+            }
+
+            // Close any active notifications
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(function(registration) {
+                    registration.getNotifications({ tag: 'qup-pickup' }).then(function(notifications) {
+                        notifications.forEach(function(notification) {
+                            notification.close();
+                        });
+                    });
+                });
+            }
         }
 
         function showOrderComplete() {
-            console.log('🎉 Showing order complete screen');
+            console.log('Showing order complete screen');
             hideElement('orderStatus');
-            hideElement('qupActions');
+            hideElement('qupControls');
             hideElement('pickupSection');
             showElement('completeSection');
             stopLogoRain();
             stopLogoOverlay();
+
+            // Stop pickup notifications when order is completed
+            stopPickupNotifications();
+
             clearInterval(waitTimeInterval);
             clearInterval(orderStatusInterval);
             currentOrder = null;
             currentOrderData = null;
+            qupEnabled = false;
+            currentPosition = 1;
         }
 
         function startNewOrder() {
-          hideElement('orderStatus');
-            hideElement('qupActions');
+            hideElement('orderStatus');
+            hideElement('qupControls');
+            hideElement('qupPreviewControls'); // Hide QUP preview
             hideElement('pickupSection');
             hideElement('completeSection');
             showElement('orderForm');
+            showElement('queuePreview'); // Show preview again
             document.getElementById('customerName').value = '';
             document.getElementById('orderDescription').value = '';
+            document.getElementById('enableQup').checked = false; // Reset QUP toggle
+            document.getElementById('saveQupButton').style.display = 'none'; // Hide save button
             stopLogoRain();
             stopLogoOverlay();
+
+            // Stop any lingering pickup notifications
+            stopPickupNotifications();
+
             if (waitTimeInterval) {
                 clearInterval(waitTimeInterval);
                 waitTimeInterval = null;
@@ -1900,13 +2775,19 @@
             }
             currentOrder = null;
             currentOrderData = null;
+            qupEnabled = false;
+            currentPosition = 1;
+            previewQupPosition = 3; // Reset preview position
+
+            // Reload queue preview
+            loadQueuePreview();
         }
 
         function flashScreen() {
             const flash = document.createElement('div');
             flash.className = 'screen-flash';
             document.body.appendChild(flash);
-            setTimeout(() => {
+            setTimeout(function() {
                 flash.remove();
             }, 800);
         }
@@ -1929,9 +2810,9 @@
         }
 
         function setLoading(type, state) {
-            const buttonText = document.getElementById(`${type}ButtonText`);
-            const loading = document.getElementById(`${type}Loading`);
-            const button = document.getElementById(`${type}Button`);
+            const buttonText = document.getElementById(type + 'Text');
+            const loading = document.getElementById(type + 'Loading');
+            const button = document.getElementById(type + 'Button');
 
             if (buttonText && loading && button) {
                 if (state) {
@@ -1946,18 +2827,20 @@
             }
         }
 
-        function showAlert(message, type = 'info') {
+        function showAlert(message, type) {
+            if (!type) type = 'info';
+            
             const alerts = document.getElementById('alerts');
             if (!alerts) return;
 
             const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
+            alert.className = 'alert alert-' + type;
             alert.textContent = message;
             alerts.appendChild(alert);
 
-            setTimeout(() => {
+            setTimeout(function() {
                 alert.style.opacity = '0';
-                setTimeout(() => {
+                setTimeout(function() {
                     alert.remove();
                 }, 300);
             }, 5000);
@@ -1967,13 +2850,10 @@
         document.getElementById('loginButton').addEventListener('click', handleLogin);
         document.getElementById('logoutButton').addEventListener('click', logout);
         document.getElementById('orderButton').addEventListener('click', placeOrder);
-        document.getElementById('qupButton').addEventListener('click', performQUP);
-        document.getElementById('moveDownButton').addEventListener('click', moveDown);
+        document.getElementById('qupUpBtn').addEventListener('click', performQupUp);
+        document.getElementById('qupDownBtn').addEventListener('click', performQupDown);
         document.getElementById('newOrderButton').addEventListener('click', startNewOrder);
-
-        document.getElementById('skipAuthButton').addEventListener('click', () => {
-            showApp({ email: 'test@example.com' });
-        });
+        document.getElementById('enableQup').addEventListener('change', handleQupToggle);
 
         // Initialize on load
         window.addEventListener('load', init);
