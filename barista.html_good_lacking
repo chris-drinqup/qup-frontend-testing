@@ -132,11 +132,9 @@
             font-size: 16px;
             width: 100%;
             margin-top: 15px;
-            transition: all 0.15s ease;
+            transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            position: relative;
-            transform: translateY(0);
         }
 
         .login-btn:hover {
@@ -144,26 +142,10 @@
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
-        .login-btn:active {
-            transform: translateY(1px) scale(0.99);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            transition: all 0.1s ease;
-        }
-
         .login-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .login-btn:disabled:hover {
-            transform: none;
-            box-shadow: none;
-        }
-
-        .login-btn:disabled:active {
-            transform: none;
-            box-shadow: none;
         }
 
         .dashboard-container {
@@ -229,20 +211,12 @@
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            transition: all 0.15s ease;
-            position: relative;
-            transform: translateY(0);
+            transition: all 0.3s ease;
         }
 
         .logout-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-        }
-
-        .logout-btn:active {
-            transform: translateY(1px) scale(0.98);
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-            transition: all 0.1s ease;
         }
 
         .datetime-container {
@@ -339,12 +313,10 @@
             border-radius: 10px;
             font-weight: 600;
             font-size: 13px;
-            transition: all 0.15s ease;
+            transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            position: relative;
-            transform: translateY(0);
         }
 
         .order-table button:hover {
@@ -352,26 +324,10 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
         }
 
-        .order-table button:active {
-            transform: translateY(2px) scale(0.98);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.1s ease;
-        }
-
         .order-table button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .order-table button:disabled:hover {
-            transform: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .order-table button:disabled:active {
-            transform: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .btn-finalize {
@@ -503,11 +459,12 @@
             50% { opacity: 0.7; }
         }
 
-        /* Mobile responsive design */
+        /* Desktop - show table, hide mobile cards */
         .mobile-orders {
             display: none;
         }
 
+        /* Mobile card design */
         .order-card {
             background: var(--bg-secondary);
             border-radius: 15px;
@@ -587,12 +544,10 @@
             border-radius: 10px;
             font-weight: 600;
             font-size: 14px;
-            transition: all 0.15s ease;
+            transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            position: relative;
-            transform: translateY(0);
         }
 
         .order-card-actions button:hover {
@@ -600,28 +555,7 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
         }
 
-        .order-card-actions button:active {
-            transform: translateY(2px) scale(0.98);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.1s ease;
-        }
-
-        .order-card-actions button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .order-card-actions button:disabled:hover {
-            transform: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .order-card-actions button:disabled:active {
-            transform: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
+        /* Mobile responsive design for portrait phones */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -656,6 +590,7 @@
                 font-size: 24px;
             }
 
+            /* Key fix: Hide table and show mobile cards on small screens */
             .order-table {
                 display: none !important;
             }
@@ -664,12 +599,14 @@
                 display: block !important;
             }
 
+            /* Make websocket status smaller on mobile */
             .websocket-status {
                 font-size: 12px;
                 padding: 6px 12px;
                 margin-left: 8px;
             }
 
+            /* Stack websocket status below time on very small screens */
             @media (max-width: 480px) {
                 .datetime-container {
                     font-size: 12px;
@@ -759,13 +696,13 @@
     </div>
 
     <script>
-        // Configuration - FIXED FOR CLOUD RUN
-        const API_BASE = 'https://qupcore-supercode-modular-692478335867.us-central1.run.app';
-        let SUPABASE_URL = '';
-        let SUPABASE_ANON_KEY = '';
+        // Configuration
+        const API_BASE = 'https://qupcore-supercode-692478335867.us-central1.run.app';
+        const SUPABASE_URL = 'https://eorhgophbjjbiguvkygo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmhnb3BoYmpqYmlndXZreWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjMyMjUsImV4cCI6MjA2NDM5OTIyNX0.fV_6TFXfjDVusTeknF_LAGjxw7BfTZtoQ0helbm5mwo';
 
         // Initialize Supabase
-        let supabase = null;
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Global state
         let socket = null;
@@ -778,76 +715,11 @@
         let currentLogo = null;
         let logoSettings = null;
 
-        // Get client configuration from server
-        async function getClientConfig() {
-            try {
-                console.log('Getting client configuration from server...');
-
-                const response = await fetch(`${API_BASE}/api/client/config`);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Invalid response format: Expected JSON');
-                }
-
-                const data = await response.json();
-
-                if (response.ok && data.config) {
-                    SUPABASE_URL = data.config.supabase_url;
-                    SUPABASE_ANON_KEY = data.config.supabase_anon_key;
-
-                    console.log('Client configuration loaded from server');
-                    return true;
-                } else {
-                    throw new Error('Failed to get client configuration');
-                }
-            } catch (error) {
-                console.error('Failed to get client config:', error);
-                showError('Failed to load configuration from server');
-                return false;
-            }
-        }
-
-        function initializeSupabase() {
-            try {
-                if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL' ||
-                    !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-                    console.error('Supabase configuration missing from server');
-                    showError('Supabase configuration missing. Please contact administrator.');
-                    return false;
-                }
-
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase client initialized with server config');
-                return true;
-            } catch (error) {
-                console.error('Supabase initialization failed:', error);
-                showError('Failed to initialize authentication system.');
-                return false;
-            }
-        }
-
         // Check if user is already logged in
         async function init() {
             console.log('QUP Barista Dashboard initializing...');
 
-            // Get configuration from server first
-            const configLoaded = await getClientConfig();
-            if (!configLoaded) {
-                showLogin();
-                return;
-            }
-
-            // Initialize Supabase with server config
-            if (!initializeSupabase()) {
-                showLogin();
-                return;
-            }
-
-            // Load company assets
+            // Load company assets first
             await loadCompanyAssets();
 
             try {
@@ -1043,16 +915,17 @@
             console.log('Dashboard initialized for:', user.email);
         }
 
-        // Get developer key for API access from server environment
+        // Get developer key for API access
         async function getDeveloperKey() {
             try {
-                console.log('Getting API key from server...');
+                console.log('Getting developer key...');
 
-                const response = await fetch(`${API_BASE}/api/client/api-key`, {
+                const response = await fetch(`${API_BASE}/api/auth/developer/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        user_email: currentUser.email
+                        username: 'developer',
+                        password: 'dev123'
                     })
                 });
 
@@ -1060,21 +933,16 @@
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Invalid response format: Expected JSON');
-                }
-
                 const data = await response.json();
 
-                if (data.api_key) {
-                    developerKey = data.api_key;
-                    console.log('API key obtained from server environment');
+                if (data.developer_key) {
+                    developerKey = data.developer_key;
+                    console.log('Developer key obtained');
                 } else {
-                    throw new Error(data.error || 'No API key in response');
+                    throw new Error(data.error || 'No developer key in response');
                 }
             } catch (error) {
-                console.error('API key error:', error);
+                console.error('Developer key error:', error);
                 showError('Unable to authenticate with API. Please contact administrator.');
             }
         }
@@ -1117,7 +985,7 @@
                     handleOrderUpdate(data);
                 });
 
-                // QUP-specific event handlers
+                // NEW: QUP-specific event handlers
                 socket.on('qup_performed', (data) => {
                     console.log('QUP operation performed:', data);
                     handleQUPUpdate(data);
@@ -1151,7 +1019,7 @@
                     setTimeout(fetchQueue, 500);
                 });
 
-                // Listen for Enhanced Super QUP events
+                // NEW: Listen for Enhanced Super QUP events
                 socket.on('enhanced_super_qup', (data) => {
                     console.log('Enhanced Super QUP performed:', data);
                     handleEnhancedQUPUpdate(data);
@@ -1160,29 +1028,6 @@
                 socket.on('downward_movement', (data) => {
                     console.log('Downward movement performed:', data);
                     handleDownwardMovement(data);
-                });
-
-                // NEW: Addition QUP synchronization events
-                socket.on('queue_position_changed', (data) => {
-                    console.log('Queue position changed - immediate refresh:', data);
-                    fetchQueue();
-                });
-
-                socket.on('force_qup_performed', (data) => {
-                    console.log('Force QUP performed - immediate refresh:', data);
-                    showQUPNotification(`Force QUP: ${data.compensation_amount || 'unknown'} VoT compensation`);
-                    fetchQueue();
-                });
-
-                socket.on('hybrid_qup_performed', (data) => {
-                    console.log('Hybrid QUP performed - immediate refresh:', data);
-                    showQUPNotification(`Hybrid QUP: Pool + Force used`);
-                    fetchQueue();
-                });
-
-                socket.on('element_moved', (data) => {
-                    console.log('Element moved - immediate refresh:', data);
-                    fetchQueue();
                 });
 
                 updateWebSocketStatus('connecting');
@@ -1217,48 +1062,70 @@
             });
         }
 
-        // FIXED: Enhanced event handlers for QUP operations - IMMEDIATE REFRESH
+        // NEW: Enhanced event handlers for QUP operations
         function handleQUPUpdate(data) {
-            console.log('QUP performed - force immediate refresh:', data);
-            showQUPNotification(`QUP: ${data.userId || data.orderId} moved positions`);
-            // IMMEDIATE refresh for QUP events (removed setTimeout delay)
-            fetchQueue();
+            console.log('Handling QUP update:', data);
+            
+            showQUPNotification(`QUP performed: ${data.userId || data.orderId} moved positions`);
+            
+            // Force immediate queue refresh for QUP operations
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 300);
+            }
         }
 
         function handlePositionChange(data) {
-            console.log('Position change detected - immediate refresh:', data);
+            console.log('Handling position change:', data);
+            
             if (data.fromPosition !== undefined && data.toPosition !== undefined) {
-                showQUPNotification(`Position change: ${data.fromPosition} → ${data.toPosion}`);
+                showQUPNotification(`Position change: ${data.fromPosition} → ${data.toPosition}`);
             }
-            // IMMEDIATE refresh (removed setTimeout delay)
-            fetchQueue();
+                       // Refresh queue to show new order
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 300);
+            }
         }
 
         function handleQueueOrderChange(data) {
-            console.log('Queue order change - immediate refresh:', data);
+            console.log('Handling queue order change:', data);
+            
             showQUPNotification('Queue order updated');
-            // IMMEDIATE refresh (removed setTimeout delay)
-            fetchQueue();
+            
+            // Immediate refresh for queue order changes
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 200);
+            }
         }
 
         function handleEnhancedQUPUpdate(data) {
-            console.log('Enhanced Super QUP - immediate refresh:', data);
+            console.log('Handling Enhanced Super QUP update:', data);
+            
             showQUPNotification(`Enhanced QUP: ${data.details?.qup_type || 'position change'}`);
-            // IMMEDIATE refresh (removed setTimeout delay)
-            fetchQueue();
+            
+            // Force immediate refresh for enhanced QUP
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 200);
+            }
         }
 
         function handleDownwardMovement(data) {
-            console.log('Downward movement - immediate refresh:', data);
+            console.log('Handling downward movement:', data);
+            
             showQUPNotification('Customer moved down in queue');
-            // IMMEDIATE refresh (removed setTimeout delay)
-            fetchQueue();
+            
+            // Refresh queue to show new order
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 300);
+            }
         }
 
         function handleOrderUpdate(data) {
             console.log('Handling order update:', data.action);
+
+            // Show notification
             showOrderNotification(`Order ${data.orderId}: ${data.action}`);
 
+            // For QUP-related actions, force immediate refresh
             if (data.action && (
                 data.action.toLowerCase().includes('qup') ||
                 data.action.toLowerCase().includes('position') ||
@@ -1269,6 +1136,7 @@
                     setTimeout(fetchQueue, 200);
                 }
             } else {
+                // Regular refresh for other actions
                 if (!isActionInProgress) {
                     setTimeout(fetchQueue, 1000);
                 }
@@ -1296,6 +1164,7 @@
             }, 3000);
         }
 
+        // NEW: QUP-specific notification
         function showQUPNotification(message) {
             const notification = document.createElement('div');
             notification.className = 'qup-notification';
@@ -1317,7 +1186,7 @@
             }, 4000);
         }
 
-        // FIXED API calls with better error handling
+        // API calls
         async function apiCall(endpoint, options = {}) {
             if (!developerKey) {
                 throw new Error('Not authenticated - no developer key available');
@@ -1337,13 +1206,6 @@
             try {
                 console.log(`API Call: ${options.method || 'GET'} ${url}`);
                 const response = await fetch(url, finalOptions);
-
-                // FIXED: Check if response is JSON before parsing
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error(`Invalid response format: ${contentType}`);
-                }
-
                 const data = await response.json();
 
                 if (!response.ok) {
@@ -1367,17 +1229,12 @@
                 console.log('Fetching queue data...');
                 const data = await apiCall(`/api/v1/queue/list?admin=true&t=${Date.now()}`);
 
-                // FIXED: Better validation of response structure
-                if (data && data.status === "success" && data.queue) {
-                    console.log(`Queue fetched: ${data.queue.length} items`);
-                    updateOrdersDisplay(data.queue);
-                } else if (data && data.queue) {
-                    // Handle case where status might not be set but queue exists
-                    console.log(`Queue fetched: ${data.queue.length} items (no status field)`);
-                    updateOrdersDisplay(data.queue);
+                if (data.status === "success") {
+                    console.log(`Queue fetched: ${data.queue?.length || 0} items`);
+                    updateOrdersDisplay(data.queue || []);
                 } else {
-                    console.error("Invalid queue response structure:", data);
-                    showError("Invalid response from server");
+                    console.error("Queue fetch failed:", data.message);
+                    showError("Failed to fetch queue data");
                 }
             } catch (error) {
                 console.error("Error fetching queue:", error);
@@ -1646,9 +1503,7 @@
                 console.log(`Order ${orderId} completed`);
                 showOrderNotification(`Order completed: ${orderId}`);
 
-                // The SERVER should send WebSocket events, not the client
-                // Remove manual WebSocket emission - let the server handle it
-
+                // Refresh the queue display
                 fetchQueue();
 
             } catch (error) {
@@ -1675,6 +1530,7 @@
                 console.log(`Order ${orderId} cancelled`);
                 showOrderNotification(`Order cancelled: ${orderId}`);
 
+                // Refresh the queue display
                 fetchQueue();
 
             } catch (error) {
@@ -1752,16 +1608,18 @@
             }
         }
 
+        // Enhanced auto-refresh with QUP awareness
         function startAutoRefresh() {
             if (autoRefreshInterval) {
                 clearInterval(autoRefreshInterval);
             }
 
+            // Reduced auto-refresh interval since we have better real-time updates for QUP
             autoRefreshInterval = setInterval(() => {
                 if (!isActionInProgress) {
                     fetchQueue();
                 }
-            }, 8000);
+            }, 8000); // Increased from 5 to 8 seconds since WebSocket handles most updates
         }
 
         function setLoading(loading) {
@@ -1792,6 +1650,7 @@
                 }, 8000);
             }
 
+            // Also show in login screen if visible
             const loginError = document.getElementById("loginError");
             if (loginError && document.getElementById('loginContainer').style.display !== 'none') {
                 loginError.innerHTML = `<strong>Error:</strong> ${message}`;
