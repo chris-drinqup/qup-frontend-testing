@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkish Chef on Wheels - Chef Dashboard</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #c41e3a;
+            --primary-dark: #8b0000;
+            --secondary: #ffd700;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #1a0e0e;
+            --bg-secondary: #2d1b1b;
+            --bg-card: #3d2929;
+            --text-primary: #ffffff;
+            --text-secondary: #d4af37;
+            --border: #5a3a3a;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--secondary);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .environment-selector {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .environment-selector h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .env-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .env-btn {
+            padding: 12px 24px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .env-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .env-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .dashboard-container {
+            margin: 20px;
+            min-height: calc(100vh - 40px);
+        }
+
+        .container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 40px var(--shadow);
+            max-width: 1400px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 20px;
+            margin: -10px -10px 30px -10px;
+        }
+
+        .dashboard-header h2 {
+            color: var(--text-primary);
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .websocket-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+
+        .websocket-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .websocket-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .websocket-status.connecting {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .datetime-container {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+            font-weight: 700;
+            padding: 25px 30px;
+            background: var(--bg-secondary);
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 25px var(--shadow);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px var(--shadow);
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+        }
+
+        .order-table th {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            color: white;
+            text-align: left;
+            font-size: 16px;
+            padding: 20px 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .order-table td {
+            padding: 20px 25px;
+            text-align: left;
+            background-color: var(--bg-secondary);
+            font-size: 15px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .order-table tr:hover td {
+            background-color: var(--bg-card);
+            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.15);
+        }
+
+        .order-table tr.ready-order td {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .order-table tr.ready-order:hover td {
+            background-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .order-table button {
+            padding: 10px 18px;
+            margin: 3px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            transform: translateY(0);
+        }
+
+        .order-table button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .order-table button:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.1s ease;
+        }
+
+        .order-table button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-finalize {
+            background: linear-gradient(45deg, var(--info), #1976d2);
+            color: white;
+        }
+
+        .btn-complete {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(45deg, var(--danger), #dc2626);
+            color: white;
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, var(--warning), #d97706);
+            color: white;
+        }
+
+        .customer-name {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .pickup-code {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #059669;
+            background: rgba(16, 185, 129, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--success);
+        }
+
+        .live-timer {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--secondary);
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-waiting {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .status-processing {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        .status-ready {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .order-items {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .order-items-list {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0;
+        }
+
+        .order-items-list li {
+            padding: 2px 0;
+            font-size: 13px;
+        }
+
+        .order-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .order-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .qup-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(196, 30, 58, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .qup-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            padding: 18px 25px;
+            margin: 15px 0;
+            border-radius: 15px;
+            border: 1px solid var(--danger);
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        /* Mobile responsive design */
+        .mobile-orders {
+            display: none;
+        }
+
+        .order-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 25px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px var(--shadow);
+        }
+
+        .order-card.ready-order {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .order-card-title {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+
+        .order-card-time {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--secondary);
+            animation: pulse 2s infinite;
+        }
+
+        .order-card-details {
+            margin-bottom: 15px;
+        }
+
+        .order-card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .order-card-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .order-card-value {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .order-card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .order-card-actions button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 16px;
+            margin: 0;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            transform: translateY(0);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+                border-radius: 20px;
+            }
+
+            .datetime-container {
+                font-size: 14px;
+                padding: 15px 20px;
+                text-align: center;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .dashboard-header h2 {
+                font-size: 24px;
+            }
+
+            .order-table {
+                display: none !important;
+            }
+
+            .mobile-orders {
+                display: block !important;
+            }
+
+            .websocket-status {
+                font-size: 12px;
+                padding: 6px 12px;
+                margin-left: 8px;
+            }
+
+            .env-buttons {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🇹🇷 Turkish Chef Dashboard 👨‍🍳</h1>
+        <p>Professional Kitchen Management • Turkish Chef on Wheels</p>
+    </div>
+
+    <!-- Environment Selector -->
+    <div class="environment-selector">
+        <h3>Select Environment</h3>
+        <div class="env-buttons">
+            <button class="env-btn" onclick="setEnvironment('localhost')">
+                🏠 Local Development
+            </button>
+            <button class="env-btn active" onclick="setEnvironment('production')">
+                ☁️ Production (GCP)
+            </button>
+        </div>
+        <p style="margin-top: 10px; color: var(--text-secondary); font-size: 0.9rem;">
+            Current: <span id="currentEnv">Production (GCP)</span>
+        </p>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2>🍽️ Kitchen Orders</h2>
+                <div style="display: flex; align-items: center;">
+                    <span id="websocketStatus" class="websocket-status disconnected">Real-time: OFF</span>
+                </div>
+            </div>
+
+            <div id="errorNotification" class="error-message"></div>
+
+            <div class="datetime-container">
+                <span id="localDateTime"></span> • <span id="queueCounter">0 orders</span> in kitchen
+                <span id="websocketStatus2" class="websocket-status disconnected">Real-time: OFF</span>
+            </div>
+
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Turkish Order Details</th>
+                        <th>Prep Time</th>
+                        <th>Status</th>
+                        <th>Pickup Code</th>
+                        <th style="text-align: center">Chef Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="queueBody">
+                    <tr>
+                        <td colspan="6" style="text-align:center;">🔄 Connecting to kitchen orders...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Mobile card layout -->
+            <div class="mobile-orders" id="mobileOrders">
+                <div style="text-align:center; color: var(--text-secondary); font-style: italic; padding: 20px;">
+                    🔄 Connecting to kitchen orders...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Environment configuration
+        const environments = {
+            localhost: {
+                API_BASE: 'http://localhost:8080',
+                name: 'Local Development'
+            },
+            production: {
+                API_BASE: 'https://qupcore-supercode-modular-692478335867.us-central1.run.app',
+                name: 'Production (GCP)'
+            }
+        };
+
+        // Current environment
+        let currentEnvironment = 'production';
+        let API_BASE = environments[currentEnvironment].API_BASE;
+
+        // Global state
+        let socket = null;
+        let currentUser = 'chef_' + Date.now(); // Simple chef ID
+        let developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'; // Direct API key
+        let dateTimeInterval = null;
+        let liveTimerInterval = null;
+        let isActionInProgress = false;
+        let autoRefreshInterval = null;
+
+        // Set environment
+        function setEnvironment(env) {
+            currentEnvironment = env;
+            API_BASE = environments[env].API_BASE;
+
+            // Update UI
+            document.querySelectorAll('.env-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('currentEnv').textContent = environments[env].name;
+
+            // Reconnect WebSocket
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+            connectWebSocket();
+            fetchQueue();
+
+            showNotification(`Kitchen connected to ${environments[env].name}`, 'info');
+        }
+
+        // Initialize the dashboard
+        function init() {
+            console.log('Turkish Chef Dashboard initializing...');
+
+            // Connect WebSocket
+            connectWebSocket();
+
+            // Start updates
+            startTimeUpdates();
+            fetchQueue();
+            startAutoRefresh();
+
+            console.log('Turkish Chef Dashboard ready!');
+        }
+
+        // Enhanced WebSocket connection
+        function connectWebSocket() {
+            try {
+                console.log('Connecting to Kitchen WebSocket...');
+
+                socket = io(API_BASE, {
+                    transports: ['websocket', 'polling'],
+                    timeout: 20000,
+                    reconnection: true,
+                    reconnectionDelay: 2000,
+                    reconnectionAttempts: 5,
+                    forceNew: true
+                });
+
+                socket.on('connect', () => {
+                    updateWebSocketStatus('connected');
+                    console.log('Kitchen WebSocket connected');
+                });
+
+                socket.on('disconnect', () => {
+                    updateWebSocketStatus('disconnected');
+                    console.log('Kitchen WebSocket disconnected');
+                });
+
+                socket.on('connect_error', (error) => {
+                    console.error('Kitchen WebSocket connection error:', error);
+                    updateWebSocketStatus('disconnected');
+                });
+
+                // Order update handlers
+                socket.on('order_update', (data) => {
+                    console.log('Kitchen order update:', data);
+                    handleOrderUpdate(data);
+                });
+
+                socket.on('queue_update', (data) => {
+                    console.log('Kitchen queue update:', data);
+                    if (data.queue) {
+                        updateOrdersDisplay(data.queue);
+                    } else {
+                        setTimeout(fetchQueue, 500);
+                    }
+                });
+
+                socket.on('order_created', (data) => {
+                    console.log('New order in kitchen:', data);
+                    showNotification(`New Turkish order: ${data.orderId}`, 'success');
+                    setTimeout(fetchQueue, 500);
+                });
+
+                // QUP event handlers
+                socket.on('qup_performed', (data) => {
+                    console.log('QUP operation in kitchen:', data);
+                    showQUPNotification('Queue position changed');
+                    fetchQueue();
+                });
+
+                updateWebSocketStatus('connecting');
+
+            } catch (error) {
+                console.error('Kitchen WebSocket initialization failed:', error);
+                updateWebSocketStatus('disconnected');
+            }
+        }
+
+        function updateWebSocketStatus(status) {
+            const statusElements = [
+                document.getElementById('websocketStatus'),
+                document.getElementById('websocketStatus2')
+            ];
+
+            statusElements.forEach(element => {
+                if (element) {
+                    element.className = `websocket-status ${status}`;
+                    switch (status) {
+                        case 'connected':
+                            element.textContent = 'Kitchen: LIVE';
+                            break;
+                        case 'connecting':
+                            element.textContent = 'Kitchen: Connecting...';
+                            break;
+                        case 'disconnected':
+                            element.textContent = 'Kitchen: OFFLINE';
+                            break;
+                    }
+                }
+            });
+        }
+
+        // API calls
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const defaultHeaders = {
+                "X-API-Key": developerKey,
+                "Content-Type": "application/json"
+            };
+
+            const finalOptions = {
+                ...options,
+                headers: { ...defaultHeaders, ...(options.headers || {}) }
+            };
+
+            try {
+                console.log(`Kitchen API Call: ${options.method || 'GET'} ${url}`);
+                const response = await fetch(url, finalOptions);
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error(`Invalid response format: ${contentType}`);
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return data;
+            } catch (error) {
+                console.error(`Kitchen API call failed for ${endpoint}:`, error);
+                throw error;
+            }
+        }
+
+        async function fetchQueue() {
+            try {
+                console.log('Fetching kitchen orders...');
+                const data = await apiCall(`/api/v1/queue/list?admin=true&t=${Date.now()}`);
+
+                if (data && data.queue) {
+                    console.log(`Kitchen orders fetched: ${data.queue.length} items`);
+                    updateOrdersDisplay(data.queue);
+                } else {
+                    console.error("Invalid kitchen response:", data);
+                    showError("Invalid response from kitchen system");
+                }
+            } catch (error) {
+                console.error("Error fetching kitchen orders:", error);
+                showError(`Kitchen error: ${error.message}`);
+            }
+        }
+
+        function updateOrdersDisplay(queue) {
+            const tableBody = document.getElementById("queueBody");
+            const mobileOrders = document.getElementById("mobileOrders");
+            if (!tableBody || !mobileOrders) return;
+
+            // Filter orders: show orders that need chef attention
+            const filteredOrders = queue.filter(item => !item.cancelled);
+
+            // Sort by position (queue order)
+            filteredOrders.sort((a, b) => (a.position || 0) - (b.position || 0));
+
+            updateQueueCounter(filteredOrders.length);
+
+            if (filteredOrders.length === 0) {
+                // Desktop table
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center; color: #666; font-style: italic;">
+                            🍽️ No orders in kitchen
+                        </td>
+                    </tr>
+                `;
+
+                // Mobile cards
+                mobileOrders.innerHTML = `
+                    <div style="text-align:center; color: var(--text-secondary); font-style: italic; padding: 20px;">
+                        🍽️ No orders in kitchen
+                    </div>
+                `;
+                return;
+            }
+
+            // Generate desktop table HTML
+            const tableHtml = filteredOrders.map((item, index) => {
+                const customerName = extractCustomerName(item);
+                const orderDetails = formatOrderDetails(item);
+                let processingTime = "0:00";
+                let pickupCode = "";
+                let actions = '';
+                let rowClass = '';
+                let statusBadge = '';
+
+                // Calculate processing time
+                if (item.timestamp) {
+                    const startTime = new Date(item.timestamp);
+                    const now = new Date();
+                    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                    processingTime = formatDuration(elapsedSeconds);
+                }
+
+                // Determine status and actions based on order state
+                if (item.status === 'processing') {
+                    statusBadge = '<span class="status-badge status-processing">Cooking</span>';
+                    pickupCode = "Being Prepared";
+                    actions = `
+                        <button class="btn-complete" onclick="completeProcessing('${item.id}')">
+                            Ready for Pickup
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                } else if (item.finalized) {
+                    // Order is ready for pickup
+                    rowClass = 'ready-order';
+                    statusBadge = '<span class="status-badge status-ready">Ready</span>';
+                    pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
+                    actions = `
+                        <button class="btn-complete" onclick="confirmPickup('${item.id}')">
+                            Customer Picked Up
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                } else {
+                    // Order is waiting to be started
+                    statusBadge = '<span class="status-badge status-waiting">Waiting</span>';
+                    pickupCode = "Not Started";
+                    actions = `
+                        <button class="btn-start" onclick="startProcessing('${item.id}')">
+                            Start Cooking
+                        </button>
+                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
+                            Mark Ready
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                }
+
+                return `
+                    <tr class="${rowClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
+                        <td><span class="customer-name">${sanitizeHTML(customerName)}</span></td>
+                        <td>${orderDetails}</td>
+                        <td><span class="live-timer">${processingTime}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}</td>
+                        <td style="text-align: center">${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Generate mobile cards HTML
+            const mobileHtml = filteredOrders.map((item, index) => {
+                const customerName = extractCustomerName(item);
+                const orderDetails = formatOrderDetails(item);
+                let processingTime = "0:00";
+                let pickupCode = "";
+                let actions = '';
+                let cardClass = '';
+                let statusBadge = '';
+
+                if (item.timestamp) {
+                    const startTime = new Date(item.timestamp);
+                    const now = new Date();
+                    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                    processingTime = formatDuration(elapsedSeconds);
+                }
+
+                if (item.status === 'processing') {
+                    statusBadge = '<span class="status-badge status-processing">Cooking</span>';
+                    pickupCode = "Being Prepared";
+                    actions = `
+                        <button class="btn-complete" onclick="completeProcessing('${item.id}')">
+                            Ready for Pickup
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                } else if (item.finalized) {
+                    cardClass = 'ready-order';
+                    statusBadge = '<span class="status-badge status-ready">Ready for Pickup</span>';
+                    pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
+                    actions = `
+                        <button class="btn-complete" onclick="confirmPickup('${item.id}')">
+                            Customer Picked Up
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                } else {
+                    statusBadge = '<span class="status-badge status-waiting">Waiting to Start</span>';
+                    pickupCode = "Not Started";
+                    actions = `
+                        <button class="btn-start" onclick="startProcessing('${item.id}')">
+                            Start Cooking
+                        </button>
+                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
+                            Mark Ready
+                        </button>
+                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
+                            Cancel
+                        </button>
+                    `;
+                }
+
+                return `
+                    <div class="order-card ${cardClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
+                        <div class="order-card-header">
+                            <div class="order-card-title">${sanitizeHTML(customerName)}</div>
+                            <div class="order-card-time live-timer">${processingTime}</div>
+                        </div>
+
+                        <div class="order-card-details">
+                            <div class="order-card-row">
+                                <span class="order-card-label">Turkish Order:</span>
+                                <span class="order-card-value">${orderDetails}</span>
+                            </div>
+                            <div class="order-card-row">
+                                <span class="order-card-label">Status:</span>
+                                <span class="order-card-value">${statusBadge}</span>
+                            </div>
+                            <div class="order-card-row">
+                                <span class="order-card-label">Pickup Code:</span>
+                                <span class="order-card-value">
+                                    ${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="order-card-actions">
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Update both displays
+            tableBody.innerHTML = tableHtml;
+            mobileOrders.innerHTML = mobileHtml;
+
+            // Update live timers
+            updateLiveTimers();
+        }
+
+        function extractCustomerName(order) {
+            // Try to get customer name from payload
+            if (order.payload?.customer_name) {
+                return order.payload.customer_name;
+            }
+
+            // Try to get customer name from email
+            if (order.payload?.customer_email) {
+                return order.payload.customer_email.split('@')[0];
+            }
+
+            // Try to get from user_id
+            if (order.user_id) {
+                return order.user_id.split('@')[0];
+            }
+
+            // Fallback to order ID
+            return order.id.split('_')[0] || 'Customer';
+        }
+
+        function formatOrderDetails(order) {
+            let html = '';
+
+            // Try to get items from payload
+            if (order.payload?.items && Array.isArray(order.payload.items)) {
+                html += '<div class="order-items">';
+                html += '<ul class="order-items-list">';
+
+                order.payload.items.forEach(item => {
+                    const quantity = item.quantity || 1;
+                    const name = item.name || item.item_name || item.item_id || 'Item';
+                    html += `<li>🍽️ ${quantity}x ${name}</li>`;
+                });
+
+                html += '</ul>';
+                html += '</div>';
+
+                return html;
+            }
+
+            // Fallback to order description or ID
+            if (order.payload?.order) {
+                return ` class="order-items">🍽️ ${order.payload.order}</div>`;
+            }
+
+            return `<div class="order-items">Order: ${order.id}</div>`;
+        }
+
+        function updateQueueCounter(count) {
+            const counterElement = document.getElementById("queueCounter");
+            if (counterElement) {
+                counterElement.textContent = `${count} orders`;
+            }
+        }
+
+        // Chef action functions
+        async function startProcessing(orderId) {
+            if (isActionInPess) return;
+
+            isActionInProgress = true;
+            console.log(`Chef starting order: ${orderId}`);
+
+            try {
+                await apiCall("/api/v1/queue/start-processing", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        bartender_id: currentUser
+                    })
+                });
+
+                console.log(`Order ${orderId} started cooking`);
+                showNotification(`Started cooking order: ${orderId}`, 'success');
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error starting order:", error);
+                showError(`Failed to start cooking: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function completeProcessing(orderId) {
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log(`Chef completing order: ${orderId}`);
+
+            try {
+                await apiCall("/api/v1/queue/complete-processing", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        bartender_id: currentUser
+                    })
+                });
+
+                console.log(`Order ${orderId} ready for pickup`);
+                showNotification(`Order ready for pickup: ${orderId}`, 'success');
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error completing order:", error);
+                showError(`Failed to complete order: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function finalizeOrder(orderId) {
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log(`Chef finalizing order: ${orderId}`);
+
+            try {
+                const pickupCode = generatePickupCode();
+
+                await apiCall("/api/v1/queue/finalize", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        id: orderId,
+                        pickup_code: pickupCode
+                    })
+                });
+
+                console.log(`Order ${orderId} finalized with code: ${pickupCode}`);
+                showNotification(`Order ready! Pickup code: ${pickupCode}`, 'success');
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error finalizing order:", error);
+                showError(`Failed to finalize order: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function confirmPickup(orderId) {
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log(`Chef confirming pickup: ${orderId}`);
+
+            try {
+                await apiCall("/api/v1/queue/complete", {
+                    method: "POST",
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                console.log(`Order ${orderId} picked up`);
+                showNotification(`Order picked up: ${orderId}`, 'success');
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error confirming pickup:", error);
+                showError(`Failed to confirm pickup: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        async function cancelOrder(orderId) {
+            if (isActionInProgress) return;
+            if (!confirm(`Cancel Turkish order ${orderId}?`)) return;
+
+            isActionInProgress = true;
+            console.log(`Chef cancelling order: ${orderId}`);
+
+            try {
+                await apiCall("/api/v1/queue/cancel", {
+                    method: "POST",
+                    body: JSON.stringify({ id: orderId })
+                });
+
+                console.log(`Order ${orderId} cancelled`);
+                showNotification(`Order cancelled: ${orderId}`, 'info');
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error cancelling order:", error);
+                showError(`Failed to cancel order: ${error.message}`);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        // Event handlers
+        function handleOrderUpdate(data) {
+            console.log('Kitchen handling order update:', data.action);
+            showNotification(`Kitchen update: ${data.orderId} - ${data.action}`, 'info');
+
+            if (!isActionInProgress) {
+                setTimeout(fetchQueue, 1000);
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = 'order-notification';
+            notification.innerHTML = `<strong>Kitchen Update</strong><br>${message}`;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function showQUPNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'qup-notification';
+            notification.innerHTML = `<strong>Queue Update</strong><br>${message}`;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Utility functions
+        function generatePickupCode(timestamp) {
+            const now = timestamp ? new Date(timestamp).getTime() : Date.now();
+            return (now % 10000).toString().padStart(4, '0');
+        }
+
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function sanitizeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const formattedTime = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateTimeElement = document.getElementById("localDateTime");
+            if (dateTimeElement) {
+                dateTimeElement.textContent = formattedTime;
+            }
+        }
+
+        function updateLiveTimers() {
+            const timerElements = document.querySelectorAll('.live-timer');
+            timerElements.forEach(timer => {
+                const container = timer.closest('tr') || timer.closest('.order-card');
+                const startTime = container?.getAttribute('data-start-time');
+                if (startTime) {
+                    const start = new Date(startTime);
+                    const now = new Date();
+                    const elapsedSeconds = Math.floor((now - start) / 1000);
+                    timer.textContent = formatDuration(elapsedSeconds);
+                }
+            });
+        }
+
+        function startTimeUpdates() {
+            stopAllIntervals();
+            dateTimeInterval = setInterval(updateDateTime, 1000);
+            liveTimerInterval = setInterval(updateLiveTimers, 1000);
+        }
+
+        function stopAllIntervals() {
+            if (dateTimeInterval) {
+                clearInterval(dateTimeInterval);
+                dateTimeInterval = null;
+            }
+            if (liveTimerInterval) {
+                clearInterval(liveTimerInterval);
+                liveTimerInterval = null;
+            }
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+
+            autoRefreshInterval = setInterval(() => {
+                if (!isActionInProgress) {
+                    fetchQueue();
+                }
+            }, 8000);
+        }
+
+        function showError(message) {
+            console.error("Kitchen Error:", message);
+
+            const errorDiv = document.getElementById("errorNotification");
+            if (errorDiv) {
+                errorDiv.innerHTML = `<strong>Kitchen Error:</strong> ${message}`;
+                errorDiv.style.display = "block";
+                setTimeout(() => {
+                    errorDiv.style.display = "none";
+                }, 8000);
+            }
+        }
+
+        // Initialize the kitchen dashboard
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (socket) socket.disconnect();
+            stopAllIntervals();
+        });
+    </script>
+</body>
+</html>
