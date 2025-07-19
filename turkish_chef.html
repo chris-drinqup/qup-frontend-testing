@@ -182,6 +182,27 @@
             text-align: center;
         }
 
+        /* Priority indicator for first 3 orders */
+        .priority-indicator {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 2px solid var(--secondary);
+            text-align: center;
+        }
+
+        .priority-indicator h3 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .priority-indicator p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -226,6 +247,23 @@
 
         .order-table tr.ready-order:hover td {
             background-color: rgba(16, 185, 129, 0.2);
+        }
+
+        /* Priority highlighting for first 3 orders */
+        .order-table tr.priority-1 td {
+            background-color: rgba(255, 215, 0, 0.15);
+            border-left: 4px solid var(--secondary);
+            font-weight: 600;
+        }
+
+        .order-table tr.priority-2 td {
+            background-color: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .order-table tr.priority-3 td {
+            background-color: rgba(255, 215, 0, 0.05);
+            border-left: 2px solid var(--secondary);
         }
 
         .order-table button {
@@ -434,6 +472,22 @@
             border-left: 4px solid var(--success);
         }
 
+        /* Priority cards for mobile */
+        .order-card.priority-1 {
+            background: rgba(255, 215, 0, 0.15);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .order-card.priority-2 {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .order-card.priority-3 {
+            background: rgba(255, 215, 0, 0.05);
+            border-left: 2px solid var(--secondary);
+        }
+
         .order-card-header {
             display: flex;
             justify-content: space-between;
@@ -499,6 +553,32 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             position: relative;
             transform: translateY(0);
+        }
+
+        /* Priority indicator badges */
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .priority-badge.p1 {
+            background: var(--secondary);
+            color: var(--bg-primary);
+        }
+
+        .priority-badge.p2 {
+            background: rgba(255, 215, 0, 0.7);
+            color: var(--bg-primary);
+        }
+
+        .priority-badge.p3 {
+            background: rgba(255, 215, 0, 0.5);
+            color: var(--bg-primary);
         }
 
         @keyframes spin {
@@ -593,6 +673,12 @@
 
             <div id="errorNotification" class="error-message"></div>
 
+            <!-- Priority indicator -->
+            <div class="priority-indicator">
+                <h3>🥇 Priority Cooking Queue</h3>
+                <p>Showing first 3 orders for immediate kitchen attention • Additional orders remain in queue</p>
+            </div>
+
             <div class="datetime-container">
                 <span id="localDateTime"></span> • <span id="queueCounter">0 orders</span> in kitchen
                 <span id="websocketStatus2" class="websocket-status disconnected">Real-time: OFF</span>
@@ -601,6 +687,7 @@
             <table class="order-table">
                 <thead>
                     <tr>
+                        <th>Priority</th>
                         <th>Customer</th>
                         <th>Turkish Order Details</th>
                         <th>Prep Time</th>
@@ -611,7 +698,7 @@
                 </thead>
                 <tbody id="queueBody">
                     <tr>
-                        <td colspan="6" style="text-align:center;">🔄 Connecting to kitchen orders...</td>
+                        <td colspan="7" style="text-align:center;">🔄 Connecting to kitchen orders...</td>
                     </tr>
                 </tbody>
             </table>
@@ -644,15 +731,15 @@
 
         // Global state
         let socket = null;
-        let currentUser = 'chef_' + Date.now(); // Simple chef ID
-        let developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'; // Direct API key
+        let currentUser = 'chef_' + Date.now();
+        let developerKey = 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc';
         let dateTimeInterval = null;
         let liveTimerInterval = null;
         let isActionInProgress = false;
         let autoRefreshInterval = null;
 
-        // Set environment
-        function setEnvironment(env) {
+        // Set environment - make it globally accessible
+        window.setEnvironment = function(env) {
             currentEnvironment = env;
             API_BASE = environments[env].API_BASE;
 
@@ -669,7 +756,7 @@
             connectWebSocket();
             fetchQueue();
 
-            showNotification(`Kitchen connected to ${environments[env].name}`, 'info');
+            showNotification('Kitchen connected to ' + environments[env].name, 'info');
         }
 
         // Initialize the dashboard
@@ -701,28 +788,28 @@
                     forceNew: true
                 });
 
-                socket.on('connect', () => {
+                socket.on('connect', function() {
                     updateWebSocketStatus('connected');
                     console.log('Kitchen WebSocket connected');
                 });
 
-                socket.on('disconnect', () => {
+                socket.on('disconnect', function() {
                     updateWebSocketStatus('disconnected');
                     console.log('Kitchen WebSocket disconnected');
                 });
 
-                socket.on('connect_error', (error) => {
+                socket.on('connect_error', function(error) {
                     console.error('Kitchen WebSocket connection error:', error);
                     updateWebSocketStatus('disconnected');
                 });
 
                 // Order update handlers
-                socket.on('order_update', (data) => {
+                socket.on('order_update', function(data) {
                     console.log('Kitchen order update:', data);
                     handleOrderUpdate(data);
                 });
 
-                socket.on('queue_update', (data) => {
+                socket.on('queue_update', function(data) {
                     console.log('Kitchen queue update:', data);
                     if (data.queue) {
                         updateOrdersDisplay(data.queue);
@@ -731,14 +818,14 @@
                     }
                 });
 
-                socket.on('order_created', (data) => {
+                socket.on('order_created', function(data) {
                     console.log('New order in kitchen:', data);
-                    showNotification(`New Turkish order: ${data.orderId}`, 'success');
+                    showNotification('New Turkish order: ' + data.orderId, 'success');
                     setTimeout(fetchQueue, 500);
                 });
 
                 // QUP event handlers
-                socket.on('qup_performed', (data) => {
+                socket.on('qup_performed', function(data) {
                     console.log('QUP operation in kitchen:', data);
                     showQUPNotification('Queue position changed');
                     fetchQueue();
@@ -758,9 +845,9 @@
                 document.getElementById('websocketStatus2')
             ];
 
-            statusElements.forEach(element => {
+            statusElements.forEach(function(element) {
                 if (element) {
-                    element.className = `websocket-status ${status}`;
+                    element.className = 'websocket-status ' + status;
                     switch (status) {
                         case 'connected':
                             element.textContent = 'Kitchen: LIVE';
@@ -777,8 +864,9 @@
         }
 
         // API calls
-        async function apiCall(endpoint, options = {}) {
-            const url = `${API_BASE}${endpoint}`;
+        async function apiCall(endpoint, options) {
+            if (!options) options = {};
+            const url = API_BASE + endpoint;
             const defaultHeaders = {
                 "X-API-Key": developerKey,
                 "Content-Type": "application/json"
@@ -790,23 +878,23 @@
             };
 
             try {
-                console.log(`Kitchen API Call: ${options.method || 'GET'} ${url}`);
+                console.log('Kitchen API Call: ' + (options.method || 'GET') + ' ' + url);
                 const response = await fetch(url, finalOptions);
 
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error(`Invalid response format: ${contentType}`);
+                    throw new Error('Invalid response format: ' + contentType);
                 }
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(data.error || 'HTTP ' + response.status + ': ' + response.statusText);
                 }
 
                 return data;
             } catch (error) {
-                console.error(`Kitchen API call failed for ${endpoint}:`, error);
+                console.error('Kitchen API call failed for ' + endpoint + ':', error);
                 throw error;
             }
         }
@@ -814,10 +902,10 @@
         async function fetchQueue() {
             try {
                 console.log('Fetching kitchen orders...');
-                const data = await apiCall(`/api/v1/queue/list?admin=true&t=${Date.now()}`);
+                const data = await apiCall('/api/v1/queue/list?admin=true&t=' + Date.now());
 
                 if (data && data.queue) {
-                    console.log(`Kitchen orders fetched: ${data.queue.length} items`);
+                    console.log('Kitchen orders fetched: ' + data.queue.length + ' items');
                     updateOrdersDisplay(data.queue);
                 } else {
                     console.error("Invalid kitchen response:", data);
@@ -825,7 +913,7 @@
                 }
             } catch (error) {
                 console.error("Error fetching kitchen orders:", error);
-                showError(`Kitchen error: ${error.message}`);
+                showError('Kitchen error: ' + error.message);
             }
         }
 
@@ -835,34 +923,31 @@
             if (!tableBody || !mobileOrders) return;
 
             // Filter orders: show orders that need chef attention
-            const filteredOrders = queue.filter(item => !item.cancelled);
+            const filteredOrders = queue.filter(function(item) {
+                return !item.cancelled;
+            });
 
             // Sort by position (queue order)
-            filteredOrders.sort((a, b) => (a.position || 0) - (b.position || 0));
+            filteredOrders.sort(function(a, b) {
+                return (a.position || 0) - (b.position || 0);
+            });
 
             updateQueueCounter(filteredOrders.length);
 
             if (filteredOrders.length === 0) {
                 // Desktop table
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align:center; color: #666; font-style: italic;">
-                            🍽️ No orders in kitchen
-                        </td>
-                    </tr>
-                `;
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: #666; font-style: italic;">🍽️ No orders in kitchen</td></tr>';
 
                 // Mobile cards
-                mobileOrders.innerHTML = `
-                    <div style="text-align:center; color: var(--text-secondary); font-style: italic; padding: 20px;">
-                        🍽️ No orders in kitchen
-                    </div>
-                `;
+                mobileOrders.innerHTML = '<div style="text-align:center; color: var(--text-secondary); font-style: italic; padding: 20px;">🍽️ No orders in kitchen</div>';
                 return;
             }
 
+            // Show first 3 orders
+            const ordersToShow = filteredOrders.slice(0, 3);
+
             // Generate desktop table HTML
-            const tableHtml = filteredOrders.map((item, index) => {
+          tableHtml = ordersToShow.map(function(item, index) {
                 const customerName = extractCustomerName(item);
                 const orderDetails = formatOrderDetails(item);
                 let processingTime = "0:00";
@@ -870,6 +955,10 @@
                 let actions = '';
                 let rowClass = '';
                 let statusBadge = '';
+
+                // Add priority class for first 3 orders
+                const priorityClass = 'priority-' + (index + 1);
+                rowClass += ' ' + priorityClass;
 
                 // Calculate processing time
                 if (item.timestamp) {
@@ -879,62 +968,41 @@
                     processingTime = formatDuration(elapsedSeconds);
                 }
 
-                // Determine status and actions based on order state
+                // FIXED: Determine status and actions based on order state
                 if (item.status === 'processing') {
                     statusBadge = '<span class="status-badge status-processing">Cooking</span>';
                     pickupCode = "Being Prepared";
-                    actions = `
-                        <button class="btn-complete" onclick="completeProcessing('${item.id}')">
-                            Ready for Pickup
-                        </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
-                            Cancel
-                        </button>
-                    `;
+                    // FIXED: Change "Ready for Pickup" button to call finalizeOrder instead of completeProcessing
+                    actions = '<button class="btn-complete" onclick="finalizeOrder(\'' + item.id + '\')">Ready for Pickup</button><button class="btn-cancel" onclick="cancelOrder(\'' + item.id + '\')">Cancel</button>';
                 } else if (item.finalized) {
                     // Order is ready for pickup
-                    rowClass = 'ready-order';
+                    rowClass += ' ready-order';
                     statusBadge = '<span class="status-badge status-ready">Ready</span>';
                     pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
-                    actions = `
-                        <button class="btn-complete" onclick="confirmPickup('${item.id}')">
-                            Customer Picked Up
-                        </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
-                            Cancel
-                        </button>
-                    `;
+                    actions = '<button class="btn-complete" onclick="confirmPickup(\'' + item.id + '\')">Customer Picked Up</button><button class="btn-cancel" onclick="cancelOrder(\'' + item.id + '\')">Cancel</button>';
                 } else {
                     // Order is waiting to be started
                     statusBadge = '<span class="status-badge status-waiting">Waiting</span>';
                     pickupCode = "Not Started";
-                    actions = `
-                        <button class="btn-start" onclick="startProcessing('${item.id}')">
-                            Start Cooking
-                        </button>
-                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
-                            Mark Ready
-                        </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
-                            Cancel
-                        </button>
-                    `;
+                    actions = '<button class="btn-start" onclick="startProcessing(\'' + item.id + '\')">Start Cooking</button><button class="btn-finalize" onclick="finalizeOrder(\'' + item.id + '\')">Mark Ready</button><button class="btn-cancel" onclick="cancelOrder(\'' + item.id + '\')">Cancel</button>';
                 }
 
-                return `
-                    <tr class="${rowClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
-                        <td><span class="customer-name">${sanitizeHTML(customerName)}</span></td>
-                        <td>${orderDetails}</td>
-                        <td><span class="live-timer">${processingTime}</span></td>
-                        <td>${statusBadge}</td>
-                        <td>${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}</td>
-                        <td style="text-align: center">${actions}</td>
-                    </tr>
-                `;
+                // Priority badge
+                const priorityBadge = '<span class="priority-badge p' + (index + 1) + '">' + (index === 0 ? 'NEXT' : '#' + (index + 1)) + '</span>';
+
+                return '<tr class="' + rowClass + '" data-order-id="' + item.id + '" data-start-time="' + item.timestamp + '">' +
+                    '<td>' + priorityBadge + '</td>' +
+                    '<td><span class="customer-name">' + sanitizeHTML(customerName) + '</span></td>' +
+                    '<td>' + orderDetails + '</td>' +
+                    '<td><span class="live-timer">' + processingTime + '</span></td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td>' + (item.finalized ? '<span class="pickup-code">' + pickupCode + '</span>' : pickupCode) + '</td>' +
+                    '<td style="text-align: center">' + actions + '</td>' +
+                    '</tr>';
             }).join('');
 
             // Generate mobile cards HTML
-            const mobileHtml = filteredOrders.map((item, index) => {
+            const mobileHtml = ordersToShow.map(function(item, index) {
                 const customerName = extractCustomerName(item);
                 const orderDetails = formatOrderDetails(item);
                 let processingTime = "0:00";
@@ -943,6 +1011,10 @@
                 let cardClass = '';
                 let statusBadge = '';
 
+                // Add priority class for mobile
+                const priorityClass = 'priority-' + (index + 1);
+                cardClass += ' ' + priorityClass;
+
                 if (item.timestamp) {
                     const startTime = new Date(item.timestamp);
                     const now = new Date();
@@ -950,74 +1022,36 @@
                     processingTime = formatDuration(elapsedSeconds);
                 }
 
+                // FIXED: Same fix for mobile
                 if (item.status === 'processing') {
                     statusBadge = '<span class="status-badge status-processing">Cooking</span>';
                     pickupCode = "Being Prepared";
-                    actions = `
-                        <button class="btn-complete" onclick="completeProcessing('${item.id}')">
-                            Ready for Pickup
-                        </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
-                            Cancel
-                        </button>
-                    `;
+                    actions = '<button class="btn-complete" onclick="finalizeOrder(\'' + item.id + '\')">Ready for Pickup</button><button class="btn-cancel" onclick="cancelOrder(\'' + item.id + '\')">Cancel</button>';
                 } else if (item.finalized) {
-                    cardClass = 'ready-order';
+                    cardClass += ' ready-order';
                     statusBadge = '<span class="status-badge status-ready">Ready for Pickup</span>';
                     pickupCode = item.pickup_code || generatePickupCode(item.timestamp);
-                    actions = `
-                        <button class="btn-complete" onclick="confirmPickup('${item.id}')">
-                            Customer Picked Up
-                        </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
-                            Cancel
-                        </button>
-                    `;
+                    actions = '<button class="btn-complete" onclick="confirmPickup(\'' + item.id + '\')">Customer Picked Up</button><button class="btn-cancel" onclick="cancelOrder(\'' + item.id + '\')">Cancel</button>';
                 } else {
                     statusBadge = '<span class="status-badge status-waiting">Waiting to Start</span>';
                     pickupCode = "Not Started";
-                    actions = `
-                        <button class="btn-start" onclick="startProcessing('${item.id}')">
-                            Start Cooking
-                        </button>
-                        <button class="btn-finalize" onclick="finalizeOrder('${item.id}')">
-                            Mark Ready
-                        </button>
-                        <button class="btn-cancel" onclick="cancelOrder('${item.id}')">
-                            Cancel
-                        </button>
-                    `;
+                    actions = '<button class="btn-start" onclick="startProcessing(\'' + item.id + '\')">Start Cooking</button><button class="btn-finalize" onclick="finalizeOrder(\'' + item.id + '\')">Mark Ready</button><button class="btn-cancel" onclick="cancelOrder(\'' + item.id + '\')">Cancel</button>';
                 }
 
-                return `
-                    <div class="order-card ${cardClass}" data-order-id="${item.id}" data-start-time="${item.timestamp}">
-                        <div class="order-card-header">
-                            <div class="order-card-title">${sanitizeHTML(customerName)}</div>
-                            <div class="order-card-time live-timer">${processingTime}</div>
-                        </div>
+                const priorityBadge = '<span class="priority-badge p' + (index + 1) + '">' + (index === 0 ? 'NEXT UP' : 'PRIORITY #' + (index + 1)) + '</span>';
 
-                        <div class="order-card-details">
-                            <div class="order-card-row">
-                                <span class="order-card-label">Turkish Order:</span>
-                                <span class="order-card-value">${orderDetails}</span>
-                            </div>
-                            <div class="order-card-row">
-                                <span class="order-card-label">Status:</span>
-                                <span class="order-card-value">${statusBadge}</span>
-                            </div>
-                            <div class="order-card-row">
-                                <span class="order-card-label">Pickup Code:</span>
-                                <span class="order-card-value">
-                                    ${item.finalized ? `<span class="pickup-code">${pickupCode}</span>` : pickupCode}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="order-card-actions">
-                            ${actions}
-                        </div>
-                    </div>
-                `;
+                return '<div class="order-card ' + cardClass + '" data-order-id="' + item.id + '" data-start-time="' + item.timestamp + '">' +
+                    '<div class="order-card-header">' +
+                    '<div class="order-card-title">' + sanitizeHTML(customerName) + priorityBadge + '</div>' +
+                    '<div class="order-card-time live-timer">' + processingTime + '</div>' +
+                    '</div>' +
+                    '<div class="order-card-details">' +
+                    '<div class="order-card-row"><span class="order-card-label">Turkish Order:</span><span class="order-card-value">' + orderDetails + '</span></div>' +
+                    '<div class="order-card-row"><span class="order-card-label">Status:</span><span class="order-card-value">' + statusBadge + '</span></div>' +
+                    '<div class="order-card-row"><span class="order-card-label">Pickup Code:</span><span class="order-card-value">' + (item.finalized ? '<span class="pickup-code">' + pickupCode + '</span>' : pickupCode) + '</span></div>' +
+                    '</div>' +
+                    '<div class="order-card-actions">' + actions + '</div>' +
+                    '</div>';
             }).join('');
 
             // Update both displays
@@ -1030,12 +1064,12 @@
 
         function extractCustomerName(order) {
             // Try to get customer name from payload
-            if (order.payload?.customer_name) {
+            if (order.payload && order.payload.customer_name) {
                 return order.payload.customer_name;
             }
 
             // Try to get customer name from email
-            if (order.payload?.customer_email) {
+            if (order.payload && order.payload.customer_email) {
                 return order.payload.customer_email.split('@')[0];
             }
 
@@ -1052,14 +1086,14 @@
             let html = '';
 
             // Try to get items from payload
-            if (order.payload?.items && Array.isArray(order.payload.items)) {
+            if (order.payload && order.payload.items && Array.isArray(order.payload.items)) {
                 html += '<div class="order-items">';
                 html += '<ul class="order-items-list">';
 
-                order.payload.items.forEach(item => {
+                order.payload.items.forEach(function(item) {
                     const quantity = item.quantity || 1;
                     const name = item.name || item.item_name || item.item_id || 'Item';
-                    html += `<li>🍽️ ${quantity}x ${name}</li>`;
+                    html += '<li>🍽️ ' + quantity + 'x ' + name + '</li>';
                 });
 
                 html += '</ul>';
@@ -1069,26 +1103,25 @@
             }
 
             // Fallback to order description or ID
-            if (order.payload?.order) {
-                return ` class="order-items">🍽️ ${order.payload.order}</div>`;
+            if (order.payload && order.payload.order) {
+                return '<div class="order-items">🍽️ ' + order.payload.order + '</div>';
             }
 
-            return `<div class="order-items">Order: ${order.id}</div>`;
+            return '<div class="order-items">Order: ' + order.id + '</div>';
         }
-
-        function updateQueueCounter(count) {
+  function updateQueueCounter(count) {
             const counterElement = document.getElementById("queueCounter");
             if (counterElement) {
-                counterElement.textContent = `${count} orders`;
+                counterElement.textContent = count + ' orders';
             }
         }
 
         // Chef action functions
         async function startProcessing(orderId) {
-            if (isActionInPess) return;
+            if (isActionInProgress) return;
 
             isActionInProgress = true;
-            console.log(`Chef starting order: ${orderId}`);
+            console.log('Chef starting order: ' + orderId);
 
             try {
                 await apiCall("/api/v1/queue/start-processing", {
@@ -1099,40 +1132,13 @@
                     })
                 });
 
-                console.log(`Order ${orderId} started cooking`);
-                showNotification(`Started cooking order: ${orderId}`, 'success');
+                console.log('Order ' + orderId + ' started cooking');
+                showNotification('Started cooking order: ' + orderId, 'success');
                 fetchQueue();
 
             } catch (error) {
                 console.error("Error starting order:", error);
-                showError(`Failed to start cooking: ${error.message}`);
-            } finally {
-                isActionInProgress = false;
-            }
-        }
-
-        async function completeProcessing(orderId) {
-            if (isActionInProgress) return;
-
-            isActionInProgress = true;
-            console.log(`Chef completing order: ${orderId}`);
-
-            try {
-                await apiCall("/api/v1/queue/complete-processing", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        order_id: orderId,
-                        bartender_id: currentUser
-                    })
-                });
-
-                console.log(`Order ${orderId} ready for pickup`);
-                showNotification(`Order ready for pickup: ${orderId}`, 'success');
-                fetchQueue();
-
-            } catch (error) {
-                console.error("Error completing order:", error);
-                showError(`Failed to complete order: ${error.message}`);
+                showError('Failed to start cooking: ' + error.message);
             } finally {
                 isActionInProgress = false;
             }
@@ -1142,7 +1148,7 @@
             if (isActionInProgress) return;
 
             isActionInProgress = true;
-            console.log(`Chef finalizing order: ${orderId}`);
+            console.log('Chef finalizing order: ' + orderId);
 
             try {
                 const pickupCode = generatePickupCode();
@@ -1155,13 +1161,44 @@
                     })
                 });
 
-                console.log(`Order ${orderId} finalized with code: ${pickupCode}`);
-                showNotification(`Order ready! Pickup code: ${pickupCode}`, 'success');
+                console.log('Order ' + orderId + ' finalized with code: ' + pickupCode);
+                showNotification('Order ready! Pickup code: ' + pickupCode, 'success');
                 fetchQueue();
 
             } catch (error) {
                 console.error("Error finalizing order:", error);
-                showError(`Failed to finalize order: ${error.message}`);
+                showError('Failed to finalize order: ' + error.message);
+            } finally {
+                isActionInProgress = false;
+            }
+        }
+
+        // REMOVED: completeProcessing function as it was causing the loop issue
+
+        async function finalizeOrder(orderId) {
+            if (isActionInProgress) return;
+
+            isActionInProgress = true;
+            console.log('Chef finalizing order: ' + orderId);
+
+            try {
+                const pickupCode = generatePickupCode();
+
+                await apiCall("/api/v1/queue/finalize", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        id: orderId,
+                        pickup_code: pickupCode
+                    })
+                });
+
+                console.log('Order ' + orderId + ' finalized with code: ' + pickupCode);
+                showNotification('Order ready! Pickup code: ' + pickupCode, 'success');
+                fetchQueue();
+
+            } catch (error) {
+                console.error("Error finalizing order:", error);
+                showError('Failed to finalize order: ' + error.message);
             } finally {
                 isActionInProgress = false;
             }
@@ -1171,7 +1208,7 @@
             if (isActionInProgress) return;
 
             isActionInProgress = true;
-            console.log(`Chef confirming pickup: ${orderId}`);
+            console.log('Chef confirming pickup: ' + orderId);
 
             try {
                 await apiCall("/api/v1/queue/complete", {
@@ -1179,13 +1216,13 @@
                     body: JSON.stringify({ id: orderId })
                 });
 
-                console.log(`Order ${orderId} picked up`);
-                showNotification(`Order picked up: ${orderId}`, 'success');
+                console.log('Order ' + orderId + ' picked up');
+                showNotification('Order picked up: ' + orderId, 'success');
                 fetchQueue();
 
             } catch (error) {
                 console.error("Error confirming pickup:", error);
-                showError(`Failed to confirm pickup: ${error.message}`);
+                showError('Failed to confirm pickup: ' + error.message);
             } finally {
                 isActionInProgress = false;
             }
@@ -1193,10 +1230,10 @@
 
         async function cancelOrder(orderId) {
             if (isActionInProgress) return;
-            if (!confirm(`Cancel Turkish order ${orderId}?`)) return;
+            if (!confirm('Cancel Turkish order ' + orderId + '?')) return;
 
             isActionInProgress = true;
-            console.log(`Chef cancelling order: ${orderId}`);
+            console.log('Chef cancelling order: ' + orderId);
 
             try {
                 await apiCall("/api/v1/queue/cancel", {
@@ -1204,13 +1241,13 @@
                     body: JSON.stringify({ id: orderId })
                 });
 
-                console.log(`Order ${orderId} cancelled`);
-                showNotification(`Order cancelled: ${orderId}`, 'info');
+                console.log('Order ' + orderId + ' cancelled');
+                showNotification('Order cancelled: ' + orderId, 'info');
                 fetchQueue();
 
             } catch (error) {
                 console.error("Error cancelling order:", error);
-                showError(`Failed to cancel order: ${error.message}`);
+                showError('Failed to cancel order: ' + error.message);
             } finally {
                 isActionInProgress = false;
             }
@@ -1219,27 +1256,29 @@
         // Event handlers
         function handleOrderUpdate(data) {
             console.log('Kitchen handling order update:', data.action);
-            showNotification(`Kitchen update: ${data.orderId} - ${data.action}`, 'info');
+            showNotification('Kitchen update: ' + data.orderId + ' - ' + data.action, 'info');
 
             if (!isActionInProgress) {
                 setTimeout(fetchQueue, 1000);
             }
         }
 
-        function showNotification(message, type = 'success') {
+        function showNotification(message, type) {
+            if (!type) type = 'success';
+            
             const notification = document.createElement('div');
             notification.className = 'order-notification';
-            notification.innerHTML = `<strong>Kitchen Update</strong><br>${message}`;
+            notification.innerHTML = '<strong>Kitchen Update</strong><br>' + message;
 
             document.body.appendChild(notification);
 
-            setTimeout(() => {
+            setTimeout(function() {
                 notification.classList.add('show');
             }, 100);
 
-            setTimeout(() => {
+            setTimeout(function() {
                 notification.classList.remove('show');
-                setTimeout(() => {
+                setTimeout(function() {
                     if (document.body.contains(notification)) {
                         document.body.removeChild(notification);
                     }
@@ -1250,17 +1289,17 @@
         function showQUPNotification(message) {
             const notification = document.createElement('div');
             notification.className = 'qup-notification';
-            notification.innerHTML = `<strong>Queue Update</strong><br>${message}`;
+            notification.innerHTML = '<strong>Queue Update</strong><br>' + message;
 
             document.body.appendChild(notification);
 
-            setTimeout(() => {
+            setTimeout(function() {
                 notification.classList.add('show');
             }, 100);
 
-            setTimeout(() => {
+            setTimeout(function() {
                 notification.classList.remove('show');
-                setTimeout(() => {
+                setTimeout(function() {
                     if (document.body.contains(notification)) {
                         document.body.removeChild(notification);
                     }
@@ -1277,7 +1316,7 @@
         function formatDuration(seconds) {
             const minutes = Math.floor(seconds / 60);
             const secs = seconds % 60;
-            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+            return minutes + ':' + secs.toString().padStart(2, '0');
         }
 
         function sanitizeHTML(str) {
@@ -1301,9 +1340,9 @@
 
         function updateLiveTimers() {
             const timerElements = document.querySelectorAll('.live-timer');
-            timerElements.forEach(timer => {
+            timerElements.forEach(function(timer) {
                 const container = timer.closest('tr') || timer.closest('.order-card');
-                const startTime = container?.getAttribute('data-start-time');
+                const startTime = container && container.getAttribute('data-start-time');
                 if (startTime) {
                     const start = new Date(startTime);
                     const now = new Date();
@@ -1339,7 +1378,7 @@
                 clearInterval(autoRefreshInterval);
             }
 
-            autoRefreshInterval = setInterval(() => {
+            autoRefreshInterval = setInterval(function() {
                 if (!isActionInProgress) {
                     fetchQueue();
                 }
@@ -1351,9 +1390,9 @@
 
             const errorDiv = document.getElementById("errorNotification");
             if (errorDiv) {
-                errorDiv.innerHTML = `<strong>Kitchen Error:</strong> ${message}`;
+                errorDiv.innerHTML = '<strong>Kitchen Error:</strong> ' + message;
                 errorDiv.style.display = "block";
-                setTimeout(() => {
+                setTimeout(function() {
                     errorDiv.style.display = "none";
                 }, 8000);
             }
@@ -1363,10 +1402,11 @@
         document.addEventListener('DOMContentLoaded', init);
 
         // Cleanup on page unload
-        window.addEventListener('beforeunload', () => {
+        window.addEventListener('beforeunload', function() {
             if (socket) socket.disconnect();
             stopAllIntervals();
         });
+
     </script>
 </body>
 </html>
