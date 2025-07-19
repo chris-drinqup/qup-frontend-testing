@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkish Chef on Wheels - QUP Order System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #c41e3a;
+            --primary-dark: #8b0000;
+            --secondary: #ffd700;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-primary: #1a0e0e;
+            --bg-secondary: #2d1b1b;
+            --bg-card: #3d2929;
+            --text-primary: #ffffff;
+            --text-secondary: #d4af37;
+            --border: #5a3a3a;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--secondary);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            margin: 0 auto;
+            flex: 1;
+        }
+
+        .environment-selector {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .environment-selector h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .env-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .env-btn {
+            padding: 12px 24px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .env-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .env-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 40px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .connection-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .connection-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+            background: var(--bg-card);
+        }
+
+        .menu-section {
+            margin-bottom: 30px;
+        }
+
+        .menu-section h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 8px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .menu-item {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(196, 30, 58, 0.3);
+        }
+
+        .menu-item.selected {
+            border-color: var(--primary);
+            background: rgba(196, 30, 58, 0.1);
+        }
+
+        .menu-item h4 {
+            color: var(--secondary);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .menu-item p {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .menu-item .price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .qty-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .qty-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quantity {
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .order-summary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .order-summary h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(196, 30, 58, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Queue Preview Styles */
+        .queue-preview {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .queue-preview h4 {
+            color: var(--info);
+            margin-bottom: 15px;
+        }
+
+        .preview-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .preview-stat {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .preview-stat .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .preview-stat .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* QUP Toggle Styles */
+        .qup-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qup-checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .qup-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .qup-checkbox label {
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* QUP Controls Styles */
+        .qup-controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--success);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qup-controls h4 {
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .position-display {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 20px 0;
+            color: var(--text-primary);
+        }
+
+        .qup-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .qup-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qup-btn.up {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+        }
+
+        .qup-btn.down {
+            background: linear-gradient(45deg, var(--warning), #d97706);
+            color: white;
+        }
+
+        .qup-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .qup-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qup-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qup-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .time-savings {
+            font-size: 0.9rem;
+            color: var(--success);
+            margin: 10px 0;
+        }
+
+        /* PiQUP Code Display with Logo Protection */
+        .pickup-section-protected {
+            position: relative;
+        }
+
+        .logo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        .overlay-logo {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            opacity: 1;
+            animation: overlayFloat linear infinite;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            filter: brightness(0.1) contrast(2) saturate(0);
+        }
+
+        @keyframes overlayFloat {
+            0% { transform: translateX(-20px) translateY(-20px) rotate(0deg) scale(1); }
+            25% { transform: translateX(20px) translateY(-10px) rotate(90deg) scale(1.1); }
+            50% { transform: translateX(10px) translateY(20px) rotate(180deg) scale(0.9); }
+            75% { transform: translateX(-10px) translateY(10px) rotate(270deg) scale(1.05); }
+            100% { transform: translateX(-20px) translateY(-20px) rotate(360deg) scale(1); }
+        }
+
+        .overlay-logo:nth-child(2n) {
+            animation-duration: 3s;
+            animation-direction: reverse;
+        }
+
+        .overlay-logo:nth-child(3n) {
+            animation-duration: 4s;
+            animation-delay: -1s;
+        }
+
+        .overlay-logo:nth-child(4n) {
+            animation-duration: 5s;
+            animation-delay: -2s;
+        }
+
+        .pickup-code {
+            background: linear-gradient(45deg, var(--success), #059669);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 15;
+            text-align: center;
+        }
+
+        .pickup-code:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+        }
+
+        .pickup-code:active {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(16, 185, 129, 0.9);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            animation: flashEffect 0.8s ease-in-out;
+        }
+
+        @keyframes flashEffect {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Logo Rain Animation System */
+        .logo-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        .rain-logo {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            opacity: 0.6;
+            animation: rainFall linear infinite;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            transform: rotate(15deg);
+            z-index: 25;
+        }
+
+        @keyframes rainFall {
+            from {
+                top: -40px;
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.2);
+            }
+            to {
+                top: 100vh;
+                transform: rotate(360deg) scale(0.8);
+            }
+        }
+
+        .rain-logo:nth-child(odd) {
+            animation-direction: reverse;
+        }
+
+        .rain-logo:nth-child(3n) {
+            animation-duration: 4s;
+        }
+
+        .rain-logo:nth-child(3n+1) {
+            animation-duration: 6s;
+        }
+
+        .rain-logo:nth-child(3n+2) {
+            animation-duration: 5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .qup-buttons {
+                gap: 15px;
+            }
+
+            .qup-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .env-buttons {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo Rain Container -->
+    <div id="logoRain" class="logo-rain"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>🇹🇷 Turkish Chef on Wheels 🚚</h1>
+        <p>Authentic Turkish Cuisine • Fresh Mediterranean Food Since 2017</p>
+    </div>
+
+    <div class="container">
+        <!-- Environment Selector -->
+        <div class="environment-selector">
+            <h3>Select Environment</h3>
+            <div class="env-buttons">
+                <button class="env-btn" onclick="setEnvironment('localhost')">
+                    🏠 Local Development
+                </button>
+                <button class="env-btn active" onclick="setEnvironment('production')">
+                    ☁️ Production (GCP)
+                </button>
+            </div>
+            <p style="margin-top: 10px; color: var(--text-secondary); font-size: 0.9rem;">
+                Current: <span id="currentEnv">Production (GCP)</span>
+            </p>
+        </div>
+
+        <!-- Main App Card -->
+        <div class="card">
+            <div class="connection-status" id="connectionStatus">
+                <div class="connection-dot"></div>
+                <span>Connecting...</span>
+            </div>
+
+            <!-- Queue Preview Section -->
+            <div id="queuePreview" class="queue-preview">
+                <h4>📊 Current Queue Status</h4>
+                <div class="preview-stats">
+                    <div class="preview-stat">
+                        <div class="stat-value" id="previewWaitTime">Loading...</div>
+                        <div class="stat-label">Est. Wait Time</div>
+                    </div>
+                    <div class="preview-stat">
+                        <div class="stat-value" id="previewPosition">Loading...</div>
+                        <div class="stat-label">Your Position</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">
+                    This shows where you'll be placed when you order
+                </div>
+            </div>
+
+            <!-- Order Form -->
+            <div id="orderForm">
+                <div class="form-group">
+                    <label for="customerName">Your Name:</label>
+                    <input type="text" id="customerName" class="form-control"
+                           placeholder="Enter your name (e.g., John Smith)">
+                </div>
+
+                <!-- Menu Selection -->
+                <div class="menu-section">
+                    <h3>🍖 Main Entrees</h3>
+                    <div class="menu-grid">
+                        <div class="menu-item" data-item-id="chicken_shish" data-price="15.00">
+                            <h4>Chicken Shish Kebab</h4>
+                            <p>Grilled yogurt-marinated chicken breast cubes served in a wrap or with salad and rice, and sigara borek (feta cheese and parsley wrapped in dough and fried)</p>
+                            <div class="price">$15.00</div>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity('chicken_shish', -1)">-</button>
+                                <span class="quantity" id="qty-chicken_shish">0</span>
+                                <button class="qty-btn" onclick="changeQuantity('chicken_shish', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="menu-item" data-item-id="adana_kebab" data-price="16.00">
+                            <h4>Turkish Adana Kebab</h4>
+                            <p>Char-grilled ground lamb and beef seasoned with Turkish spices and served in wrap or on plate with rice, salad, and sigara boregi</p>
+                            <div class="price">$16.00</div>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity('adana_kebab', -1)">-</button>
+                                <span class="quantity" id="qty-adana_kebab">0</span>
+                                <button class="qty-btn" onclick="changeQuantity('adana_kebab', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="menu-item" data-item-id="doner_kebab" data-price="14.00">
+                            <h4>Turkish Doner Kebab</h4>
+                            <p>Traditional Turkish doner meat served in wrap or on plate with rice and salad</p>
+                            <div class="price">$14.00</div>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity('doner_kebab', -1)">-</button>
+                                <span class="quantity" id="qty-doner_kebab">0</span>
+                                <button class="qty-btn" onclick="changeQuantity('doner_kebab', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-section">
+                    <h3>🥗 Sides & Appetizers</h3>
+                    <div class="menu-grid">
+                        <div class="menu-item" data-item-id="kisir" data-price="6.00">
+                            <h4>Kisir</h4>
+                            <p>Delicious Turkish bulgur salad with tomato, scallions, parsley and spices</p>
+                            <div class="price">$6.00</div>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity('kisir', -1)">-</button>
+                                <span class="quantity" id="qty-kisir">0</span>
+                                <button class="qty-btn" onclick="changeQuantity('kisir', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="menu-item" data-item-id="sigara_borek" data-price="7.00">
+                            <h4>Sigara Borek</h4>
+                            <p>Turkish cigar shaped savory pastry made with feta cheese, parsley and wrapped in phyllo dough</p>
+                            <div class="price">$7.00</div>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity('sigara_borek', -1)">-</button>
+                                <span class="quantity" id="qty-sigara_borek">0</span>
+                                <button class="qty-btn" onclick="changeQuantity('sigara_borek', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="menu-item" data-item-id="piyaz" data-price="5.00">
+                            <h4>White Bean Salad (Piyaz)</h4>
+                            <p>White beans mixed with fresh chopped vegetables, olive oil, lemon juice and spices</p>
+                            <div class="price">$5.00</div>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity('piyaz', -1)">-</button>
+                                <span class="quantity" id="qty-piyaz">0</span>
+                                <button class="qty-btn" onclick="changeQuantity('piyaz', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-section">
+                    <h3>🍯 Desserts</h3>
+                    <div class="menu-grid">
+                        <div class="menu-item" data-item-id="baklava" data-price="4.00">
+                            <h4>Blava with Pistachios</h4>
+                            <p>Imported Turkish baklava with pistachios</p>
+                            <div class="price">$4.00</div>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity('baklava', -1)">-</button>
+                                <span class="quantity" id="qty-baklava">0</span>
+                                <button class="qty-btn" onclick="changeQuantity('baklava', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div id="orderSummary" class="order-summary hidden">
+                    <h3>📋 Your Order</h3>
+                    <div id="orderItems"></div>
+                    <div class="order-item" style="border-top: 2px solid var(--primary); font-weight: bold; color: var(--primary);">
+                        <span>Total:</span>
+                      <span id="orderTotal">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- QUP Toggle -->
+                <div id="qupToggle" class="qup-toggle">
+                    <h4>🚀 Enhanced Queue Experience</h4>
+                    <div class="qup-checkbox">
+                        <input type="checkbox" id="enableQup" />
+                        <label for="enableQup">Enable QUP Controls (Move up/down in line)</label>
+                    </div>
+                    <div stylefont-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">
+                        With QUP enabled, you can adjust your position in line after ordering to reduce wait time.
+                    </div>
+                    <button class="btn btn-primary" id="saveQupButton" onclick="saveQupSettings()" style="margin-top: 15px; display: none;">
+                        Save QUP Settings
+                    </button>
+                </div>
+
+                <!-- QUP Preview Controls (before ordering) -->
+                <div id="qupPreviewControls" class="qup-controls hidden">
+                    <h4>🚀 QUP Preview - Try Before You Order!</h4>
+                    <div class="position-display">
+                        Preview Position: <span id="previewQupPosition">#3</span>
+                    </div>
+                    <div class="qup-buttons">
+                        <button id="previewQupUpBtn" class="qup-btn up" title="Preview move up" onclick="previewQupUp()">+</button>
+                        <buttoid="previewQupDownBtn" class="qup-btn down" title="Preview move down" onclick="previewQupDown()">-</button>
+                    </div>
+                    <div class="time-savings" id="previewTimeSavings">
+                        Potential time saved: 2 minutes
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 15px;">
+                        <strong>Preview Mode:</strong> This simulates your total wait time (including your order processing) |
+                        <strong>Cost:</strong> 60s per QUP move
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="orderButton" onclick="placeOrder()">
+                    <span id="orderButtonText">Place Order</span>
+                    <div id="orderLoading" class="loading hidden"></div>
+                </button>
+            </div>
+
+            <!-- Order Status (hidden initially) -->
+            <div id="orderStatus" class="order-summary hidden">
+                <h3>Your Order Status</h3>
+                <div class="order-item">
+                    <span>Customer:</span>
+                    <span id="orderCustomerName">-</span>
+                </div>
+                <div class="order-item">
+                    <span>Status:</span>
+                    <span id="orderCurrentStatus">-</span>
+                </div>
+                <div class="order-item">
+                    <span>Position:</span>
+                    <span id="orderPosition">-</span>
+                </div>
+                <div class="order-item">
+                    <span>Est. Wait:</span>
+                    <span id="orderWaitTime">-</span>
+                </div>
+            </div>
+
+            <!-- QUP Controls (after ordering, when QUP is enabled) -->
+            <div id="qupControls" class="qup-controls hidden">
+                <h4>🚀 Queue Position Control</h4>
+                <div class="position-display">
+                    Position: <span id="currentQupPosition">#1</span>
+              </div>
+                <div class="qup-buttons">
+                    <button id="qupUpBtn" class="qup-btn up" title="Move up in line" onclick="performQupUp()">+</button>
+                    <button id="qupDownBtn" class="qup-btn down" title="Move down in line" onclick="performQupDown()">-</button>
+                </div>
+                <div class="time-savings" id="timeSavings">
+                    Time saved by moving up: 0 minutes
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 15px;">
+                    <strong>Pool Time Available:</strong> <span id="poolTimeDisplay">120s</span> |
+                    <strong>QUP Cost:</strong> 60s per move
+                </div>
+            </div>
+
+            <!-- PiQUP Code Display with Logo Protection -->
+            <div id="pickupSection" class="pickup-section-protected hidden">
+                <div class="alert alert-success">
+                    🎉 Your Turkish order is ready for pickup!
+              </div>
+                <div style="position: relative;">
+                    <div class="pickup-code" id="pickupCode" onclick="flashScreen()">----</div>
+                    <div id="logoOverlay" class="logo-overlay"></div>
+                </div>
+                <div style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                    Show this code to the Turkish chef
+                </div>
+                <button class="btn btn-primary" id="piqupButton" onclick="confirmPickup()">
+                    🍽️ PiQed UP - I Got My Food!
+                </button>
+            </div>
+
+            <!-- Order Complete -->
+            <div id="completeSection" class="hidden">
+                <div class="alert alert-success">
+                    Order completed! Thank you for choosing Turkish Chef on Wheels. 🇹🇷
+                </div>
+                <button class="btn btn-primary" id="newOrderButton" onclick="startNewOrder()">
+                    Order More Turkish Food
+        </button>
+            </div>
+
+            <div id="alerts"></div>
+        </div>
+    </div>
+
+    <script>
+        // Environment configuration
+        const environments = {
+            localhost: {
+                API_BASE: 'http://localhost:8080',
+                name: 'Local Development'
+            },
+            production: {
+                API_BASE: 'https://qupcore-supercode-modular-692478335867.us-central1.run.app',
+                name: 'Production (GCP)'
+            }
+        };
+
+        // Current environment
+        let currentEnvironment = 'production';
+        let API_BASE = environments[currentEnvironment].API_BASE;
+
+        // Global state
+        let socket = null;
+        let currentUser = 'customer_' + Date.now();
+        let currentOrder = null;
+        let orderItems = {};
+        let qupEnabled = false;
+        let previewQupPosition = 3;
+        let currentPosition = 1;
+        let logoRainInterval = null;
+        let logoOverlayInterval = null;
+        let currentLogo = 'QUP'; // Default to QUP text if logo fails to load
+
+        // Set environment
+        function setEnvironment(env) {
+            currentEnvironment = env;
+            API_BASE = environments[env].API_BASE;
+
+            // Update UI
+            document.querySelectorAll('.env-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('currentEnv').textContent = environments[env].name;
+
+            // Reconnect WebSocket
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+            connectWebSocket();
+            loadQueuePreview();
+
+            showAlert('Switched to ' + environments[env].name, 'info');
+        }
+
+        // Menu item quantity management
+        function changeQuantity(itemId, change) {
+            const currentQty = orderItems[itemId] || 0;
+            const newQty = Math.max(0, currentQty + change);
+
+            if (newQty === 0) {
+                delete orderItems[itemId];
+            } else {
+                orderItems[itemId] = newQty;
+            }
+
+            // Update UI
+            document.getElementById('qty-' + itemId).textContent = newQty;
+
+            // Update menu item selection visual
+            const menuItem = document.querySelector('[data-item-id="' + itemId + '"]');
+            if (newQty > 0) {
+                menuItem.classList.add('selected');
+            } else {
+                menuItem.classList.remove('selected');
+            }
+
+            updateOrderSummary();
+        }
+
+        // Update order summary
+        function updateOrderSummary() {
+            const orderItemsDiv = document.getElementById('orderItems');
+            const orderSummaryDiv = document.getElementById('orderSummary');
+            const orderTotalSpan = document.getElementById('orderTotal');
+
+            if (Object.keys(orderItems).length === 0) {
+                orderSummaryDiv.classList.add('hidden');
+                return;
+            }
+
+            orderSummaryDiv.classList.remove('hidden');
+            orderItemsDiv.innerHTML = '';
+
+            let total = 0;
+
+            Object.entries(orderItems).forEach(function([itemId, quantity]) {
+                const menuItem = document.querySelector('[data-item-id="' + itemId + '"]');
+                const name = menuItem.querySelector('h4').textContent;
+                const price = parseFloat(menuItem.dataset.price);
+                const itemTotal = price * quantity;
+                total += itemTotal;
+
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item';
+                orderItem.innerHTML = '<span>' + name + ' x' + quantity + '</span><span>$' + itemTotal.toFixed(2) + '</span>';
+                orderItemsDiv.appendChild(orderItem);
+            });
+
+            orderTotalSpan.textContent = '$' + total.toFixed(2);
+        }
+
+        // Handle QUP checkbox change
+        function handleQupToggle() {
+            const checkbox = document.getElementById('enableQup');
+            const saveButton = document.getElementById('saveQupButton');
+
+            if (checkbox.checked) {
+                saveButton.style.display = 'block';
+            } else {
+                saveButton.style.display = 'none';
+                hideElement('qupPreviewControls');
+            }
+        }
+
+        // Save QUP settings and show preview
+        function saveQupSettings() {
+            qupEnabled = document.getElementById('enableQup').checked;
+
+            if (qupEnabled) {
+                const previewPositionText = document.getElementById('previewPosition').textContent;
+                const positionMatch = previewPositionText.match(/\d+/);
+                previewQupPosition = positionMatch ? parseInt(positionMatch[0]) - 1 : 2;
+
+                showElement('qupPreviewControls');
+                updateQupPreview();
+                showAlert('QUP controls enabled! Try the preview buttons above.', 'success');
+
+                document.getElementById('saveQupButton').style.display = 'none';
+            }
+        }
+
+        // QUP Preview functions
+        function updateQupPreview() {
+            document.getElementById('previewQupPosition').textContent = '#' + (previewQupPosition + 1);
+            updatePreviewQupButtons();
+            updatePreviewTimeSavings();
+        }
+
+        function updatePreviewQupButtons() {
+            const upBtn = document.getElementById('previewQupUpBtn');
+            const downBtn = document.getElementById('previewQupDownBtn');
+
+            upBtn.disabled = previewQupPosition <= 0;
+            downBtn.disabled = previewQupPosition >= 10;
+        }
+
+        function updatePreviewTimeSavings() {
+            const baseTimePerPosition = 60;
+            const originalPosition = parseInt(document.getElementById('previewPosition').textContent.match(/\d+/)[0]) - 1;
+            const timeSaved = Math.max(0, (originalPosition - previewQupPosition) * baseTimePerPosition);
+            const minutes = Math.floor(timeSaved / 60);
+
+            document.getElementById('previewTimeSavings').textContent = 'Potential time saved: ' + minutes + ' minute' + (minutes !== 1 ? 's' : '');
+        }
+
+        function previewQupUp() {
+            if (previewQupPosition > 0) {
+                previewQupPosition--;
+                updateQupPreview();
+                showAlert('Preview: Moving to position ' + (previewQupPosition + 1), 'success');
+            }
+        }
+
+        function previewQupDown() {
+            if (previewQupPosition < 10) {
+                previewQupPosition++;
+                updateQupPreview();
+                showAlert('Preview: Moving to position ' + (previewQupPosition + 1), 'info');
+            }
+        }
+
+        // Place order
+        async function placeOrder() {
+            const customerName = document.getElementById('customerName').value.trim();
+
+            if (!customerName) {
+                showAlert('Please enter your name', 'error');
+                return;
+            }
+
+            if (Object.keys(orderItems).length === 0) {
+                showAlert('Please select at least one Turkish dish', 'error');
+                return;
+            }
+
+            setLoading('order', true);
+
+            try {
+                const orderId = currentUser + '_' + Date.now();
+
+                // Prepare items array
+                const items = Object.entries(orderItems).map(function([itemId, quantity]) {
+                    const menuItem = document.querySelector('[data-item-id="' + itemId + '"]');
+                    return {
+                        item_id: itemId,
+                        name: menuItem.querySelector('h4').textContent,
+                        quantity: quantity,
+                        price: parseFloat(menuItem.dataset.price)
+                    };
+                });
+
+                const orderPayload = {
+                    order_id: orderId,
+                    user_id: currentUser,
+                    priority: 500,
+                    payload: {
+                        customer_name: customerName,
+                        items: items,
+                        qup_enabled: qupEnabled
+                    }
+                };
+
+                // Add target position if QUP enabled
+                if (qupEnabled && previewQupPosition !== null) {
+                    orderPayload.target_position = previewQupPosition + 1;
+                }
+
+                const response = await fetch(API_BASE + '/api/v1/queue/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify(orderPayload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentOrder = data.order_id || data.id || orderId;
+                    currentPosition = data.position || 0;
+
+                    showAlert('Turkish order placed successfully!', 'success');
+
+                    // Show order status
+                    showOrderStatus(customerName, data);
+                    hideElement('orderForm');
+                    hideElement('queuePreview');
+
+                    // Show QUP controls if enabled
+                    if (qupEnabled) {
+                        showQupControls(data.position || 0);
+                    }
+
+                    // Subscribe to WebSocket updates
+                    if (socket && socket.connected) {
+                        socket.emit('subscribe', { orderId: currentOrder });
+                    }
+
+                } else {
+                    throw new Error(data.error || 'Failed to place order');
+                }
+
+            } catch (error) {
+                console.error('Order failed:', error);
+                showAlert('Order failed: ' + error.message, 'error');
+            } finally {
+                setLoading('order', false);
+            }
+        }
+
+        // Show order status
+        function showOrderStatus(customerName, orderData) {
+            document.getElementById('orderCustomerName').textContent = customerName;
+            document.getElementById('orderCurrentStatus').textContent = 'Waiting in queue';
+            document.getElementById('orderPosition').textContent = '#' + ((orderData.position || 0) + 1);
+
+            if (orderData.estimated_time) {
+                const minutes = Math.floor(orderData.estimated_time / 60);
+                const seconds = orderData.estimated_time % 60;
+                document.getElementById('orderWaitTime').textContent = minutes + 'm ' + seconds + 's';
+            }
+
+            showElement('orderStatus');
+        }
+
+        // Show QUP controls
+        function showQupControls(position) {
+            currentPosition = position;
+            document.getElementById('currentQupPosition').textContent = '#' + (position + 1);
+            updateQupButtons();
+            showElement('qupControls');
+        }
+
+        // Update QUP button states
+        function updateQupButtons() {
+            const upBtn = document.getElementById('qupUpBtn');
+            const downBtn = document.getElementById('qupDownBtn');
+
+            upBtn.disabled = currentPosition <= 0;
+            downBtn.disabled = currentPosition >= 10;
+        }
+
+        // Perform QUP operations
+        async function performQupUp() {
+            if (!currentOrder || currentPosition <= 0) {
+                showAlert('Cannot move up further', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE + '/api/v1/queue/qup-operations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify({
+                        order_id: currentOrder,
+                        user_id: currentUser,
+                        execute: true,
+                        move_direction: 'up'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    currentPosition = Math.max(0, currentPosition - 1);
+                    document.getElementById('currentQupPosition').textContent = '#' + (currentPosition + 1);
+                    updateQupButtons();
+                    showAlert('Moved up successfully!', 'success');
+                } else {
+                    showAlert(data.error || 'QUP failed', 'error');
+                }
+
+            } catch (error) {
+                console.error('QUP error:', error);
+                showAlert('QUP error: ' + error.message, 'error');
+            }
+        }
+
+        async function performQupDown() {
+            if (!currentOrder) {
+                showAlert('Cannot move down', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE + '/api/v1/queue/qup-operations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify({
+                        order_id: currentOrder,
+                        user_id: currentUser,
+                        execute: true,
+                        move_direction: 'down'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    currentPosition = currentPosition + 1;
+                    document.getElementById('currentQupPosition').textContent = '#' + (currentPosition + 1);
+                    updateQupButtons();
+                    showAlert('Moved down successfully!', 'success');
+                } else {
+                    showAlert(data.error || 'Move down failed', 'error');
+                }
+
+            } catch (error) {
+                console.error('Move down error:', error);
+                showAlert('Move down error: ' + error.message, 'error');
+            }
+        }
+
+        // Load queue preview
+        async function loadQueuePreview() {
+            try {
+                const response = await fetch(API_BASE + '/api/v1/queue/preview-join', {
+                    headers: {
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateQueuePreview(data);
+                } else {
+                    setDefaultPreview();
+                }
+            } catch (error) {
+                console.error('Failed to load queue preview:', error);
+                setDefaultPreview();
+            }
+        }
+
+        function setDefaultPreview() {
+            updateQueuePreview({
+                preview_data: {
+                    estimated_wait_time: 60,
+                    estimated_position: 1
+                }
+            });
+        }
+
+        function updateQueuePreview(data) {
+            if (data.preview_data) {
+                const waitMinutes = Math.floor(data.preview_data.estimated_wait_time / 60);
+                const waitSeconds = data.preview_data.estimated_wait_time % 60;
+                const waitDisplay = waitMinutes > 0 ? waitMinutes + 'm ' + waitSeconds + 's' : waitSeconds + 's';
+
+                document.getElementById('previewWaitTime').textContent = waitDisplay;
+                document.getElementById('previewPosition').textContent = '#' + data.preview_data.estimated_position;
+            }
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            try {
+                console.log('Connecting to WebSocket...');
+
+                socket = io(API_BASE, {
+                    transports: ['websocket', 'polling'],
+                    timeout: 20000,
+                    reconnection: true,
+                    reconnectionDelay: 2000,
+                    reconnectionAttempts: 5,
+                    forceNew: true
+                });
+
+                socket.on('connect', function() {
+                    updateConnectionStatus(true);
+                    console.log('WebSocket connected');
+                });
+
+                socket.on('disconnect', function() {
+                    updateConnectionStatus(false);
+                    console.log('WebSocket disconnected');
+                });
+
+                socket.on('connect_error', function(error) {
+                    console.error('WebSocket connection error:', error);
+                    updateConnectionStatus(false);
+                });
+
+                // Listen for order finalized events
+                socket.on('order_finalized', function(data) {
+                    console.log('Order finalized event:', data);
+                    if (currentOrder && (data.orderId === currentOrder || data.id === currentOrder || data.order_id === currentOrder)) {
+                        if (data.pickupCode || data.pickup_code) {
+                            showPickupCode(data.pickupCode || data.pickup_code);
+                        }
+                    }
+                });
+
+                socket.on('order_update', function(data) {
+                    console.log('Order update received:', data);
+                    handleOrderUpdate(data);
+                });
+
+                socket.on('queue_update', function(data) {
+                    console.log('Queue update received:', data);
+                    // Check if our order is in the queue and update status
+                    if (currentOrder && data.queue) {
+                        const myOrder = data.queue.find(function(order) {
+                            return order.id === currentOrder || order.order_id === currentOrder;
+                        });
+                        if (myOrder && myOrder.finalized && myOrder.pickup_code) {
+                            showPickupCode(myOrder.pickup_code);
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('WebSocket connection failed:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (!status) return;
+
+            if (connected) {
+                status.className = 'connection-status connected';
+                status.innerHTML = '<div class="connection-dot"></div><span>Connected</span>';
+            } else {
+                status.className = 'connection-status disconnected';
+                status.innerHTML = '<div class="connection-dot"></div><span>Disconnected</span>';
+            }
+        }
+
+        function handleOrderUpdate(data) {
+            if (!currentOrder || (data.orderId !== currentOrder && data.id !== currentOrder && data.order_id !== currentOrder)) {
+                return;
+            }
+
+            console.log('Handling order update for my order:', data.action || data.status);
+
+            // Check for finalized status
+            if (data.action === 'finalized' || data.status === 'finalized') {
+                if (data.pickup_code || data.pickupCode) {
+                    showPickupCode(data.pickup_code || data.pickupCode);
+                }
+            }
+        }
+
+        // Show pickup code with logo protection
+        function showPickupCode(code) {
+            console.log('Showing pickup code:', code);
+            document.getElementById('orderCurrentStatus').textContent = 'Ready for pickup';
+            document.getElementById('pickupCode').textContent = code;
+
+            hideElement('orderStatus');
+            hideElement('qupControls');
+            showElement('pickupSection');
+
+            // Start logo rain and overlay protection
+            startLogoRain();
+            startLogoOverlay();
+
+            showAlert('🎉 Your Turkish food is ready!', 'success');
+        }
+
+        // Logo Rain System
+        function startLogoRain() {
+            console.log('Starting Turkish Chef logo rain...');
+            
+            const rainContainer = document.getElementById('logoRain');
+            if (!rainContainer) return;
+
+            logoRainInterval = setInterval(function() {
+                createRainLogo(rainContainer);
+            }, 500);
+        }
+
+        function createRainLogo(container) {
+            const logoElement = document.createElement('div');
+            logoElement.className = 'rain-logo';
+            
+            // Use QUP logo if it's a URL, otherwise use text
+            if (currentLogo && currentLogo.startsWith('http')) {
+                const img = document.createElement('img');
+                img.src = currentLogo;
+                img.style.width = '24px';
+                img.style.height = '24px';
+                logoElement.appendChild(img);
+            } else {
+                logoElement.textContent = currentLogo || 'QUP';
+                logoElement.style.fontSize = '24px';
+            }
+            
+            logoElement.style.left = Math.random() * window.innerWidth + 'px';
+            logoElement.style.animationDuration = (Math.random() * 3 + 3) + 's';
+
+            container.appendChild(logoElement);
+
+            // Remove after animation
+            setTimeout(function() {
+                if (logoElement.parentNode) {
+                    logoElement.remove();
+                }
+            }, 8000);
+        }
+
+        function stopLogoRain() {
+            if (logoRainInterval) {
+                clearInterval(logoRainInterval);
+                logoRainInterval = null;
+                document.getElementById('logoRain').innerHTML = '';
+            }
+        }
+
+        // Logo Overlay Protection System
+        function startLogoOverlay() {
+            const overlayContainer = document.getElementById('logoOverlay');
+            if (!overlayContainer) return;
+
+            // Create multiple floating logos over the pickup code
+            for (let i = 0; i < 8; i++) {
+                createOverlayLogo(overlayContainer, i);
+            }
+
+            logoOverlayInterval = setInterval(function() {
+                if (overlayContainer.children.length < 12) {
+                    createOverlayLogo(overlayContainer, Math.floor(Math.random() * 100));
+                }
+            }, 2000);
+        }
+
+        function createOverlayLogo(container, index) {
+            const logo = document.createElement('div');
+            logo.className = 'overlay-logo';
+            
+            // Use QUP logo if it's a URL, otherwise use text
+            if (currentLogo && currentLogo.startsWith('http')) {
+                const img = document.createElement('img');
+                img.src = currentLogo;
+                img.style.width = '12px';
+                img.style.height = '12px';
+                logo.appendChild(img);
+            } else {
+                logo.textContent = currentLogo || 'QUP';
+                logo.style.fontSize = '12px';
+            }
+            
+            logo.style.left = Math.random() * 90 + 5 + '%';
+            logo.style.top = Math.random() * 90 + 5 + '%';
+            logo.style.animationDuration = (2 + Math.random() * 3) + 's';
+            logo.style.animationDelay = (Math.random() * 2) + 's';
+
+            container.appendChild(logo);
+
+            setTimeout(function() {
+                if (logo.parentNode) {
+                    logo.remove();
+                }
+            }, 8000 + Math.random() * 4000);
+        }
+
+        function stopLogoOverlay() {
+            if (logoOverlayInterval) {
+                clearInterval(logoOverlayInterval);
+                logoOverlayInterval = null;
+                const overlayContainer = document.getElementById('logoOverlay');
+                if (overlayContainer) {
+                    overlayContainer.innerHTML = '';
+                }
+            }
+        }
+
+        // Screen flash effect
+        function flashScreen() {
+            const flash = document.createElement('div');
+            flash.className = 'screen-flash';
+            document.body.appendChild(flash);
+            setTimeout(function() {
+                flash.remove();
+            }, 800);
+        }
+
+        // Confirm pickup (PiQUP button)
+        async function confirmPickup() {
+            if (!currentOrder) {
+                showAlert('No order to confirm', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE + '/api/v1/queue/complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'UwCNmn3I0XxmJ15nRxu6dkPIqAz46dxOb4ljz0-SRlc'
+                    },
+                    body: JSON.stringify({ id: currentOrder })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Thank you! Order completed.', 'success');
+                    showOrderComplete();
+                } else {
+                    throw new Error(data.error || 'Failed to confirm pickup');
+                }
+
+            } catch (error) {
+                console.error('Pickup confirmation failed:', error);
+                showAlert('Failed to confirm pickup: ' + error.message, 'error');
+            }
+        }
+
+        function showOrderComplete() {
+            hideElement('orderStatus');
+            hideElement('qupControls');
+            hideElement('pickupSection');
+            showElement('completeSection');
+            stopLogoRain();
+            stopLogoOverlay();
+
+            currentOrder = null;
+            qupEnabled = false;
+            currentPosition = 1;
+            
+            // Auto return to order screen after 3 seconds
+            setTimeout(function() {
+                startNewOrder();
+            }, 3000);
+        }
+
+        function startNewOrder() {
+            hideElement('orderStatus');
+            hideElement('qupControls');
+            hideElement('qupPreviewControls');
+            hideElement('pickupSection');
+            hideElement('completeSection');
+            showElement('orderForm');
+            showElement('queuePreview');
+            
+            // Reset form
+            document.getElementById('customerName').value = '';
+            document.getElementById('enableQup').checked = false;
+            document.getElementById('saveQupButton').style.display = 'none';
+            
+            // Reset menu
+            Object.keys(orderItems).forEach(function(itemId) {
+                document.getElementById('qty-' + itemId).textContent = '0';
+                document.querySelector('[data-item-id="' + itemId + '"]').classList.remove('selected');
+            });
+            orderItems = {};
+            updateOrderSummary();
+            
+            stopLogoRain();
+            stopLogoOverlay();
+            
+            currentOrder = null;
+            qupEnabled = false;
+            currentPosition = 1;
+            previewQupPosition = 3;
+
+            // Reload queue preview
+            loadQueuePreview();
+        }
+
+        // Utility functions
+        function showElement(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove('hidden');
+                element.classList.add('fade-in');
+            }
+        }
+
+        function hideElement(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add('hidden');
+                element.classList.remove('fade-in');
+            }
+        }
+
+        function setLoading(type, state) {
+            const buttonText = document.getElementById(type + 'ButtonText');
+            const loading = document.getElementById(type + 'Loading');
+            const button = document.getElementById(type + 'Button');
+
+            if (buttonText && loading && button) {
+                if (state) {
+                    button.disabled = true;
+                    buttonText.classList.add('hidden');
+                    loading.classList.remove('hidden');
+                } else {
+                    button.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    loading.classList.add('hidden');
+                }
+            }
+        }
+
+        function showAlert(message, type) {
+            if (!type) type = 'success';
+
+            const alerts = document.getElementById('alerts');
+            if (!alerts) return;
+
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-' + type;
+            alert.textContent = message;
+            alerts.appendChild(alert);
+
+            setTimeout(function() {
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        // Event listeners
+        document.getElementById('enableQup').addEventListener('change', handleQupToggle);
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            loadQupLogo(); // Load QUP logo from database
+            connectWebSocket();
+            loadQueuePreview();
+            console.log('Turkish Chef QUP Client initialized');
+        });
+
+        // Load QUP logo from database
+        async function loadQupLogo() {
+            try {
+                // Try to get logo from the same endpoints the original client.html uses
+                const response = await fetch(API_BASE + '/api/client/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.config && data.config.logo_url) {
+                        currentLogo = data.config.logo_url;
+                        console.log('QUP logo loaded from database:', currentLogo);
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load QUP logo from database, using default');
+                // Keep default 'QUP' text
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (socket) socket.disconnect();
+            stopLogoRain();
+            stopLogoOverlay();
+        });
+    </script>
+</body>
+</html>
